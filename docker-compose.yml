@@ -1,0 +1,51 @@
+# Sobe todo o backend: MongoDB + API + worker de coleta.
+#   docker compose up -d --build
+#   API em http://localhost:8000  (documentação em /docs)
+services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+    ports:
+      - "${PORT:-8000}:8000"
+    volumes:
+      - estado:/app/var
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  worker:
+    build: ./backend
+    restart: unless-stopped
+    command: ["praiometro-worker"]
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      MONGO_URI: mongodb://mongo:27017
+    volumes:
+      - estado:/app/var
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+
+volumes:
+  mongo-data:
+  estado:
