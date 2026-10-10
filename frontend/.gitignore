@@ -1,22 +1,27 @@
-# dependencies
+# dependências
 /node_modules
-/ios/build
-/android/build
+
+# pastas nativas geradas por `expo prebuild` (Continuous Native Generation)
+/android
+/ios
+
+# expo / build
+/.expo/
+/dist/
+/web-build/
+/coverage/
+
+# configuração local (use .env.example como modelo)
+.env
+.env.local
+app.json
+*.key
+*.jks
+*.p12
+*.keystore
+!debug.keystore
 
 # misc
-/.expo/
-/.expo-shared/
-/.idea/
 .DS_Store
-.env
-.web/
-app.json
-eas.json
-
-# metro
+/.idea/
 /metro-cache
-
-# generated
-/android/app/src/main/res/drawable/*
-!/android/app/src/main/res/drawable/node_modules
-*.key
