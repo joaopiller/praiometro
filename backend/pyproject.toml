@@ -43,6 +43,7 @@ praiometro = ["dados/*.json"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+filterwarnings = ["ignore::DeprecationWarning:mongomock.*"]
 
 [tool.coverage.run]
 source = ["praiometro"]

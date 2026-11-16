@@ -9,12 +9,13 @@ import FeedbackSection from '../../components/FeedbackSection';
 import GlassCard from '../../components/GlassCard';
 import HistoricoStrip from '../../components/HistoricoStrip';
 import MetricCard from '../../components/MetricCard';
+import RelatosCard from '../../components/RelatosCard';
 import Screen from '../../components/Screen';
 import StateView from '../../components/StateView';
 import StatusBanner from '../../components/StatusBanner';
 import WaveDivider from '../../components/WaveDivider';
 import { getBeachPhoto } from '../../constants/beaches';
-import { useAvaliacao, useHistorico, usePonto } from '../../hooks/queries';
+import { useAvaliacao, useHistorico, usePonto, useRelatos } from '../../hooks/queries';
 import type { PraiasScreenProps } from '../../navigation/types';
 import { colors } from '../../theme';
 import { descreverBoletim, formatNumber, formatTemp } from '../../utils/format';
@@ -28,6 +29,7 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
     const ponto = usePonto(id);
     const avaliacao = useAvaliacao(id);
     const historico = useHistorico(id);
+    const relatos = useRelatos(id);
     const [modalVisivel, setModalVisivel] = useState(false);
 
     if (ponto.isPending || (ponto.error && !ponto.data)) {
@@ -70,6 +72,7 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                 ponto.refetch();
                 avaliacao.refetch();
                 historico.refetch();
+                relatos.refetch();
             }}
             contentStyle={styles.content}
         >
@@ -106,6 +109,8 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                 />
 
                 <HistoricoStrip historico={historico.data} />
+
+                <RelatosCard codigo={id} />
 
                 {leitura.choveu_8_horas && (
                     <View style={styles.rainAlert} accessibilityRole="alert">

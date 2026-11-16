@@ -79,3 +79,11 @@ export function descreverBoletim(data?: string | null, agora: Date = new Date())
     const quando = dias <= 0 ? 'hoje' : dias === 1 ? 'ontem' : `há ${dias} dias`;
     return `Boletim do INEA de ${pad(dia)}/${pad(mes)} (${quando})`;
 }
+
+/** "agora", "há 12 min", "há 3 h" a partir de um ISO com fuso */
+export function tempoDesde(iso: string, agora: Date = new Date()): string {
+    const minutos = Math.max(0, Math.round((agora.getTime() - new Date(iso).getTime()) / 60_000));
+    if (minutos < 2) return 'agora';
+    if (minutos < 60) return `há ${minutos} min`;
+    return `há ${Math.floor(minutos / 60)} h`;
+}

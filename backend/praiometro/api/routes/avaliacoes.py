@@ -2,13 +2,13 @@ import logging
 import time
 from datetime import timedelta
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pymongo.errors import PyMongoError
 
 from ...auth import TokenInvalidoError, VerificadorGoogle
 from ...avaliacoes import RepositorioVotos
 from ...config import Settings
-from ..deps import get_limitador, get_pontos, get_repo, get_settings, get_verificador, obter_ponto
+from ..deps import get_limitador, get_pontos, get_repo, get_settings, get_token, get_verificador, obter_ponto
 from ..ratelimit import LimitadorTaxa
 from ..schemas import Avaliacao, RespostaVoto, VotoIn
 
@@ -60,22 +60,13 @@ def obter_avaliacao(
     return resposta
 
 
-def _extrair_token(authorization: str | None, token_query: str | None) -> str:
-    if authorization and authorization.lower().startswith("bearer "):
-        return authorization[7:].strip()
-    if token_query:  # versões antigas do app
-        return token_query
-    raise HTTPException(status_code=401, detail="Faça login para avaliar")
-
-
 # def síncrono: pymongo e google-auth bloqueiam, então rodam no threadpool
 @router.post("/votar", response_model=RespostaVoto, summary="Registra a avaliação do usuário")
 def votar(
     votos: VotoIn,
     request: Request,
     praia_id: str = Query(..., description="Código da praia"),
-    authorization: str | None = Header(None),
-    token: str | None = Query(None, deprecated=True, description="Use o header Authorization: Bearer"),
+    token: str = Depends(get_token),
     pontos: dict = Depends(get_pontos),
     repo: RepositorioVotos = Depends(get_repo),
     verificador: VerificadorGoogle = Depends(get_verificador),
@@ -88,7 +79,7 @@ def votar(
 
     obter_ponto(pontos, praia_id)
     try:
-        user_id = verificador(_extrair_token(authorization, token))
+        user_id = verificador(token)
     except TokenInvalidoError:
         raise HTTPException(status_code=401, detail="Login expirado ou inválido. Entre novamente.") from None
 

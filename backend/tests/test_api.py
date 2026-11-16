@@ -1,6 +1,9 @@
 import json
 
+import mongomock
+
 from praiometro.api.ratelimit import LimitadorTaxa
+from praiometro.relatos import RepositorioRelatos
 
 VOTOS = {"limpeza": 5, "acessibilidade": 4, "infraestrutura": 3, "seguranca": 2, "tranquilidade": 1}
 AUTH = {"Authorization": "Bearer valido-usuario1"}
@@ -226,20 +229,26 @@ class RepoQuebrado:
         return False
 
 
-def _cliente(settings, repo):
+def _cliente(settings, repo, relatos=None):
     from fastapi.testclient import TestClient
 
     from praiometro.api.app import create_app
 
     return TestClient(
-        create_app(settings, repo=repo, verificador=lambda t: "u"), raise_server_exceptions=False
+        create_app(
+            settings,
+            repo=repo,
+            verificador=lambda t: "u",
+            relatos=relatos or RepositorioRelatos(mongomock.MongoClient().db),
+        ),
+        raise_server_exceptions=False,
     )
 
 
 def test_mongo_fora_do_ar(settings, estado):
     estado["GR000"]["avaliacao_media"] = {"limpeza": 4}
     settings.estado_file.write_text(json.dumps(estado), encoding="utf-8")
-    with _cliente(settings, RepoQuebrado()) as c:
+    with _cliente(settings, RepoQuebrado(), relatos=RepoQuebrado()) as c:
         assert c.get("/health").json()["mongo"] is False
         assert c.get("/pontos").status_code == 200
         r = c.get("/pontos/GR000/avaliacao")
@@ -248,6 +257,8 @@ def test_mongo_fora_do_ar(settings, estado):
         r = c.post("/votar", params={"praia_id": "GR000"}, json=VOTOS, headers=AUTH)
         assert r.status_code == 503
         assert "detail" in r.json()
+        # relatos também dependem do Mongo: a leitura avisa em vez de quebrar
+        assert c.get("/pontos/GR000/relatos").json() == {"relatos": [], "disponivel": False}
 
 
 def test_estado_corrompido_usa_catalogo(settings, repo):

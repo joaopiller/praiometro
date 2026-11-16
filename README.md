@@ -18,6 +18,7 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 - Ondas (nas praias oceânicas), vento, temperatura da água, índice UV e previsão para as próximas 24 horas
 - Maré e nascer/pôr do sol
 - Avaliação das praias pelos usuários (limpeza, acessibilidade, infraestrutura, segurança e tranquilidade), com meia estrela
+- Relatos rápidos de quem está na praia (lotada, água-viva, mar agitado, bandeira vermelha...), que expiram em 5 horas
 - Busca sem acento e filtro por praias próprias/impróprias
 - Funciona offline com os últimos dados baixados
 
@@ -108,7 +109,19 @@ ruff check . && ruff format --check .
 | GET | `/pontos/{codigo}/avaliacao` | Médias das avaliações |
 | GET | `/pontos/{codigo}/historico?dias=365` | Histórico de balneabilidade |
 | GET | `/regiao` | Maré e nascer/pôr do sol |
+| GET | `/pontos/{codigo}/relatos` | Relatos ativos, agrupados por tipo |
+| POST | `/pontos/{codigo}/relatos` | Envia ou confirma um relato (exige login e estar a até 2 km da praia) |
+| POST | `/pontos/{codigo}/relatos/{tipo}/denuncia` | Contesta um relato |
 | POST | `/votar?praia_id=...` | Envia/atualiza uma avaliação (header `Authorization: Bearer <id_token do Google>`) |
+
+### Moderação dos relatos
+
+Os relatos são opções fixas, sem texto livre, então não há conteúdo ofensivo para moderar. Contra relatos falsos:
+
+- cada relato expira em 5 horas (índice TTL no MongoDB);
+- é preciso estar logado e a até 2 km da praia, verificado também no servidor;
+- cada pessoa conta uma vez por tipo e praia a cada hora, com no máximo 5 relatos por dia;
+- 3 contestações de pessoas diferentes escondem o relato, a menos que ele tenha mais confirmações do que contestações.
 
 ## Frontend
 

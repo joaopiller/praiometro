@@ -100,3 +100,23 @@ class Sol(BaseModel):
 class Regiao(BaseModel):
     mare: Mare | None = None
     sol: list[Sol] = []
+
+
+class NovoRelato(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    tipo: str
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+
+
+class Relato(BaseModel):
+    tipo: str
+    rotulo: str
+    confirmacoes: int
+    ultimo_em: str
+
+
+class ListaRelatos(BaseModel):
+    relatos: list[Relato]
+    disponivel: bool = Field(description="False quando o banco de relatos está fora do ar")

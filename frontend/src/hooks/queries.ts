@@ -1,6 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { enviarVoto, fetchAvaliacao, fetchHistorico, fetchPonto, fetchPontos, fetchRegiao } from '../api/praiometro';
-import type { Notas } from '../api/types';
+import {
+    denunciarRelato,
+    enviarRelato,
+    enviarVoto,
+    fetchAvaliacao,
+    fetchHistorico,
+    fetchPonto,
+    fetchPontos,
+    fetchRegiao,
+    fetchRelatos,
+} from '../api/praiometro';
+import type { Notas, TipoRelato } from '../api/types';
+import type { Coordenada } from '../utils/geo';
 import { PONTO_CLIMA } from '../config/env';
 
 export const queryKeys = {
@@ -9,6 +20,7 @@ export const queryKeys = {
     avaliacao: (codigo: string) => ['pontos', codigo, 'avaliacao'] as const,
     historico: (codigo: string) => ['pontos', codigo, 'historico'] as const,
     regiao: ['regiao'] as const,
+    relatos: (codigo: string) => ['pontos', codigo, 'relatos'] as const,
 };
 
 export function usePontos() {
@@ -43,4 +55,25 @@ export function useHistorico(codigo: string) {
 
 export function useRegiao() {
     return useQuery({ queryKey: queryKeys.regiao, queryFn: fetchRegiao });
+}
+
+export function useRelatos(codigo: string) {
+    return useQuery({ queryKey: queryKeys.relatos(codigo), queryFn: () => fetchRelatos(codigo), staleTime: 60 * 1000 });
+}
+
+export function useEnviarRelato(codigo: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ tipo, local, idToken }: { tipo: TipoRelato; local: Coordenada; idToken: string }) =>
+            enviarRelato(codigo, tipo, local, idToken),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.relatos(codigo) }),
+    });
+}
+
+export function useDenunciarRelato(codigo: string) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ tipo, idToken }: { tipo: TipoRelato; idToken: string }) => denunciarRelato(codigo, tipo, idToken),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.relatos(codigo) }),
+    });
 }

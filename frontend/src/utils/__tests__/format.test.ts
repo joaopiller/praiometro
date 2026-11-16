@@ -1,4 +1,4 @@
-import { descreverBoletim, formatDate, formatHour, formatNumber, formatTemp, formatUpdated, isStale, parseTimestamp } from '../format';
+import { descreverBoletim, tempoDesde, formatDate, formatHour, formatNumber, formatTemp, formatUpdated, isStale, parseTimestamp } from '../format';
 
 // 16/11/2026 15:30 em Niterói = 18:30 UTC
 const AGORA = new Date(Date.UTC(2026, 10, 16, 18, 30));
@@ -42,5 +42,11 @@ describe('format', () => {
         expect(descreverBoletim('2026-11-15', AGORA)).toBe('Boletim do INEA de 15/11 (ontem)');
         expect(descreverBoletim('2026-11-16', AGORA)).toBe('Boletim do INEA de 16/11 (hoje)');
         expect(descreverBoletim(null, AGORA)).toBe('Boletim do INEA');
+    });
+
+    it('descreve há quanto tempo', () => {
+        expect(tempoDesde('2026-11-16T18:29:30Z', AGORA)).toBe('agora');
+        expect(tempoDesde('2026-11-16T18:10:00Z', AGORA)).toBe('há 20 min');
+        expect(tempoDesde('2026-11-16T15:00:00Z', AGORA)).toBe('há 3 h');
     });
 });

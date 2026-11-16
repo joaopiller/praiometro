@@ -101,3 +101,24 @@ export interface Regiao {
     mare: { serie: { hora: string; nivel: number | null }[]; extremos: ExtremoMare[] } | null;
     sol: { data: string; nascer: string; por: string }[];
 }
+
+export type TipoRelato =
+    | 'lotada'
+    | 'tranquila'
+    | 'agua_viva'
+    | 'lixo'
+    | 'mar_agitado'
+    | 'bandeira_vermelha'
+    | 'agua_turva';
+
+export interface Relato {
+    tipo: TipoRelato;
+    rotulo: string;
+    confirmacoes: number;
+    ultimo_em: string;
+}
+
+export interface ListaRelatos {
+    relatos: Relato[];
+    disponivel: boolean;
+}

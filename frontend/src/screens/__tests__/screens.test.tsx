@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import * as Location from 'expo-location';
-import { fetchAvaliacao, fetchHistorico, fetchPonto, fetchPontos, fetchRegiao } from '../../api/praiometro';
+import { fetchAvaliacao, fetchHistorico, fetchPonto, fetchPontos, fetchRegiao, fetchRelatos } from '../../api/praiometro';
 import type { PontoDetalhe, PontoResumo } from '../../api/types';
 import { axiosError, renderWithClient } from '../../test/render';
 import Clima from '../Clima';
@@ -31,6 +31,7 @@ beforeEach(() => {
     jest.clearAllMocks();
     mockHistorico.mockResolvedValue({ codigo: 'X', registros: [], total: 0, proprias: 0, percentual_proprio: null });
     mockRegiao.mockResolvedValue({ mare: null, sol: [] });
+    (fetchRelatos as jest.Mock).mockResolvedValue({ disponivel: true, relatos: [] });
 });
 
 describe('Praias', () => {

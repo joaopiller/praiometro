@@ -12,9 +12,11 @@ from ..auth import VerificadorGoogle
 from ..avaliacoes import RepositorioVotos
 from ..config import Settings, configurar_logging, get_settings
 from ..db import criar_colecao_votos
+from ..relatos import RepositorioRelatos
 from .cache import CacheJson, CachePontos
 from .ratelimit import LimitadorTaxa
 from .routes import avaliacoes, pontos, regiao, sistema
+from .routes import relatos as rotas_relatos
 
 log = logging.getLogger(__name__)
 
@@ -23,18 +25,23 @@ def create_app(
     settings: Settings | None = None,
     repo: RepositorioVotos | None = None,
     verificador=None,
+    relatos: RepositorioRelatos | None = None,
 ) -> FastAPI:
     settings = settings or get_settings()
     repo = repo or RepositorioVotos(criar_colecao_votos(settings))
     verificador = verificador or VerificadorGoogle(settings.google_client_id)
+    if relatos is None:
+        banco = repo.colecao.database if isinstance(repo, RepositorioVotos) else None
+        relatos = RepositorioRelatos(banco if banco is not None else criar_colecao_votos(settings).database)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         app.state.cache.recarregar(forcar=True)
-        try:
-            repo.garantir_indices()
-        except Exception as e:
-            log.warning("Não foi possível criar índices no MongoDB: %s", e)
+        for repositorio in (repo, relatos):
+            try:
+                repositorio.garantir_indices()
+            except Exception as e:
+                log.warning("Não foi possível criar índices no MongoDB: %s", e)
         yield
 
     app = FastAPI(
@@ -46,6 +53,7 @@ def create_app(
     app.state.settings = settings
     app.state.repo = repo
     app.state.verificador = verificador
+    app.state.relatos = relatos
     app.state.cache = CachePontos(settings.estado_file, settings.catalogo_file)
     app.state.cache_historico = CacheJson(settings.historico_file, intervalo=30)
     app.state.cache_regiao = CacheJson(settings.regiao_file, intervalo=30)
@@ -84,6 +92,7 @@ def create_app(
     app.include_router(pontos.router)
     app.include_router(avaliacoes.router)
     app.include_router(regiao.router)
+    app.include_router(rotas_relatos.router)
     return app
 
 
