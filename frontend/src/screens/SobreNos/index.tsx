@@ -1,19 +1,12 @@
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
-import { Alert, Linking, Pressable, Text, View } from 'react-native';
+import { Linking, Pressable, Text, View } from 'react-native';
+import { useAviso } from '../../components/Aviso';
 import GlassCard, { CardLabel } from '../../components/GlassCard';
 import Screen from '../../components/Screen';
 import { CONTATO, env } from '../../config/env';
 import { colors, toneColors } from '../../theme';
 import styles from './styles';
-
-async function abrir(url: string) {
-    try {
-        await Linking.openURL(url);
-    } catch {
-        Alert.alert('Não foi possível abrir o link', url);
-    }
-}
 
 const LEGENDA = [
     { cor: toneColors.success.solid, titulo: 'Própria', texto: 'a água atende ao padrão de qualidade para banho' },
@@ -30,9 +23,11 @@ const FONTES = [
 const EQUIPE = 'Rafael Lucio, João Vicente Piller, Lucas Silveira e Pâmella de Azevedo';
 
 function Contato({ icone, texto, url }: { icone: ComponentProps<typeof FontAwesome>['name']; texto: string; url: string }) {
+    const avisar = useAviso();
+    const abrir = () => Linking.openURL(url).catch(() => avisar('Não foi possível abrir o link.', 'erro'));
     return (
         <Pressable
-            onPress={() => abrir(url)}
+            onPress={abrir}
             accessibilityRole="link"
             style={({ pressed }) => [styles.botao, pressed && styles.pressed]}
         >

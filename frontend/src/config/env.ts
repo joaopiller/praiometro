@@ -7,6 +7,7 @@ export const env = {
     // 10.0.2.2 = localhost do computador visto pelo emulador Android
     apiUrl: process.env.EXPO_PUBLIC_API_URL ?? extra.apiUrl ?? 'http://10.0.2.2:8000',
     googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? extra.GOOGLE_CLIENT_ID,
+    googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     appVersion: Constants.expoConfig?.version ?? 'dev',
 };
 

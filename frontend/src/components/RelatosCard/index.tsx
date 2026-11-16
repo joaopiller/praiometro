@@ -1,5 +1,5 @@
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import type { Relato, TipoRelato } from '../../api/types';
 import { infoRelato, TIPOS_RELATO } from '../../constants/relatos';
@@ -7,7 +7,7 @@ import { useRelatos } from '../../hooks/queries';
 import { useAcoesRelato, type Resultado } from '../../hooks/useAcoesRelato';
 import { colors, toneColors } from '../../theme';
 import { tempoDesde } from '../../utils/format';
-import Aviso, { type MensagemAviso } from '../Aviso';
+import { useAviso } from '../Aviso';
 import BottomSheet from '../BottomSheet';
 import GlassCard, { CardLabel } from '../GlassCard';
 import styles from './styles';
@@ -41,18 +41,17 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
     const { relatar, contestar, enviando } = useAcoesRelato(codigo);
     const [escolhendo, setEscolhendo] = useState(false);
     const [selecionado, setSelecionado] = useState<Relato | null>(null);
-    const [aviso, setAviso] = useState<MensagemAviso | null>(null);
-    const limparAviso = useCallback(() => setAviso(null), []);
+    const avisar = useAviso();
 
     if (!data?.disponivel) return null;
 
     const concluir = (resultado: Resultado, sucesso: string, fechar: () => void) => {
         if (resultado.ok) {
             fechar();
-            setAviso({ texto: sucesso, tipo: 'sucesso', id: Date.now() });
+            avisar(sucesso);
         } else if (resultado.erro) {
             fechar();
-            setAviso({ texto: resultado.erro, tipo: 'erro', id: Date.now() });
+            avisar(resultado.erro, 'erro');
         }
     };
 
@@ -94,8 +93,6 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
                 <MaterialCommunityIcons name="bullhorn-outline" size={18} color={colors.sand} />
                 <Text style={styles.botaoTexto}>Como está a praia agora?</Text>
             </Pressable>
-
-            <Aviso mensagem={aviso} onFim={limparAviso} />
 
             <BottomSheet visible={escolhendo} onClose={() => setEscolhendo(false)} bloqueado={enviando}>
                 <Text style={styles.titulo} accessibilityRole="header">

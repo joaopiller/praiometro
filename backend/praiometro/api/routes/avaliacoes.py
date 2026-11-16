@@ -5,7 +5,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pymongo.errors import PyMongoError
 
-from ...auth import TokenInvalidoError, VerificadorGoogle
+from ...auth import TokenInvalidoError, VerificadorTokens
 from ...avaliacoes import RepositorioVotos
 from ...config import Settings
 from ..deps import get_limitador, get_pontos, get_repo, get_settings, get_token, get_verificador, obter_ponto
@@ -69,7 +69,7 @@ def votar(
     token: str = Depends(get_token),
     pontos: dict = Depends(get_pontos),
     repo: RepositorioVotos = Depends(get_repo),
-    verificador: VerificadorGoogle = Depends(get_verificador),
+    verificador: VerificadorTokens = Depends(get_verificador),
     limitador: LimitadorTaxa = Depends(get_limitador),
     settings: Settings = Depends(get_settings),
 ):

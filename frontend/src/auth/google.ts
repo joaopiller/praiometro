@@ -14,7 +14,7 @@ export function configureGoogleSignIn() {
         console.warn('EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID não definido: login com Google indisponível.');
         return;
     }
-    GoogleSignin.configure({ webClientId: env.googleWebClientId });
+    GoogleSignin.configure({ webClientId: env.googleWebClientId, iosClientId: env.googleIosClientId });
     configurado = true;
 }
 

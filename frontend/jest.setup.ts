@@ -28,6 +28,19 @@ jest.mock('expo-location', () => ({
     Accuracy: { Balanced: 3 },
 }));
 
+jest.mock('expo-apple-authentication', () => {
+    const { Pressable, Text } = require('react-native');
+    const React = require('react');
+    return {
+        isAvailableAsync: jest.fn().mockResolvedValue(false),
+        signInAsync: jest.fn(),
+        AppleAuthenticationButtonType: { CONTINUE: 1 },
+        AppleAuthenticationButtonStyle: { BLACK: 2 },
+        AppleAuthenticationButton: ({ onPress }: { onPress: () => void }) =>
+            React.createElement(Pressable, { onPress, testID: 'botao-apple' }, React.createElement(Text, null, 'Continuar com a Apple')),
+    };
+});
+
 jest.mock('expo-splash-screen', () => ({
     preventAutoHideAsync: jest.fn().mockResolvedValue(true),
     hideAsync: jest.fn().mockResolvedValue(true),

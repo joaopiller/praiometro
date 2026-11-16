@@ -4,10 +4,11 @@ import { useIsFocused } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Pressable, Text, useWindowDimensions, View, type ViewToken } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, useWindowDimensions, View, type ViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../api/client';
 import type { PontoResumo } from '../../api/types';
+import { useAviso } from '../../components/Aviso';
 import HomeHeader from '../../components/HomeHeader';
 import MapBeachCard from '../../components/MapBeachCard';
 import Screen from '../../components/Screen';
@@ -50,6 +51,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const [selecionado, setSelecionado] = useState<string | null>(null);
     const [mapaFalhou, setMapaFalhou] = useState(false);
     const { coordenada: origem, carregando: localizando, localizar } = useLocalizacao();
+    const avisar = useAviso();
 
     const cardLargura = Math.min(width - 56, 380);
 
@@ -92,7 +94,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const irParaMaisProxima = async () => {
         const r = await localizar();
         if ('erro' in r) {
-            Alert.alert('Localização indisponível', r.erro);
+            avisar(r.erro, 'erro');
             return;
         }
         const [maisProxima] = ordenarPorDistancia(praias, r.coordenada);

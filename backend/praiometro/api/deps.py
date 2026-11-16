@@ -1,6 +1,6 @@
 from fastapi import Header, HTTPException, Query, Request
 
-from ..auth import VerificadorGoogle
+from ..auth import VerificadorTokens
 from ..avaliacoes import RepositorioVotos
 from ..config import Settings
 from ..relatos import RepositorioRelatos
@@ -21,7 +21,7 @@ async def get_repo(request: Request) -> RepositorioVotos:
     return request.app.state.repo
 
 
-async def get_verificador(request: Request) -> VerificadorGoogle:
+async def get_verificador(request: Request) -> VerificadorTokens:
     return request.app.state.verificador
 
 

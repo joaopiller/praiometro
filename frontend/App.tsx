@@ -7,7 +7,9 @@ import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { createQueryClient, setupAppFocusRefetch } from './src/api/queryClient';
 import { configureGoogleSignIn } from './src/auth/google';
+import { LoginProvider } from './src/auth/LoginProvider';
 import AnimatedSplash from './src/components/AnimatedSplash';
+import { AvisoProvider } from './src/components/Aviso';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import RootNavigator from './src/navigation/RootNavigator';
 
@@ -36,7 +38,11 @@ export default function App() {
                     onError={() => setCacheRestaurado(true)}
                 >
                     <StatusBar style="light" />
-                    <RootNavigator />
+                    <AvisoProvider>
+                        <LoginProvider>
+                            <RootNavigator />
+                        </LoginProvider>
+                    </AvisoProvider>
                     {!aberturaConcluida && (
                         <AnimatedSplash pronto={cacheRestaurado} onFim={() => setAberturaConcluida(true)} />
                     )}

@@ -8,7 +8,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 
 from .. import __version__
-from ..auth import VerificadorGoogle
+from ..auth import VerificadorTokens
 from ..avaliacoes import RepositorioVotos
 from ..config import Settings, configurar_logging, get_settings
 from ..db import criar_colecao_votos
@@ -29,7 +29,7 @@ def create_app(
 ) -> FastAPI:
     settings = settings or get_settings()
     repo = repo or RepositorioVotos(criar_colecao_votos(settings))
-    verificador = verificador or VerificadorGoogle(settings.google_client_id)
+    verificador = verificador or VerificadorTokens(settings.google_client_id, settings.apple_bundle_id)
     if relatos is None:
         banco = repo.colecao.database if isinstance(repo, RepositorioVotos) else None
         relatos = RepositorioRelatos(banco if banco is not None else criar_colecao_votos(settings).database)

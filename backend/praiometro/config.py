@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     api_workers: int = 2
     log_level: str = "INFO"
     google_client_id: str | None = None
+    # audiência dos tokens do "Entrar com a Apple" no app iOS
+    apple_bundle_id: str | None = "com.praiometro.app"
     cors_origins: list[str] = ["*"]
 
     # Coleta

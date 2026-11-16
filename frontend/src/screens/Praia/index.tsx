@@ -1,8 +1,9 @@
 import { Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { Alert, ImageBackground, Linking, Pressable, Text, View } from 'react-native';
+import { ImageBackground, Linking, Pressable, Text, View } from 'react-native';
 import { getErrorMessage } from '../../api/client';
+import { useAviso } from '../../components/Aviso';
 import DataNotice from '../../components/DataNotice';
 import FeedbackModal from '../../components/FeedbackModal';
 import FeedbackSection from '../../components/FeedbackSection';
@@ -31,6 +32,7 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
     const historico = useHistorico(id);
     const relatos = useRelatos(id);
     const [modalVisivel, setModalVisivel] = useState(false);
+    const avisar = useAviso();
 
     if (ponto.isPending || (ponto.error && !ponto.data)) {
         return (
@@ -61,7 +63,7 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
         try {
             await Linking.openURL(url);
         } catch {
-            Alert.alert('Não foi possível abrir o mapa', 'Verifique se há um app de mapas instalado.');
+            avisar('Não foi possível abrir o mapa. Verifique se há um app de mapas instalado.', 'erro');
         }
     }
 

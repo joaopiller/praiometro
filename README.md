@@ -19,7 +19,8 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 - Maré e nascer/pôr do sol
 - Avaliação das praias pelos usuários (limpeza, acessibilidade, infraestrutura, segurança e tranquilidade), com meia estrela
 - Relatos rápidos de quem está na praia (lotada, água-viva, mar agitado, bandeira vermelha...), que expiram em 5 horas
-- Busca sem acento e filtro por praias próprias/impróprias
+- Busca sem acento e filtros de praias próprias e mais próximas
+- Login com Google (e com Apple no iPhone) para avaliar e relatar
 - Funciona offline com os últimos dados baixados
 
 ## Fontes de dados
@@ -125,7 +126,7 @@ Os relatos são opções fixas, sem texto livre, então não há conteúdo ofens
 
 ## Frontend
 
-Requer Node 20+ e, para rodar no Android, Android Studio com JDK 17 ou 21.
+Requer Node 20+ e, para rodar no Android, Android Studio com JDK 17 ou 21. Para iOS, veja a seção [iOS](#ios).
 
 ```bash
 cd frontend
@@ -137,7 +138,26 @@ npm run android          # gera o projeto nativo e abre no emulador/celular
 As configurações ficam no `.env` (veja `.env.example`):
 
 - `EXPO_PUBLIC_API_URL`: endereço da API. No emulador, `http://10.0.2.2:8000` aponta para o seu computador.
-- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`: Web Client ID do Google, usado no login para avaliar praias.
+- `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`: Web Client ID do Google, usado no login para avaliar e relatar.
+- `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`: ID do cliente iOS do Google (só para builds iOS).
+
+### Login com Google
+
+O login (usado para avaliar e relatar) depende de um projeto no [Google Cloud](https://console.cloud.google.com), em **Google Auth Platform**:
+
+1. **Público-alvo:** externo. Enquanto o app estiver "Em teste", só os e-mails em *Usuários de teste* conseguem entrar.
+2. **Clientes → Aplicativo da Web:** o ID gerado é o `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` do frontend e o `GOOGLE_CLIENT_ID` do backend (o mesmo valor nos dois).
+3. **Clientes → Android:** pacote `com.praiometro.app` e o SHA-1 do certificado que assina o app. Um cliente para cada certificado:
+   - desenvolvimento: `5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25`;
+   - produção (EAS): o SHA-1 mostrado por `eas credentials`.
+
+4. **Clientes → iOS:** bundle ID `com.praiometro.app`. O ID gerado vai em `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`; o esquema de URL de retorno é derivado dele automaticamente.
+
+Sem o cliente Android com o SHA-1 certo, o Google recusa o login com `DEVELOPER_ERROR`. O Client Secret não é usado.
+
+### Login com Apple
+
+No iPhone o app oferece "Entrar com a Apple" ao lado do Google, como exige a App Store para apps com login de terceiros. O app não pede nome nem e-mail; o backend valida o token com as chaves públicas da Apple e guarda o usuário como `apple:<id>`. A audiência esperada é o bundle ID, configurável em `APPLE_BUNDLE_ID` no backend. No Android a opção não aparece.
 
 A pasta `android/` é gerada a partir do `app.config.ts` (`npm run prebuild`), então não precisa ser editada à mão.
 
@@ -157,18 +177,35 @@ npm run lint
 npm test
 ```
 
-### Gerar APK
+### iOS
+
+O mesmo código gera o app de iOS. Para compilar localmente é preciso um Mac com Xcode e CocoaPods:
+
+```bash
+npm run ios              # gera o projeto nativo e abre no simulador
+```
+
+Também dá para gerar na nuvem pelo EAS, sem Xcode:
+
+- `eas build -p ios --profile simulador`: build para o simulador, não precisa de conta Apple.
+- `eas build -p ios --profile preview`: instala no iPhone por link (distribuição interna). Precisa da conta Apple Developer e do aparelho registrado com `eas device:create`.
+- `eas build -p ios --profile production` + `eas submit -p ios`: envia para o TestFlight e a App Store.
+
+Em desenvolvimento a API pode ser HTTP na rede local (o app libera isso só quando `EXPO_PUBLIC_API_URL` começa com `http://`); em produção ela precisa de HTTPS.
+
+### Gerar builds
 
 ```bash
 npm install -g eas-cli
-eas build --platform android --profile preview
+eas build --platform android --profile preview   # APK
+eas build --platform ios --profile preview        # iPhone (distribuição interna)
 ```
 
 ## CI/CD
 
 - **Backend** (`.github/workflows/backend.yml`): lint, testes com cobertura e build da imagem Docker. Em pushes na `main`, a imagem é publicada no GitHub Container Registry.
 - **Frontend** (`.github/workflows/frontend.yml`): typecheck, lint, testes e validação do bundle.
-- **Release do app** (`.github/workflows/eas-build.yml`): build do APK pelo EAS, disparado manualmente ou por tags `v*`. Precisa do secret `EXPO_TOKEN`.
+- **Release do app** (`.github/workflows/eas-build.yml`): builds pelo EAS, disparado manualmente (escolhendo Android, iOS ou ambos) ou por tags `v*` (por enquanto só Android, até a conta Apple Developer estar no EAS). Precisa do secret `EXPO_TOKEN`.
 
 ## Autoria
 

@@ -1,6 +1,7 @@
 import { getErrorMessage } from '../api/client';
 import type { TipoRelato } from '../api/types';
-import { LoginError, obterIdToken } from '../auth/google';
+import { LoginError } from '../auth/google';
+import { useLogin } from '../auth/LoginProvider';
 import { useDenunciarRelato, useEnviarRelato } from './queries';
 import { LocalizacaoError, obterLocalizacao } from './useLocalizacao';
 
@@ -14,11 +15,12 @@ function mensagemDe(error: unknown): string {
 export function useAcoesRelato(codigo: string) {
     const enviar = useEnviarRelato(codigo);
     const denunciar = useDenunciarRelato(codigo);
+    const { pedirLogin } = useLogin();
 
     async function relatar(tipo: TipoRelato): Promise<Resultado> {
         try {
             const local = await obterLocalizacao();
-            const idToken = await obterIdToken();
+            const idToken = await pedirLogin();
             if (!idToken) return { ok: false };
             await enviar.mutateAsync({ tipo, local, idToken });
             return { ok: true };
@@ -29,7 +31,7 @@ export function useAcoesRelato(codigo: string) {
 
     async function contestar(tipo: TipoRelato): Promise<Resultado> {
         try {
-            const idToken = await obterIdToken();
+            const idToken = await pedirLogin();
             if (!idToken) return { ok: false };
             await denunciar.mutateAsync({ tipo, idToken });
             return { ok: true };

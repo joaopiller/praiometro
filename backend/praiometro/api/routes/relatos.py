@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pymongo.errors import PyMongoError
 
-from ...auth import TokenInvalidoError, VerificadorGoogle
+from ...auth import TokenInvalidoError, VerificadorTokens
 from ...relatos import RelatoRecusadoError, RepositorioRelatos
 from ..deps import get_limitador, get_pontos, get_relatos, get_token, get_verificador, obter_ponto
 from ..ratelimit import LimitadorTaxa
@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 router = APIRouter(prefix="/pontos/{codigo}/relatos", tags=["relatos"])
 
 
-def _usuario(token: str, verificador: VerificadorGoogle) -> str:
+def _usuario(token: str, verificador: VerificadorTokens) -> str:
     try:
         return verificador(token)
     except TokenInvalidoError:
@@ -46,7 +46,7 @@ def enviar_relato(
     token: str = Depends(get_token),
     pontos: dict = Depends(get_pontos),
     relatos: RepositorioRelatos = Depends(get_relatos),
-    verificador: VerificadorGoogle = Depends(get_verificador),
+    verificador: VerificadorTokens = Depends(get_verificador),
     limitador: LimitadorTaxa = Depends(get_limitador),
 ):
     _limitar(request, limitador)
@@ -78,7 +78,7 @@ def denunciar_relato(
     token: str = Depends(get_token),
     pontos: dict = Depends(get_pontos),
     relatos: RepositorioRelatos = Depends(get_relatos),
-    verificador: VerificadorGoogle = Depends(get_verificador),
+    verificador: VerificadorTokens = Depends(get_verificador),
     limitador: LimitadorTaxa = Depends(get_limitador),
 ):
     _limitar(request, limitador)
