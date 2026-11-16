@@ -77,7 +77,12 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
             contentStyle={styles.content}
         >
             <ImageBackground source={foto?.imagem} style={styles.hero} resizeMode="cover" accessibilityIgnoresInvertColors>
-                <LinearGradient colors={['rgba(0,0,0,0.35)', 'transparent', 'rgba(1,84,134,0.6)']} style={styles.heroShade} />
+                {/* o topo parte da mesma cor em que o cabeçalho termina, então a foto "nasce" dele */}
+                <LinearGradient
+                    colors={[colors.bgTop, 'rgba(10,99,158,0.55)', 'rgba(10,99,158,0)', 'transparent', 'rgba(1,84,134,0.65)']}
+                    locations={[0, 0.16, 0.42, 0.62, 1]}
+                    style={styles.heroShade}
+                />
                 <Pressable
                     onPress={() => navigation.goBack()}
                     style={styles.back}

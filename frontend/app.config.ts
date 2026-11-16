@@ -17,14 +17,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         slug: 'praiometro',
         version: '2.0.0',
         orientation: 'portrait',
-        icon: './assets/logo.jpg',
+        icon: './assets/images/icone.png',
         userInterfaceStyle: 'light',
         newArchEnabled: true,
-        splash: { image: './assets/logo.jpg', resizeMode: 'contain', backgroundColor: '#015486' },
         ios: { supportsTablet: true, bundleIdentifier: 'com.praiometro.app' },
         android: {
             package: 'com.praiometro.app',
-            adaptiveIcon: { foregroundImage: './assets/logo.jpg', backgroundColor: '#015486' },
+            adaptiveIcon: { foregroundImage: './assets/images/icone-adaptativo.png', backgroundColor: '#015486' },
             edgeToEdgeEnabled: true,
             // O app não precisa de localização, armazenamento nem sobreposição de tela.
             blockedPermissions: [
@@ -34,6 +33,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             ],
         },
         plugins: [
+            [
+                'expo-splash-screen',
+                {
+                    // logo recortada rente ao desenho: no Android 12+ a imagem é cortada em círculo,
+                    // então ela precisa ser estreita o bastante para caber nele
+                    image: './assets/images/logo-header.png',
+                    imageWidth: 170,
+                    resizeMode: 'contain',
+                    backgroundColor: '#015486',
+                },
+            ],
             '@maplibre/maplibre-react-native',
             [
                 'expo-location',

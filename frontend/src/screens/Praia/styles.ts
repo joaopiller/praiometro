@@ -3,7 +3,7 @@ import { colors, radius, spacing, typography } from '../../theme';
 
 export default StyleSheet.create({
     content: { paddingHorizontal: 0, gap: 0 },
-    hero: { height: 240, justifyContent: 'flex-end', backgroundColor: colors.brand },
+    hero: { height: 250, justifyContent: 'flex-end', backgroundColor: colors.bgTop },
     heroShade: { ...StyleSheet.absoluteFillObject },
     back: {
         position: 'absolute',

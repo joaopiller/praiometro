@@ -28,6 +28,11 @@ jest.mock('expo-location', () => ({
     Accuracy: { Balanced: 3 },
 }));
 
+jest.mock('expo-splash-screen', () => ({
+    preventAutoHideAsync: jest.fn().mockResolvedValue(true),
+    hideAsync: jest.fn().mockResolvedValue(true),
+}));
+
 jest.mock('expo-font', () => ({
     ...jest.requireActual('expo-font'),
     isLoaded: jest.fn(() => true),

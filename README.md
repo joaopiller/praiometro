@@ -141,6 +141,14 @@ As configurações ficam no `.env` (veja `.env.example`):
 
 A pasta `android/` é gerada a partir do `app.config.ts` (`npm run prebuild`), então não precisa ser editada à mão.
 
+### Imagens
+
+Scripts em `frontend/scripts/` (requerem Python com Pillow: `pip install pillow`):
+
+- `python scripts/comprimir-imagens.py`: reduz as fotos de `assets/images/praias` para 1280 px de largura. Rode sempre que adicionar uma foto nova; ele não mexe no que já está otimizado.
+- `python scripts/gerar-icones.py`: gera o ícone do app e o ícone adaptativo do Android a partir de `assets/images/logo-header.png`.
+- `python scripts/gerar-pins.py`: gera os pins do mapa.
+
 ### Testes e qualidade
 
 ```bash
