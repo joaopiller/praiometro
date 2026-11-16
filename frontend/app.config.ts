@@ -1,3 +1,4 @@
+import { withEntitlementsPlist } from 'expo/config-plugins';
 import type { ConfigContext, ExpoConfig } from 'expo/config';
 
 /**
@@ -5,17 +6,26 @@ import type { ConfigContext, ExpoConfig } from 'expo/config';
  *   EXPO_PUBLIC_API_URL               URL da API (ex.: http://192.168.0.10:8000)
  *   EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID  Web Client ID do Google Sign-In
  *   EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID  ID do cliente iOS do Google (só para builds iOS)
+ *   EXPO_PUBLIC_LOGIN_APPLE=false     tira o login da Apple (conta Apple gratuita não assina apps com ele)
  *   EAS_PROJECT_ID                    (opcional) ID do projeto no Expo/EAS
  */
+// o Expo aplica o plugin da Apple só por o pacote estar instalado; sem o login, a permissão sai
+const semLoginApple = (config: ExpoConfig) =>
+    withEntitlementsPlist(config, (cfg) => {
+        delete cfg.modResults['com.apple.developer.applesignin'];
+        return cfg;
+    });
+
 export default ({ config }: ConfigContext): ExpoConfig => {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? '';
     // HTTP sem TLS só em desenvolvimento, quando a API está na rede local
     const apiSemTls = apiUrl === '' || apiUrl.startsWith('http://');
     // o Google no iOS volta para o app pelo ID do cliente invertido
     const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+    const comApple = process.env.EXPO_PUBLIC_LOGIN_APPLE !== 'false';
     const iosUrlScheme = iosClientId && `com.googleusercontent.apps.${iosClientId.replace('.apps.googleusercontent.com', '')}`;
 
-    return {
+    const app: ExpoConfig = {
         ...config,
         name: 'Praiômetro',
         slug: 'praiometro',
@@ -23,12 +33,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         orientation: 'portrait',
         icon: './assets/images/icone.png',
         userInterfaceStyle: 'light',
-        newArchEnabled: true,
         ios: {
             supportsTablet: true,
             bundleIdentifier: 'com.praiometro.app',
-            usesAppleSignIn: true,
+            usesAppleSignIn: comApple,
             infoPlist: {
+                // nome mostrado pelo sistema em alertas (ex.: login); sem isso aparece "Praimetro"
+                CFBundleName: 'Praiômetro',
                 // o app só usa a criptografia padrão do sistema (HTTPS)
                 ITSAppUsesNonExemptEncryption: false,
                 ...(apiSemTls ? { NSAppTransportSecurity: { NSAllowsArbitraryLoads: true } } : {}),
@@ -37,7 +48,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         android: {
             package: 'com.praiometro.app',
             adaptiveIcon: { foregroundImage: './assets/images/icone-adaptativo.png', backgroundColor: '#015486' },
-            edgeToEdgeEnabled: true,
             // O app não precisa de armazenamento nem de sobreposição de tela.
             blockedPermissions: [
                 'android.permission.SYSTEM_ALERT_WINDOW',
@@ -60,14 +70,17 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             '@maplibre/maplibre-react-native',
             [
                 'expo-location',
-                { locationWhenInUsePermission: 'O Praiômetro usa sua localização para mostrar a praia mais próxima.' },
+                {
+                    locationWhenInUsePermission:
+                        'O Praiômetro usa sua localização para mostrar a praia mais próxima e para confirmar que você está na praia ao enviar um relato.',
+                },
             ],
             [
                 'expo-build-properties',
                 // HTTP sem TLS só é liberado quando a API configurada é http:// (ex.: rede local).
                 { android: { usesCleartextTraffic: apiSemTls } },
             ],
-            'expo-apple-authentication',
+            ...(comApple ? ['expo-apple-authentication'] : []),
             ...(iosUrlScheme ? [['@react-native-google-signin/google-signin', { iosUrlScheme }] as [string, object]] : []),
         ],
         extra: {
@@ -75,4 +88,5 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             ...(process.env.EAS_PROJECT_ID ? { eas: { projectId: process.env.EAS_PROJECT_ID } } : {}),
         },
     };
+    return comApple ? app : semLoginApple(app);
 };

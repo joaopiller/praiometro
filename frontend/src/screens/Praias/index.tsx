@@ -6,6 +6,8 @@ import BeachCard from '../../components/BeachCard';
 import DataNotice from '../../components/DataNotice';
 import Screen from '../../components/Screen';
 import StateView from '../../components/StateView';
+import Vidro from '../../components/Vidro';
+import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
 import { usePontos } from '../../hooks/queries';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
 import { formatDistancia, ordenarPorDistancia } from '../../utils/geo';
@@ -25,6 +27,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
     const { data, isPending, error, refetch, isRefetching } = usePontos();
     const [busca, setBusca] = useState('');
     const [filtro, setFiltro] = useState<Filtro>('todas');
+    const espacoAbas = useEspacoDasAbas();
 
     const { coordenada, carregando: localizando, erro: erroLocal, localizar } = useLocalizacao();
 
@@ -58,7 +61,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
             <FlatList
                 data={praias}
                 keyExtractor={(p) => p.ponto.codigo}
-                contentContainerStyle={styles.list}
+                contentContainerStyle={[styles.list, espacoAbas > 0 && { paddingBottom: espacoAbas + 32 }]}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="on-drag"
                 onRefresh={() => refetch()}
@@ -66,7 +69,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                 ListHeaderComponent={
                     <View style={styles.header}>
                         {error ? <DataNotice timestamp={data?.[0]?.ultima_leitura} refreshError /> : null}
-                        <View style={styles.search}>
+                        <Vidro style={styles.search} semVidro={styles.searchFundo} escuro>
                             <Ionicons name="search" size={20} color={colors.textMuted} />
                             <TextInput
                                 style={styles.input}
@@ -75,6 +78,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                                 value={busca}
                                 onChangeText={setBusca}
                                 returnKeyType="search"
+                                keyboardAppearance="dark"
                                 autoCorrect={false}
                                 accessibilityLabel="Buscar praia"
                             />
@@ -83,7 +87,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                                     <Ionicons name="close-circle" size={20} color={colors.textMuted} />
                                 </Pressable>
                             ) : null}
-                        </View>
+                        </Vidro>
                         <View style={styles.chips} accessibilityRole="radiogroup">
                             {FILTROS.map((f) => {
                                 const ativo = filtro === f.id;

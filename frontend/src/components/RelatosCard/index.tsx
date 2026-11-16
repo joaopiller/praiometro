@@ -2,6 +2,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import type { Relato, TipoRelato } from '../../api/types';
+import { LoginSobreModal } from '../../auth/LoginProvider';
 import { infoRelato, TIPOS_RELATO } from '../../constants/relatos';
 import { useRelatos } from '../../hooks/queries';
 import { useAcoesRelato, type Resultado } from '../../hooks/useAcoesRelato';
@@ -94,7 +95,12 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
                 <Text style={styles.botaoTexto}>Como está a praia agora?</Text>
             </Pressable>
 
-            <BottomSheet visible={escolhendo} onClose={() => setEscolhendo(false)} bloqueado={enviando}>
+            <BottomSheet
+                visible={escolhendo}
+                onClose={() => setEscolhendo(false)}
+                bloqueado={enviando}
+                sobreposicao={<LoginSobreModal />}
+            >
                 <Text style={styles.titulo} accessibilityRole="header">
                     Como está a praia?
                 </Text>
@@ -116,7 +122,12 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
                 {enviando && <ActivityIndicator color={colors.brand} style={styles.carregando} />}
             </BottomSheet>
 
-            <BottomSheet visible={!!selecionado} onClose={() => setSelecionado(null)} bloqueado={enviando}>
+            <BottomSheet
+                visible={!!selecionado}
+                onClose={() => setSelecionado(null)}
+                bloqueado={enviando}
+                sobreposicao={<LoginSobreModal />}
+            >
                 {selecionado && info && (
                     <View style={styles.detalhe}>
                         <View style={[styles.iconeGrande, { backgroundColor: `${toneColors[info.tom].solid}1F` }]}>

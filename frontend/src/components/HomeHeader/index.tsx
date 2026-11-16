@@ -1,11 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image, Pressable, Text } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 import { useClima } from '../../hooks/queries';
 import { useZonaClima } from '../../hooks/useZonaClima';
 import { formatTemp, parseTimestamp } from '../../utils/format';
 import { getCondicao } from '../../utils/weather';
 import { colors } from '../../theme';
+import Vidro, { temVidro } from '../Vidro';
 import WeatherIcon from '../WeatherIcon';
 import styles from './styles';
 
@@ -17,8 +18,8 @@ export default function HomeHeader({ onPress }: { onPress?: () => void }) {
     const leitura = data?.leitura_atual;
     const condicao = getCondicao(leitura?.weather_code);
 
-    return (
-        <LinearGradient colors={[colors.headerTop, colors.bgTop]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.bar}>
+    const conteudo = (
+        <>
             <Image source={logo} style={styles.logo} accessibilityLabel="Praiômetro" />
             <Pressable
                 onPress={onPress}
@@ -30,17 +31,33 @@ export default function HomeHeader({ onPress }: { onPress?: () => void }) {
             >
                 {leitura ? (
                     <>
-                        <WeatherIcon code={leitura.weather_code} size={22} hour={parseTimestamp(leitura.timestamp)?.hora} />
-                        <Text style={styles.temp}>{formatTemp(leitura.temperature_2m)}</Text>
-                        <Text style={styles.condicao} numberOfLines={1}>
-                            {condicao.descricao}
-                        </Text>
+                        <WeatherIcon code={leitura.weather_code} size={28} hour={parseTimestamp(leitura.timestamp)?.hora} />
+                        <View style={styles.climaTexto}>
+                            <Text style={styles.temp}>{formatTemp(leitura.temperature_2m)}</Text>
+                            <Text style={styles.condicao} numberOfLines={1}>
+                                {condicao.descricao}
+                            </Text>
+                        </View>
                     </>
                 ) : (
-                    <Text style={styles.condicao}>{isPending ? '...' : 'Clima'}</Text>
+                    <Text style={[styles.condicao, styles.climaTexto]}>{isPending ? '...' : 'Clima'}</Text>
                 )}
                 <Feather name="chevron-right" size={16} color="rgba(255,255,255,0.7)" />
             </Pressable>
+        </>
+    );
+
+    // no iOS 26 a barra vira vidro tingido com o azul da marca, deixando o mapa aparecer por trás
+    if (temVidro) {
+        return (
+            <Vidro style={[styles.bar, styles.barVidro]} tintColor={colors.vidroMarca}>
+                {conteudo}
+            </Vidro>
+        );
+    }
+    return (
+        <LinearGradient colors={[colors.headerTop, colors.bgTop]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.bar}>
+            {conteudo}
         </LinearGradient>
     );
 }

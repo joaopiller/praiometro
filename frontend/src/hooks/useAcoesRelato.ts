@@ -20,7 +20,7 @@ export function useAcoesRelato(codigo: string) {
     async function relatar(tipo: TipoRelato): Promise<Resultado> {
         try {
             const local = await obterLocalizacao();
-            const idToken = await pedirLogin();
+            const idToken = await pedirLogin({ sobreModal: true });
             if (!idToken) return { ok: false };
             await enviar.mutateAsync({ tipo, local, idToken });
             return { ok: true };
@@ -31,7 +31,7 @@ export function useAcoesRelato(codigo: string) {
 
     async function contestar(tipo: TipoRelato): Promise<Resultado> {
         try {
-            const idToken = await pedirLogin();
+            const idToken = await pedirLogin({ sobreModal: true });
             if (!idToken) return { ok: false };
             await denunciar.mutateAsync({ tipo, idToken });
             return { ok: true };

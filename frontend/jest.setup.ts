@@ -17,7 +17,7 @@ jest.mock('@maplibre/maplibre-react-native', () => {
     const React = require('react');
     const { View } = require('react-native');
     const Mock = ({ children }: { children?: React.ReactNode }) => React.createElement(View, null, children);
-    return { __esModule: true, default: { setAccessToken: jest.fn(), MapView: Mock, Camera: Mock, PointAnnotation: Mock } };
+    return { Map: Mock, Camera: Mock, GeoJSONSource: Mock, Layer: Mock, Images: Mock, UserLocation: Mock };
 });
 
 jest.mock('expo-location', () => ({

@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import type { PontoResumo } from '../../api/types';
 import { getBeachPhoto } from '../../constants/beaches';
-import { colors, toneColors } from '../../theme';
+import { colors } from '../../theme';
 import { nivelBalneabilidade } from '../../utils/risk';
 import Badge from '../Badge';
 import styles from './styles';
@@ -26,11 +26,8 @@ function MapBeachCard({ ponto, nome, local, largura, selecionado, distancia, onA
             onPress={() => onAbrir(ponto.codigo)}
             accessibilityRole="button"
             accessibilityLabel={`${nome}${local ? `, ${local}` : ''}. ${nivel.mensagem}. Abrir detalhes`}
-            style={({ pressed }) => [
-                styles.card,
-                { width: largura, borderColor: selecionado ? toneColors[nivel.tom].solid : 'transparent' },
-                pressed && styles.pressed,
-            ]}
+            accessibilityState={{ selected: selecionado }}
+            style={({ pressed }) => [styles.card, { width: largura }, pressed && styles.pressed]}
         >
             {foto ? (
                 <Image source={foto.imagem} style={styles.foto} />

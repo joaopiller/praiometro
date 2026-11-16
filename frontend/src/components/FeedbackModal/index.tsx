@@ -1,10 +1,10 @@
 import { Feather } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, Text, View } from 'react-native';
 import { getErrorMessage } from '../../api/client';
 import { CRITERIOS, type Notas } from '../../api/types';
 import { LoginError } from '../../auth/google';
-import { useLogin } from '../../auth/LoginProvider';
+import { LoginSobreModal, useLogin } from '../../auth/LoginProvider';
 import { useEnviarVoto } from '../../hooks/queries';
 import { useAviso } from '../Aviso';
 import { formatDate } from '../../utils/format';
@@ -32,12 +32,16 @@ export default function FeedbackModal({ visible, onClose, beachName, beachId }: 
     const faltam = Object.values(notas).filter((n) => n <= 0).length;
     const completo = faltam === 0;
 
-    useEffect(() => {
-        if (visible) {
+    // zera o formulário sempre que abre (ou troca de praia)
+    const abertura = visible ? beachId : null;
+    const [ultimaAbertura, setUltimaAbertura] = useState(abertura);
+    if (abertura !== ultimaAbertura) {
+        setUltimaAbertura(abertura);
+        if (abertura) {
             setNotas(NOTAS_VAZIAS);
             setErro(null);
         }
-    }, [visible, beachId]);
+    }
 
     const fechar = () => {
         if (!enviando) onClose();
@@ -48,7 +52,7 @@ export default function FeedbackModal({ visible, onClose, beachName, beachId }: 
         setErro(null);
         try {
             setEntrando(true);
-            const idToken = await pedirLogin();
+            const idToken = await pedirLogin({ sobreModal: true });
             setEntrando(false);
             if (!idToken) return;
             const resposta = await votar.mutateAsync({ notas, idToken });
@@ -97,11 +101,12 @@ export default function FeedbackModal({ visible, onClose, beachName, beachId }: 
                             <Text style={styles.erroTexto}>{erro}</Text>
                         </View>
                     )}
-                    {!completo && (
-                        <Text style={styles.pending}>
-                            Falta{faltam === 1 ? '' : 'm'} {faltam} {faltam === 1 ? 'critério' : 'critérios'}
-                        </Text>
-                    )}
+                    {/* a linha fica sempre ali para a caixa não pular ao completar */}
+                    <Text style={styles.pending}>
+                        {completo
+                            ? 'Tudo certo, é só enviar'
+                            : `Falta${faltam === 1 ? '' : 'm'} ${faltam} ${faltam === 1 ? 'critério' : 'critérios'}`}
+                    </Text>
                     <View style={styles.buttons}>
                         <Pressable
                             onPress={fechar}
@@ -127,6 +132,7 @@ export default function FeedbackModal({ visible, onClose, beachName, beachId }: 
                     </View>
                 </Pressable>
             </Pressable>
+            <LoginSobreModal />
         </Modal>
     );
 }

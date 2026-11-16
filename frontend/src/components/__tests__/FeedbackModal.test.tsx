@@ -37,6 +37,7 @@ describe('FeedbackModal', () => {
         expect(mockToken).not.toHaveBeenCalled();
         avaliarTudo();
         expect(screen.queryByText(/Falta/)).toBeNull();
+        expect(screen.getByText('Tudo certo, é só enviar')).toBeTruthy();
     });
 
     it('envia meia estrela e fecha após sucesso', async () => {

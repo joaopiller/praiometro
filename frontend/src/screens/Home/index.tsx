@@ -1,10 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import MapLibreGL, { type CameraRef } from '@maplibre/maplibre-react-native';
+import { Camera, GeoJSONSource, Images, Layer, Map, UserLocation, type CameraRef } from '@maplibre/maplibre-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, useWindowDimensions, View, type ViewToken } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { ActivityIndicator, FlatList, Pressable, Text, useWindowDimensions, View, type ListViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../api/client';
 import type { PontoResumo } from '../../api/types';
@@ -13,16 +13,16 @@ import HomeHeader from '../../components/HomeHeader';
 import MapBeachCard from '../../components/MapBeachCard';
 import Screen from '../../components/Screen';
 import StateView from '../../components/StateView';
+import Vidro from '../../components/Vidro';
 import { MAPA_INICIAL } from '../../constants/beaches';
 import { usePontos } from '../../hooks/queries';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
 import type { TabScreenProps } from '../../navigation/types';
+import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
 import { colors } from '../../theme';
 import { coordenadaDoPonto, distanciaKm, formatDistancia, ordenarPorDistancia } from '../../utils/geo';
 import { localEspecifico, nomePrincipal } from '../../utils/search';
 import styles, { CARD_GAP, CARROSSEL_ALTURA } from './styles';
-
-MapLibreGL.setAccessToken(null);
 
 const PINS = {
     propria: require('../../../assets/images/pins/pin-propria.png'),
@@ -40,12 +40,6 @@ const posicao = (p: PontoResumo): [number, number] => [p.coordenadas_terra![1], 
 
 const VISIBILIDADE = { itemVisiblePercentThreshold: 70 };
 
-const LEGENDA = [
-    { cor: '#2FA35A', texto: 'Própria' },
-    { cor: '#D9483B', texto: 'Imprópria' },
-    { cor: '#5D7690', texto: 'Sem dados' },
-];
-
 export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const { data, isPending, error, refetch } = usePontos();
     const insets = useSafeAreaInsets();
@@ -55,6 +49,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const lista = useRef<FlatList<PontoResumo>>(null);
     const [selecionado, setSelecionado] = useState<string | null>(null);
     const [mapaFalhou, setMapaFalhou] = useState(false);
+    const base = useEspacoDasAbas();
     const { coordenada: origem, carregando: localizando, localizar } = useLocalizacao();
     const avisar = useAviso();
 
@@ -84,16 +79,15 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             const indice = praias.findIndex((p) => p.codigo === codigo);
             if (indice < 0) return;
             setSelecionado(codigo);
-            camera.current?.setCamera({
-                centerCoordinate: posicao(praias[indice]),
-                zoomLevel: 13.5,
-                animationDuration: 700,
-                animationMode: 'flyTo',
-                padding: { paddingBottom: CARROSSEL_ALTURA, paddingTop: 0, paddingLeft: 0, paddingRight: 0 },
+            camera.current?.flyTo({
+                center: posicao(praias[indice]),
+                zoom: 13.5,
+                duration: 700,
+                padding: { bottom: base + CARROSSEL_ALTURA, top: 0, left: 0, right: 0 },
             });
             if (rolarLista) lista.current?.scrollToOffset({ offset: indice * (cardLargura + CARD_GAP), animated: true });
         },
-        [praias, cardLargura],
+        [praias, cardLargura, base],
     );
 
     const irParaMaisProxima = async () => {
@@ -133,16 +127,19 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
 
     const recentralizar = () => {
         setSelecionado(null);
-        camera.current?.setCamera({ centerCoordinate: MAPA_INICIAL.centro, zoomLevel: MAPA_INICIAL.zoom, animationDuration: 700 });
+        camera.current?.easeTo({ center: MAPA_INICIAL.centro, zoom: MAPA_INICIAL.zoom, duration: 700, padding: { top: 0, right: 0, bottom: 0, left: 0 } });
     };
 
-    const aoMudarCard = useRef(({ viewableItems }: { viewableItems: ViewToken<PontoResumo>[] }) => {
-        const atual = viewableItems.find((v) => v.isViewable)?.item;
-        if (atual && arrastando.current) focarRef.current(atual.codigo, false);
-    }).current;
     const arrastando = useRef(false);
     const focarRef = useRef(focar);
-    focarRef.current = focar;
+    useEffect(() => {
+        focarRef.current = focar;
+    }, [focar]);
+    // a FlatList não aceita trocar onViewableItemsChanged depois de montada
+    const [aoMudarCard] = useState(() => ({ viewableItems }: { viewableItems: ListViewToken[] }) => {
+        const atual: PontoResumo | undefined = viewableItems.find((v) => v.isViewable)?.item;
+        if (atual && arrastando.current) focarRef.current(atual.codigo, false);
+    });
 
     if (isPending || (error && !data)) {
         return (
@@ -154,34 +151,35 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
 
     return (
         <View style={styles.container}>
-            <MapLibreGL.MapView
+            <Map
                 style={styles.map}
                 mapStyle="https://tiles.openfreemap.org/styles/liberty"
-                logoEnabled={false}
-                compassEnabled={false}
-                attributionPosition={{ bottom: CARROSSEL_ALTURA + 4, left: 8 }}
+                logo={false}
+                compass={false}
+                attributionPosition={{ bottom: base + CARROSSEL_ALTURA + 4, left: 8 }}
                 onDidFailLoadingMap={() => setMapaFalhou(true)}
                 onDidFinishLoadingMap={() => setMapaFalhou(false)}
                 onPress={() => setSelecionado(null)}
             >
-                <MapLibreGL.Camera
+                <Camera
                     ref={camera}
-                    defaultSettings={{ centerCoordinate: MAPA_INICIAL.centro, zoomLevel: MAPA_INICIAL.zoom }}
-                    minZoomLevel={9}
-                    maxZoomLevel={17}
+                    initialViewState={{ center: MAPA_INICIAL.centro, zoom: MAPA_INICIAL.zoom }}
+                    minZoom={9}
+                    maxZoom={17}
                 />
-                <MapLibreGL.Images images={PINS} />
-                {origem && <MapLibreGL.UserLocation visible animated />}
-                <MapLibreGL.ShapeSource
+                <Images images={PINS} />
+                {origem && <UserLocation animated />}
+                <GeoJSONSource
                     id="praias"
-                    shape={geojson}
+                    data={geojson}
                     onPress={(e) => {
-                        const codigo = e.features[0]?.properties?.codigo;
+                        const codigo = e.nativeEvent.features[0]?.properties?.codigo;
                         if (codigo) focar(codigo, true);
                     }}
-                    hitbox={{ width: 36, height: 36 }}
+                    hitbox={{ top: 18, right: 18, bottom: 18, left: 18 }}
                 >
-                    <MapLibreGL.SymbolLayer
+                    <Layer
+                        type="symbol"
                         id="praias-pin"
                         filter={['!=', ['get', 'codigo'], selecionado ?? '']}
                         style={{
@@ -191,9 +189,10 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                             iconSize: ['interpolate', ['linear'], ['zoom'], 10, 0.3, 13, 0.36, 16, 0.44],
                         }}
                     />
-                    <MapLibreGL.SymbolLayer
+                    <Layer
+                        type="symbol"
                         id="praias-nome"
-                        minZoomLevel={12.5}
+                        minzoom={12.5}
                         filter={['!=', ['get', 'codigo'], selecionado ?? '']}
                         style={{
                             textField: ['get', 'nome'],
@@ -207,7 +206,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                             textOptional: true,
                         }}
                     />
-                    <MapLibreGL.SymbolLayer
+                    <Layer
+                        type="symbol"
                         id="praias-pin-selecionado"
                         filter={['==', ['get', 'codigo'], selecionado ?? '']}
                         style={{
@@ -226,8 +226,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                             textHaloWidth: 2,
                         }}
                     />
-                </MapLibreGL.ShapeSource>
-            </MapLibreGL.MapView>
+                </GeoJSONSource>
+            </Map>
 
             {focado && <StatusBar style="dark" />}
             <LinearGradient
@@ -237,14 +237,6 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             />
             <View style={[styles.top, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
                 <HomeHeader onPress={() => navigation.navigate('Clima')} />
-                <View style={styles.legenda} accessible accessibilityLabel="Legenda: verde própria, vermelho imprópria, cinza sem dados">
-                    {LEGENDA.map((l) => (
-                        <View key={l.texto} style={styles.legendaItem}>
-                            <View style={[styles.legendaPonto, { backgroundColor: l.cor }]} />
-                            <Text style={styles.legendaTexto}>{l.texto}</Text>
-                        </View>
-                    ))}
-                </View>
             </View>
 
             {mapaFalhou && (
@@ -254,32 +246,26 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             )}
 
             {selecionado && (
-                <Pressable
-                    onPress={recentralizar}
-                    style={({ pressed }) => [styles.fab, { bottom: CARROSSEL_ALTURA + 70 }, pressed && styles.pressed]}
-                    accessibilityRole="button"
-                    accessibilityLabel="Ver todas as praias"
-                >
+                <BotaoMapa onPress={recentralizar} rotulo="Ver todas as praias" bottom={base + CARROSSEL_ALTURA + 70}>
                     <MaterialCommunityIcons name="arrow-expand-all" size={20} color={colors.brand} />
-                </Pressable>
+                </BotaoMapa>
             )}
-            <Pressable
+            <BotaoMapa
                 onPress={irParaMaisProxima}
                 disabled={localizando}
-                style={({ pressed }) => [styles.fab, { bottom: CARROSSEL_ALTURA + 12 }, pressed && styles.pressed]}
-                accessibilityRole="button"
-                accessibilityLabel="Ir para a praia mais próxima de mim"
+                rotulo="Ir para a praia mais próxima de mim"
+                bottom={base + CARROSSEL_ALTURA + 12}
             >
                 {localizando ? (
                     <ActivityIndicator color={colors.brand} />
                 ) : (
                     <MaterialCommunityIcons name="crosshairs-gps" size={22} color={colors.brand} />
                 )}
-            </Pressable>
+            </BotaoMapa>
 
             <FlatList
                 ref={lista}
-                style={styles.carrossel}
+                style={[styles.carrossel, { bottom: base + 8 }]}
                 data={praias}
                 horizontal
                 keyExtractor={(p) => p.codigo}
@@ -301,5 +287,33 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 renderItem={renderCard}
             />
         </View>
+    );
+}
+
+function BotaoMapa({
+    onPress,
+    disabled,
+    rotulo,
+    bottom,
+    children,
+}: {
+    onPress: () => void;
+    disabled?: boolean;
+    rotulo: string;
+    bottom: number;
+    children: ReactNode;
+}) {
+    return (
+        <Pressable
+            onPress={onPress}
+            disabled={disabled}
+            style={({ pressed }) => [styles.fab, { bottom }, pressed && styles.pressed]}
+            accessibilityRole="button"
+            accessibilityLabel={rotulo}
+        >
+            <Vidro style={styles.fabVidro} semVidro={styles.fabFundo} interativo>
+                {children}
+            </Vidro>
+        </Pressable>
     );
 }

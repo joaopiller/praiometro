@@ -9,7 +9,6 @@ export default StyleSheet.create({
         gap: spacing.md,
         padding: 10,
         borderRadius: radius.lg,
-        borderWidth: 2,
         backgroundColor: '#fff',
         shadowColor: '#00243D',
         shadowOpacity: 0.22,

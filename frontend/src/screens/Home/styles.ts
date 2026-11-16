@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { temVidro } from '../../components/Vidro';
 import { colors, radius, spacing } from '../../theme';
 
 export const CARROSSEL_ALTURA = 112;
@@ -17,31 +18,17 @@ export default StyleSheet.create({
     map: { flex: 1 },
     scrim: { position: 'absolute', top: 0, left: 0, right: 0 },
     top: { position: 'absolute', top: 0, left: 0, right: 0, paddingHorizontal: spacing.md, gap: spacing.sm },
-    legenda: {
-        flexDirection: 'row',
-        alignSelf: 'flex-start',
-        gap: spacing.md,
-        backgroundColor: 'rgba(255,255,255,0.92)',
-        paddingHorizontal: spacing.md,
-        paddingVertical: 6,
-        borderRadius: radius.pill,
-        ...sombra,
-        shadowOpacity: 0.12,
-    },
-    legendaItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-    legendaPonto: { width: 10, height: 10, borderRadius: 5, borderWidth: 1.5, borderColor: '#fff' },
-    legendaTexto: { fontSize: 12, fontWeight: '600', color: colors.bgBottom },
     fab: {
         position: 'absolute',
         right: spacing.lg,
         width: 46,
         height: 46,
         borderRadius: 23,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        ...sombra,
+        // o vidro do iOS já tem a própria sombra
+        ...(temVidro ? null : sombra),
     },
+    fabVidro: { flex: 1, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
+    fabFundo: { backgroundColor: '#fff' },
     pressed: { opacity: 0.8 },
     carrossel: { position: 'absolute', left: 0, right: 0, bottom: 8, height: CARROSSEL_ALTURA - 8, flexGrow: 0 },
     mapError: {

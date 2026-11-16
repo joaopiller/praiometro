@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Pressable, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { obterIdToken } from '../google';
-import { LoginProvider, useLogin } from '../LoginProvider';
+import { LoginProvider, LoginSobreModal, useLogin } from '../LoginProvider';
 
 jest.mock('../google', () => ({ ...jest.requireActual('../google'), obterIdToken: jest.fn() }));
 
@@ -12,22 +12,25 @@ const mockGoogle = obterIdToken as jest.Mock;
 const mockAppleDisponivel = AppleAuthentication.isAvailableAsync as jest.Mock;
 const mockApple = AppleAuthentication.signInAsync as jest.Mock;
 
-function Botao() {
+function Botao({ sobreModal }: { sobreModal?: boolean }) {
     const { pedirLogin } = useLogin();
     const [resultado, setResultado] = useState('nada');
     return (
-        <Pressable onPress={async () => setResultado(String(await pedirLogin()))}>
-            <Text>entrar</Text>
-            <Text>resultado: {resultado}</Text>
-        </Pressable>
+        <>
+            <Pressable onPress={async () => setResultado(String(await pedirLogin({ sobreModal })))}>
+                <Text>entrar</Text>
+                <Text>resultado: {resultado}</Text>
+            </Pressable>
+            {sobreModal && <LoginSobreModal />}
+        </>
     );
 }
 
-const montar = () =>
+const montar = (sobreModal?: boolean) =>
     render(
         <SafeAreaProvider initialMetrics={{ frame: { x: 0, y: 0, width: 390, height: 844 }, insets: { top: 0, left: 0, right: 0, bottom: 0 } }}>
             <LoginProvider>
-                <Botao />
+                <Botao sobreModal={sobreModal} />
             </LoginProvider>
         </SafeAreaProvider>,
     );
@@ -94,5 +97,19 @@ describe('LoginProvider', () => {
             await new Promise((r) => setTimeout(r, 400));
         });
         expect(await screen.findByText('resultado: null')).toBeTruthy();
+    });
+
+    it('pedido de dentro de um Modal mostra a escolha ali mesmo, sem abrir outro Modal', async () => {
+        mockAppleDisponivel.mockResolvedValue(true);
+        montar(true);
+        await act(async () => {});
+        fireEvent.press(screen.getByText('entrar'));
+        expect(await screen.findAllByText('Entre para continuar')).toHaveLength(1);
+        await act(async () => {
+            fireEvent.press(screen.getByText('Continuar com o Google'));
+            await new Promise((r) => setTimeout(r, 400));
+        });
+        expect(await screen.findByText('resultado: token-google')).toBeTruthy();
+        expect(screen.queryByText('Entre para continuar')).toBeNull();
     });
 });

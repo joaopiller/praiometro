@@ -6,6 +6,8 @@ export const colors = {
     bgMid: '#015486',
     bgBottom: '#013B60',
     tabBar: '#013B60',
+    // tinta do vidro (iOS 26): azul da marca translúcido
+    vidroMarca: 'rgba(1,67,108,0.82)',
     sand: '#F5D9A8',
     sandSoft: 'rgba(245,217,168,0.18)',
     foam: '#E6F6FF',

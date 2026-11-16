@@ -29,7 +29,7 @@ function Onda({ largura, altura, amplitude, cor, duracao, mover }: {
     duracao: number;
     mover: boolean;
 }) {
-    const x = useRef(new Animated.Value(0)).current;
+    const [x] = useState(() => new Animated.Value(0));
     const d = useMemo(() => caminhoOnda(largura, altura, amplitude), [largura, altura, amplitude]);
 
     useEffect(() => {
@@ -62,9 +62,9 @@ export default function AnimatedSplash({ pronto, onFim }: Props) {
     const [tempoMinimo, setTempoMinimo] = useState(false);
     const [tempoEsgotado, setTempoEsgotado] = useState(false);
     const [logoPronta, setLogoPronta] = useState(false);
-    const subida = useRef(new Animated.Value(0)).current;
-    const flutuar = useRef(new Animated.Value(0)).current;
-    const saida = useRef(new Animated.Value(0)).current;
+    const [subida] = useState(() => new Animated.Value(0));
+    const [flutuar] = useState(() => new Animated.Value(0));
+    const [saida] = useState(() => new Animated.Value(0));
     const saindo = useRef(false);
 
     useEffect(() => {

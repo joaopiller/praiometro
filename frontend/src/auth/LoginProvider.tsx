@@ -9,13 +9,37 @@ import { appleDisponivel, obterTokenApple } from './apple';
 import { obterIdToken } from './google';
 
 type Pedido = { resolve: (token: string | null) => void; reject: (erro: unknown) => void };
-type Login = { pedirLogin: () => Promise<string | null> };
+/** sobreModal: o pedido vem de dentro de um Modal aberto, que precisa mostrar <LoginSobreModal /> */
+type Opcoes = { sobreModal?: boolean };
+type Login = { pedirLogin: (opcoes?: Opcoes) => Promise<string | null> };
+type Folha = {
+    aberto: boolean;
+    sobreModal: boolean;
+    entrarComApple: () => void;
+    entrarComGoogle: () => void;
+    cancelar: () => void;
+};
 
 // fora do provider (ou no Android) o login é sempre o do Google
 const LoginContext = createContext<Login>({ pedirLogin: obterIdToken });
+const FolhaContext = createContext<Folha | null>(null);
 
 export function useLogin() {
     return useContext(LoginContext);
+}
+
+/**
+ * No iOS um Modal não abre por cima de outro: quem pede login de dentro de um Modal
+ * coloca isto dentro dele, e a escolha de login aparece ali mesmo.
+ */
+export function LoginSobreModal() {
+    const folha = useContext(FolhaContext);
+    if (!folha) return null;
+    return (
+        <BottomSheet embutido visible={folha.aberto && folha.sobreModal} onClose={folha.cancelar}>
+            <EscolhaDeLogin {...folha} />
+        </BottomSheet>
+    );
 }
 
 // a folha precisa terminar de fechar antes de abrir a tela de login do sistema
@@ -24,21 +48,26 @@ const esperarFechar = () => new Promise((r) => setTimeout(r, 350));
 export function LoginProvider({ children }: { children: ReactNode }) {
     const [comApple, setComApple] = useState(false);
     const [aberto, setAberto] = useState(false);
+    const [sobreModal, setSobreModal] = useState(false);
     const pedido = useRef<Pedido | null>(null);
 
     useEffect(() => {
         appleDisponivel().then(setComApple);
     }, []);
 
-    const pedirLogin = useCallback(() => {
-        if (!comApple) return obterIdToken();
-        return new Promise<string | null>((resolve, reject) => {
-            pedido.current = { resolve, reject };
-            setAberto(true);
-        });
-    }, [comApple]);
+    const pedirLogin = useCallback(
+        (opcoes?: Opcoes) => {
+            if (!comApple) return obterIdToken();
+            return new Promise<string | null>((resolve, reject) => {
+                pedido.current = { resolve, reject };
+                setSobreModal(!!opcoes?.sobreModal);
+                setAberto(true);
+            });
+        },
+        [comApple],
+    );
 
-    const entrarCom = (obter: () => Promise<string | null>) => async () => {
+    const entrarCom = async (obter: () => Promise<string | null>) => {
         const atual = pedido.current;
         pedido.current = null;
         setAberto(false);
@@ -56,37 +85,55 @@ export function LoginProvider({ children }: { children: ReactNode }) {
         setAberto(false);
     };
 
+    const folha: Folha = {
+        aberto,
+        sobreModal,
+        entrarComApple: () => entrarCom(obterTokenApple),
+        entrarComGoogle: () => entrarCom(obterIdToken),
+        cancelar,
+    };
+
     return (
         <LoginContext.Provider value={{ pedirLogin }}>
-            {children}
-            <BottomSheet visible={aberto} onClose={cancelar}>
-                <Text style={styles.titulo} accessibilityRole="header">
-                    Entre para continuar
-                </Text>
-                <Text style={styles.subtitulo}>Escolha como você quer entrar.</Text>
-                <View style={styles.botoes}>
-                    {/* a Apple exige o botão oficial, com o mesmo destaque das outras opções */}
-                    <AppleAuthentication.AppleAuthenticationButton
-                        buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
-                        buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-                        cornerRadius={radius.md}
-                        style={styles.botao}
-                        onPress={entrarCom(obterTokenApple)}
-                    />
-                    <Pressable
-                        onPress={entrarCom(obterIdToken)}
-                        accessibilityRole="button"
-                        style={({ pressed }) => [styles.botao, styles.google, pressed && styles.pressionado]}
-                    >
-                        <FontAwesome name="google" size={18} color="#1F1F1F" />
-                        <Text style={styles.googleTexto}>Continuar com o Google</Text>
-                    </Pressable>
-                    <Pressable onPress={cancelar} accessibilityRole="button" style={styles.cancelar}>
-                        <Text style={styles.cancelarTexto}>Agora não</Text>
-                    </Pressable>
-                </View>
-            </BottomSheet>
+            <FolhaContext.Provider value={folha}>
+                {children}
+                <BottomSheet visible={aberto && !sobreModal} onClose={cancelar}>
+                    <EscolhaDeLogin {...folha} />
+                </BottomSheet>
+            </FolhaContext.Provider>
         </LoginContext.Provider>
+    );
+}
+
+function EscolhaDeLogin({ entrarComApple, entrarComGoogle, cancelar }: Folha) {
+    return (
+        <>
+            <Text style={styles.titulo} accessibilityRole="header">
+                Entre para continuar
+            </Text>
+            <Text style={styles.subtitulo}>Escolha como você quer entrar.</Text>
+            <View style={styles.botoes}>
+                {/* a Apple exige o botão oficial, com o mesmo destaque das outras opções */}
+                <AppleAuthentication.AppleAuthenticationButton
+                    buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                    buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                    cornerRadius={radius.md}
+                    style={styles.botao}
+                    onPress={entrarComApple}
+                />
+                <Pressable
+                    onPress={entrarComGoogle}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [styles.botao, styles.google, pressed && styles.pressionado]}
+                >
+                    <FontAwesome name="google" size={18} color="#1F1F1F" />
+                    <Text style={styles.googleTexto}>Continuar com o Google</Text>
+                </Pressable>
+                <Pressable onPress={cancelar} accessibilityRole="button" style={styles.cancelar}>
+                    <Text style={styles.cancelarTexto}>Agora não</Text>
+                </Pressable>
+            </View>
+        </>
     );
 }
 

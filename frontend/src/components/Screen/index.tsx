@@ -1,6 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ReactNode } from 'react';
 import { RefreshControl, ScrollView, View, type StyleProp, type ViewStyle } from 'react-native';
+import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
 import { colors } from '../../theme';
 import styles from './styles';
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function Screen({ children, scroll = true, refreshing = false, onRefresh, contentStyle }: Props) {
+    const espacoAbas = useEspacoDasAbas();
     return (
         <View style={styles.root}>
             <LinearGradient
@@ -22,7 +24,7 @@ export default function Screen({ children, scroll = true, refreshing = false, on
             />
             {scroll ? (
                 <ScrollView
-                    contentContainerStyle={[styles.content, contentStyle]}
+                    contentContainerStyle={[styles.content, contentStyle, espacoAbas > 0 && { paddingBottom: espacoAbas + 32 }]}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                     refreshControl={

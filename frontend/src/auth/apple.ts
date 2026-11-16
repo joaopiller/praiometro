@@ -3,7 +3,7 @@ import { Platform } from 'react-native';
 import { LoginError } from './google';
 
 export async function appleDisponivel(): Promise<boolean> {
-    if (Platform.OS !== 'ios') return false;
+    if (Platform.OS !== 'ios' || process.env.EXPO_PUBLIC_LOGIN_APPLE === 'false') return false;
     try {
         return await AppleAuthentication.isAvailableAsync();
     } catch {

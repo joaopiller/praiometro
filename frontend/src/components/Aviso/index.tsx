@@ -39,9 +39,11 @@ export function AvisoProvider({ children }: { children: ReactNode }) {
 
 function AvisoFlutuante({ mensagem, onFim }: { mensagem: Mensagem | null; onFim: () => void }) {
     const insets = useSafeAreaInsets();
-    const progresso = useRef(new Animated.Value(0)).current;
+    const [progresso] = useState(() => new Animated.Value(0));
     const fim = useRef(onFim);
-    fim.current = onFim;
+    useEffect(() => {
+        fim.current = onFim;
+    });
 
     useEffect(() => {
         if (!mensagem) return;

@@ -127,7 +127,7 @@ Os relatos são opções fixas, sem texto livre, então não há conteúdo ofens
 
 ## Frontend
 
-Requer Node 20+ e, para rodar no Android, Android Studio com JDK 17 ou 21. Para iOS, veja a seção [iOS](#ios).
+Feito com Expo SDK 58 (React Native 0.88). Requer Node 20+ e, para rodar no Android, Android Studio com JDK 17 ou 21. Para iOS, veja a seção [iOS](#ios).
 
 ```bash
 cd frontend
@@ -185,6 +185,17 @@ O mesmo código gera o app de iOS. Para compilar localmente é preciso um Mac co
 ```bash
 npm run ios              # gera o projeto nativo e abre no simulador
 ```
+
+No simulador a API do computador responde em `http://localhost:8000`; num iPhone de verdade use o IP da rede local (`npm run setup:env`).
+
+Para instalar no próprio iPhone com uma conta Apple gratuita (Personal Team), coloque `EXPO_PUBLIC_LOGIN_APPLE=false` no `.env`: o Xcode não assina apps com login da Apple nesse tipo de conta. O login com Google continua funcionando.
+
+```bash
+npx expo prebuild -p ios --clean
+npx expo run:ios --device --configuration Release
+```
+
+No iOS 26 em diante o app usa o visual Liquid Glass do sistema: a barra de abas é a nativa do iOS (ícones SF Symbols) e o cabeçalho do mapa, os botões flutuantes e a busca são de vidro (`expo-glass-effect`). Em versões anteriores e no Android o visual continua o mesmo de antes.
 
 Também dá para gerar na nuvem pelo EAS, sem Xcode:
 

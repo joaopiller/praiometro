@@ -1,5 +1,5 @@
-import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Easing, Modal, Pressable, View } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Animated, Easing, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styles from './styles';
 
@@ -9,11 +9,15 @@ interface Props {
     children: ReactNode;
     /** impede fechar tocando fora (ex.: durante um envio) */
     bloqueado?: boolean;
+    /** desenha como camada, sem abrir outro Modal: no iOS um Modal não abre por cima de outro já aberto */
+    embutido?: boolean;
+    /** camada extra dentro do Modal, por cima da folha (ex.: a escolha de login) */
+    sobreposicao?: ReactNode;
 }
 
-export default function BottomSheet({ visible, onClose, children, bloqueado }: Props) {
+export default function BottomSheet({ visible, onClose, children, bloqueado, embutido, sobreposicao }: Props) {
     const insets = useSafeAreaInsets();
-    const deslocamento = useRef(new Animated.Value(400)).current;
+    const [deslocamento] = useState(() => new Animated.Value(400));
 
     useEffect(() => {
         if (!visible) return;
@@ -30,18 +34,25 @@ export default function BottomSheet({ visible, onClose, children, bloqueado }: P
         if (!bloqueado) onClose();
     };
 
+    const folha = (
+        <Pressable style={styles.fundo} onPress={fechar} accessibilityLabel="Fechar">
+            <Animated.View
+                style={[styles.folha, { paddingBottom: insets.bottom + 24, transform: [{ translateY: deslocamento }] }]}
+            >
+                <Pressable onPress={() => {}} accessible={false}>
+                    <View style={styles.alca} />
+                    {children}
+                </Pressable>
+            </Animated.View>
+        </Pressable>
+    );
+
+    if (embutido) return visible ? <View style={StyleSheet.absoluteFill}>{folha}</View> : null;
+
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={fechar} statusBarTranslucent>
-            <Pressable style={styles.fundo} onPress={fechar} accessibilityLabel="Fechar">
-                <Animated.View
-                    style={[styles.folha, { paddingBottom: insets.bottom + 24, transform: [{ translateY: deslocamento }] }]}
-                >
-                    <Pressable onPress={() => {}} accessible={false}>
-                        <View style={styles.alca} />
-                        {children}
-                    </Pressable>
-                </Animated.View>
-            </Pressable>
+            {folha}
+            {sobreposicao}
         </Modal>
     );
 }
