@@ -16,9 +16,11 @@ interface Props {
     showIcon?: boolean;
     /** para usar sobre fundo claro */
     claro?: boolean;
+    /** texto como frase ("Própria para banho"), sem caixa alta: lê melhor quando é longo */
+    frase?: boolean;
 }
 
-export default function Badge({ label, tone, showIcon = true, claro }: Props) {
+export default function Badge({ label, tone, showIcon = true, claro, frase }: Props) {
     const c = toneColors[tone];
     const cor = claro ? c.solid : c.fg;
     return (
@@ -27,7 +29,9 @@ export default function Badge({ label, tone, showIcon = true, claro }: Props) {
             accessibilityLabel={label}
         >
             {showIcon && <Feather name={ICONES[tone]} size={12} color={cor} />}
-            <Text style={[styles.text, { color: cor }]}>{label.toUpperCase()}</Text>
+            <Text style={[styles.text, frase && styles.frase, { color: cor }]} numberOfLines={1}>
+                {frase ? label : label.toUpperCase()}
+            </Text>
         </View>
     );
 }

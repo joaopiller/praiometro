@@ -9,9 +9,10 @@ import { colors, toneColors } from '../../theme';
 import styles from './styles';
 
 const LEGENDA = [
-    { cor: toneColors.success.solid, titulo: 'Própria', texto: 'a água atende ao padrão de qualidade para banho' },
-    { cor: toneColors.danger.solid, titulo: 'Imprópria', texto: 'evite entrar no mar' },
-    { cor: toneColors.neutral.solid, titulo: 'Sem dados', texto: 'o ponto não entrou no último boletim' },
+    { cor: toneColors.success.solid, titulo: 'Própria para banho', texto: 'a água atende ao padrão de qualidade' },
+    { cor: toneColors.warning.solid, titulo: 'Parcialmente própria', texto: 'alguns trechos da praia estão próprios para banho e outros não' },
+    { cor: toneColors.danger.solid, titulo: 'Imprópria para banho', texto: 'evite entrar no mar' },
+    { cor: toneColors.neutral.solid, titulo: 'Sem boletim recente', texto: 'a praia não entrou no último boletim' },
 ];
 
 const FONTES = [
@@ -46,7 +47,7 @@ export default function SobreNos() {
                 </Text>
                 <Text style={styles.texto}>
                     Projeto de extensão da Universidade Federal Fluminense (UFF) que reúne, em um só lugar, as informações que
-                    importam para quem vai à praia em Niterói.
+                    importam para quem vai à praia em Niterói e no Rio de Janeiro.
                 </Text>
                 <Text style={styles.equipe}>Feito por {EQUIPE}.</Text>
             </GlassCard>
@@ -64,7 +65,8 @@ export default function SobreNos() {
                     </View>
                 ))}
                 <Text style={styles.dica}>
-                    O INEA publica boletins cerca de duas vezes por semana. Depois de chuva forte, evite o banho por até 24 horas,
+                    O INEA mede a água em vários trechos de cada praia e publica boletins cerca de duas vezes por semana. No Rio,
+                    o app cobre as praias da Zona Sul e da Zona Sudoeste. Depois de chuva forte, evite o banho por até 24 horas,
                     mesmo em praias próprias.
                 </Text>
             </GlassCard>

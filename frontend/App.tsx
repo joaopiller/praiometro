@@ -11,6 +11,7 @@ import { LoginProvider } from './src/auth/LoginProvider';
 import AnimatedSplash from './src/components/AnimatedSplash';
 import { AvisoProvider } from './src/components/Aviso';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import { abrirNaCidadeDaPessoa } from './src/hooks/useLugar';
 import RootNavigator from './src/navigation/RootNavigator';
 
 // a abertura nativa fica até a animada assumir (ela chama hideAsync ao aparecer)
@@ -33,7 +34,7 @@ export default function App() {
             <SafeAreaProvider>
                 <PersistQueryClientProvider
                     client={queryClient}
-                    persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: '2' }}
+                    persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: '3' }}
                     onSuccess={() => setCacheRestaurado(true)}
                     onError={() => setCacheRestaurado(true)}
                 >
@@ -44,7 +45,14 @@ export default function App() {
                         </LoginProvider>
                     </AvisoProvider>
                     {!aberturaConcluida && (
-                        <AnimatedSplash pronto={cacheRestaurado} onFim={() => setAberturaConcluida(true)} />
+                        <AnimatedSplash
+                            pronto={cacheRestaurado}
+                            onFim={() => {
+                                setAberturaConcluida(true);
+                                // depois da abertura, para o pedido de localização não ficar por cima dela
+                                abrirNaCidadeDaPessoa();
+                            }}
+                        />
                     )}
                 </PersistQueryClientProvider>
             </SafeAreaProvider>

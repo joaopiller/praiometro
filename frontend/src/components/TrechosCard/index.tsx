@@ -18,9 +18,11 @@ export default function TrechosCard({ pontos, selecionado, onSelecionar }: Props
     return (
         <GlassCard style={styles.card}>
             <CardLabel icon={<MaterialCommunityIcons name="map-marker-multiple-outline" size={18} color={colors.label} />}>
-                Trechos da praia
+                Banho por trecho
             </CardLabel>
-            <Text style={styles.ajuda}>A água é medida em {pontos.length} pontos. Toque para ver o histórico de cada um.</Text>
+            <Text style={styles.ajuda}>
+                O INEA mede a qualidade da água em {pontos.length} pontos desta praia. Toque para ver o histórico de cada um.
+            </Text>
             <View accessibilityRole="radiogroup">
                 {pontos.map((p, i) => {
                     const nivel = nivelBalneabilidade(p.balneabilidade);

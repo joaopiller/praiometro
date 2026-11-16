@@ -44,9 +44,11 @@ class PontoDaPraia(BaseModel):
 
 
 class PraiaResumo(BaseModel):
-    id: str = Field(description="Prefixo dos códigos dos pontos (IC para Icaraí)")
+    id: str = Field(description="IC para Icaraí; no Rio, o nome (copacabana)")
     ordem: int = Field(description="Posição ao longo do litoral, de Gragoatá a Itacoatiara")
     nome: str
+    cidade: Literal["niteroi", "rio"]
+    bairro: str = ""
     principal: str = Field(description="Ponto de onde vêm clima e mar")
     centro: list[float] | None = Field(
         None, description="[lat, lon] do pin no mapa, no meio da faixa de areia"

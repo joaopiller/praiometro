@@ -50,7 +50,7 @@ def test_executar_coleta_ponta_a_ponta(settings):
         patch("praiometro.coleta.inea.ler_boletim", return_value=inea.Boletim(status={"GR000": True})),
     ):
         estado = executar_coleta(settings, sessao=object())
-    assert len(estado) == 29
+    assert len(estado) == 68
     assert estado["GR000"]["leitura_atual"]["temperature_2m"] == 25.0
     assert estado["GR000"]["leitura_atual"]["balneabilidade"] is True
     assert len(estado["GR000"]["previsao"]) == 11  # limitado pelo fim da série de teste
@@ -102,3 +102,28 @@ def test_clima_em_terra_e_mar_na_agua(settings):
     primeiro = next(iter(catalogo.values()))
     assert chamadas["meteo"][0] == primeiro["coordenadas_terra_decimais"]
     assert chamadas["marine"][0] == primeiro["coordenadas_decimais"]
+
+
+def test_cada_cidade_usa_o_proprio_boletim(settings):
+    from datetime import date
+
+    horas = [f"2026-01-10T{h:02d}:00" for h in range(24)]
+    serie = {"time": horas, "temperature_2m": [25.0] * 24, "precipitation": [0] * 24}
+
+    def ler(pdf):
+        if "rio" in pdf.name:
+            return inea.Boletim(data=date(2026, 11, 11), status={"CP004": True})
+        return inea.Boletim(data=date(2026, 11, 12), status={"GR000": False})
+
+    with (
+        patch("praiometro.coleta.atualizador.chave_hora_atual", return_value="2026-01-10T12:00"),
+        patch("praiometro.coleta.open_meteo.buscar_lote", side_effect=lambda *a, **k: [serie] * len(a[2])),
+        patch("praiometro.coleta.inea.baixar_boletim", return_value=False) as baixar,
+        patch("praiometro.coleta.inea.ler_boletim", side_effect=ler),
+    ):
+        estado = executar_coleta(settings, sessao=object())
+    paginas = [c.args[1] for c in baixar.call_args_list]
+    assert paginas == [settings.inea_url, settings.inea_rio_url]
+    assert estado["CP004"]["leitura_atual"]["balneabilidade"] is True
+    assert estado["CP004"]["leitura_atual"]["balneabilidade_data"] == "2026-11-11"
+    assert estado["GR000"]["leitura_atual"]["balneabilidade_data"] == "2026-11-12"

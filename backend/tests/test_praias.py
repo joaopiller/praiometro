@@ -24,8 +24,13 @@ def test_situacao_da_praia():
 
 def test_pontos_agrupados_por_praia(estado):
     praias = agrupar(estado)
-    assert len(praias) == 14
+    assert len(praias) == 14 + 22
     assert list(praias)[:3] == ["GR", "BV", "FC"]
+    assert list(praias)[14] == "barra-de-guaratiba"
+    # no Rio, Barra da Tijuca e Barra da Tijuca II do boletim são uma praia só
+    assert praias["barra"]["pontos"] == ["BD005", "BD007", "BD009", "BD010"]
+    assert praias["copacabana"]["cidade"] == "rio"
+    assert praias["IC"]["cidade"] == "niteroi" and praias["IC"]["bairro"] == "Icaraí"
     icarai = praias["IC"]
     assert icarai["nome"] == "Praia de Icaraí"
     assert len(icarai["pontos"]) == 4
@@ -40,7 +45,7 @@ def test_lista_de_praias_mostra_praia_parcial(settings, estado, repo):
     settings.estado_file.write_text(json.dumps(estado), encoding="utf-8")
     with TestClient(create_app(settings, repo=repo, verificador=verificador_falso)) as client:
         praias = {p["id"]: p for p in client.get("/praias").json()["praias"]}
-    assert len(praias) == 14
+    assert len(praias) == 36
     assert praias["IC"]["situacao"] == "parcial"
     assert (praias["IC"]["pontos_proprios"], praias["IC"]["pontos_com_dados"]) == (3, 4)
     assert praias["GR"]["situacao"] == "propria"
@@ -56,6 +61,10 @@ def test_detalhe_da_praia_traz_leitura_do_ponto_principal(client):
     assert dados["leitura_atual"]["temperature_2m"] == 29.1
     assert client.get("/praias/ic").status_code == 200
     assert client.get("/praias/XX").status_code == 404
+    rio = client.get("/praias/copacabana").json()
+    assert rio["cidade"] == "rio" and rio["bairro"] == "Copacabana"
+    # código de ponto do Rio leva à praia dele
+    assert client.get("/praias/CP004").json()["id"] == "copacabana"
 
 
 def test_votos_de_pontos_diferentes_contam_para_a_mesma_praia(client):

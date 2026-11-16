@@ -1,7 +1,9 @@
 """Orquestra a coleta horária e grava o estado consolidado."""
 
 import logging
+from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo
 
@@ -16,6 +18,34 @@ from .http import criar_sessao
 log = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
+class FonteBoletim:
+    """Onde fica o boletim de uma cidade no site do INEA."""
+
+    cidade: str
+    pagina: str
+    # trecho do nome do PDF, quando a página tem boletins de várias regiões
+    boletim: str | None = None
+    historico: str | None = None
+
+
+def fontes(settings: Settings) -> list[FonteBoletim]:
+    return [
+        FonteBoletim("niteroi", settings.inea_url),
+        FonteBoletim(
+            "rio", settings.inea_rio_url, boletim="zona-sudoeste|zona-sul", historico="barra_e_zona_sul"
+        ),
+    ]
+
+
+def _pdf(settings: Settings, fonte: FonteBoletim, nome: str = "boletim") -> Path:
+    # Niterói continua no arquivo de antes
+    sufixo = "" if fonte.cidade == "niteroi" else f"_{fonte.cidade}"
+    if nome == "boletim":
+        return settings.pdf_file.with_name(f"{settings.pdf_file.stem}{sufixo}.pdf")
+    return settings.pdf_file.with_name(f"{nome}{sufixo}.pdf")
+
+
 def chave_hora_atual(timezone: str, agora: datetime | None = None) -> str:
     agora = agora or datetime.now(ZoneInfo(timezone))
     return agora.replace(minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M")
@@ -27,7 +57,7 @@ def mesclar_estado(
     leituras: dict[str, dict | None],
     previsoes: dict[str, list],
     balneabilidade: dict[str, bool | None],
-    data_boletim: str | None = None,
+    data_boletim: str | dict[str, str | None] | None = None,
 ) -> dict[str, dict]:
     """Combina catálogo, estado anterior e dados novos.
 
@@ -53,7 +83,12 @@ def mesclar_estado(
                 bal = leitura_anterior.get("balneabilidade")
                 data_bal = leitura_anterior.get("balneabilidade_data")
             else:
-                data_bal = data_boletim
+                # cada cidade tem o seu boletim, com a sua data
+                data_bal = (
+                    data_boletim.get(info.get("cidade", "niteroi"))
+                    if isinstance(data_boletim, dict)
+                    else data_boletim
+                )
             ponto["leitura_atual"] = {**leitura, "balneabilidade": bal, "balneabilidade_data": data_bal}
             ponto["previsao"] = previsoes.get(codigo, [])
         novo[codigo] = ponto
@@ -95,13 +130,18 @@ def executar_coleta(settings: Settings, sessao: requests.Session | None = None) 
         if leituras[codigo] is None:
             log.warning("Sem leitura para %s às %s; mantendo a anterior", codigo, chave)
 
-    inea.baixar_boletim(sessao, settings.inea_url, settings.pdf_file)
-    boletim = inea.ler_boletim(settings.pdf_file)
-    data_boletim = boletim.data.isoformat() if boletim.data else None
+    status: dict[str, bool | None] = {}
+    datas: dict[str, str | None] = {}
+    for fonte in fontes(settings):
+        pdf = _pdf(settings, fonte)
+        inea.baixar_boletim(sessao, fonte.pagina, pdf, arquivo=fonte.boletim)
+        boletim = inea.ler_boletim(pdf)
+        status.update(boletim.status)
+        datas[fonte.cidade] = boletim.data.isoformat() if boletim.data else None
 
     estado = atualizar_json(
         settings.estado_file,
-        lambda atual: mesclar_estado(catalogo, atual, leituras, previsoes, boletim.status, data_boletim),
+        lambda atual: mesclar_estado(catalogo, atual, leituras, previsoes, status, datas),
     )
     ok = sum(1 for v in leituras.values() if v)
     log.info("Coleta de %s concluída: %d/%d pontos atualizados", chave, ok, len(codigos))
@@ -122,16 +162,18 @@ def atualizar_regiao(settings: Settings, sessao: requests.Session | None = None)
 def atualizar_historico(settings: Settings, sessao: requests.Session | None = None) -> int:
     sessao = sessao or criar_sessao()
     ano = datetime.now(ZoneInfo(settings.timezone)).year
-    anos = [ano] if settings.historico_file.exists() else [ano - 1, ano]
     novo: dict[str, dict[str, bool]] = {}
-    for a in anos:
-        pdf = settings.pdf_file.with_name(f"historico_{a}.pdf")
-        historico.baixar_historico(sessao, settings.inea_url, a, pdf)
-        if pdf.exists():
-            try:
-                historico.mesclar_historico(novo, historico.ler_historico(pdf))
-            except Exception:
-                log.exception("Erro ao ler o histórico de %d", a)
+    for fonte in fontes(settings):
+        for a in (ano - 1, ano):
+            pdf = _pdf(settings, fonte, f"historico_{a}")
+            # o ano passado não muda mais: baixa só uma vez
+            if a == ano or not pdf.exists():
+                historico.baixar_historico(sessao, fonte.pagina, a, pdf, arquivo=fonte.historico)
+            if pdf.exists():
+                try:
+                    historico.mesclar_historico(novo, historico.ler_historico(pdf))
+                except Exception:
+                    log.exception("Erro ao ler o histórico de %d (%s)", a, fonte.cidade)
     if not novo:
         return 0
     atualizar_json(settings.historico_file, lambda atual: historico.mesclar_historico(atual, novo))

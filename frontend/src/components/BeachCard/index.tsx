@@ -4,7 +4,7 @@ import type { PraiaResumo } from '../../api/types';
 import { getBeachPhoto } from '../../constants/beaches';
 import { colors } from '../../theme';
 import { nivelPraia } from '../../utils/risk';
-import { resumoDaPraia } from '../../utils/trechos';
+import { ondeFica } from '../../utils/trechos';
 import Badge from '../Badge';
 import styles from './styles';
 
@@ -17,7 +17,7 @@ interface Props {
 export default function BeachCard({ praia, distancia, onPress }: Props) {
     const nivel = nivelPraia(praia.situacao);
     const foto = getBeachPhoto(praia.id);
-    const detalhe = [distancia, resumoDaPraia(praia)].filter(Boolean).join(' · ');
+    const detalhe = [distancia, ondeFica(praia)].filter(Boolean).join(' · ');
     return (
         <Pressable
             onPress={onPress}
@@ -39,7 +39,7 @@ export default function BeachCard({ praia, distancia, onPress }: Props) {
                 <Text style={styles.location} numberOfLines={1}>
                     {detalhe}
                 </Text>
-                <Badge label={nivel.rotulo} tone={nivel.tom} />
+                <Badge label={nivel.rotulo} tone={nivel.tom} frase />
             </View>
             <Feather name="chevron-right" size={22} color={colors.textSubtle} />
         </Pressable>

@@ -72,7 +72,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                 'expo-location',
                 {
                     locationWhenInUsePermission:
-                        'O Praiômetro usa sua localização para mostrar a praia mais próxima e para confirmar que você está na praia ao enviar um relato.',
+                        'O Praiômetro usa sua localização para abrir o app na sua cidade, mostrar a praia mais próxima e confirmar que você está na praia ao enviar um relato.',
                 },
             ],
             [

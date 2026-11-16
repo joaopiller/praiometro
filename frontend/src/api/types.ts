@@ -1,3 +1,5 @@
+import type { Cidade } from '../config/cidades';
+
 /** Leitura horária de um ponto (formato devolvido pela API). */
 export interface Leitura {
     timestamp?: string;
@@ -51,6 +53,8 @@ export interface PraiaResumo {
     id: string;
     ordem: number;
     nome: string;
+    cidade: Cidade;
+    bairro: string;
     /** ponto de onde vêm clima e mar */
     principal: string;
     /** [lat, lon] do pin, no meio da faixa de areia */

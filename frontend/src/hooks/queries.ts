@@ -37,7 +37,7 @@ export function usePonto(codigo: string) {
     return useQuery({ queryKey: queryKeys.ponto(codigo), queryFn: () => fetchPonto(codigo) });
 }
 
-export function useClima(zona: ZonaClima = 'centro') {
+export function useClima(zona: ZonaClima) {
     return usePonto(ZONAS_CLIMA.find((z) => z.id === zona)!.ponto);
 }
 

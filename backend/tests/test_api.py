@@ -14,14 +14,14 @@ def test_health(client):
     assert r.status_code == 200
     corpo = r.json()
     assert corpo["status"] == "ok"
-    assert corpo["pontos"] == 29
+    assert corpo["pontos"] == 68
 
 
 def test_listar_pontos_inclui_balneabilidade(client):
     r = client.get("/pontos")
     assert r.status_code == 200
     pontos = {p["codigo"]: p for p in r.json()["pontos"]}
-    assert len(pontos) == 29
+    assert len(pontos) == 68
     assert pontos["GR000"]["nome"] == ["Praia de Gragoatá"]
     assert pontos["GR000"]["balneabilidade"] is True
     assert pontos["GR000"]["ultima_leitura"] == "2026-01-10T14:00"
@@ -33,9 +33,12 @@ def test_pontos_seguem_o_litoral(client):
     pontos = client.get("/pontos").json()["pontos"]
     assert [p["ordem"] for p in pontos] == list(range(len(pontos)))
     codigos = [p["codigo"] for p in pontos]
-    # Jurujuba vem depois de Charitas e antes de Adão e Eva; Itacoatiara fecha a lista
+    # Jurujuba vem depois de Charitas e antes de Adão e Eva; Itacoatiara fecha Niterói
     assert codigos.index("CH000") < codigos.index("JR000") < codigos.index("AD000")
-    assert codigos[0] == "GR000" and codigos[-1].startswith("IA")
+    assert codigos[0] == "GR000" and codigos[28].startswith("IA")
+    # no Rio, de Guaratiba à Glória
+    assert codigos[29] == "BG000" and codigos[-1] == "FL008"
+    assert codigos.index("IP003") < codigos.index("CP004") < codigos.index("LM002")
 
 
 def test_nome_de_charitas_corrigido(client):
@@ -178,7 +181,7 @@ def test_sem_estado_usa_catalogo(settings, repo):
 
     with TestClient(create_app(settings, repo=repo, verificador=lambda t: t)) as c:
         pontos = c.get("/pontos").json()["pontos"]
-        assert len(pontos) == 29
+        assert len(pontos) == 68
         assert pontos[0]["ultima_leitura"] is None
 
 
@@ -276,7 +279,7 @@ def test_estado_corrompido_usa_catalogo(settings, repo):
     with _cliente(settings, repo) as c:
         r = c.get("/pontos")
         assert r.status_code == 200
-        assert len(r.json()["pontos"]) == 29
+        assert len(r.json()["pontos"]) == 68
 
 
 def test_estado_corrompido_depois_mantem_cache(client, settings):

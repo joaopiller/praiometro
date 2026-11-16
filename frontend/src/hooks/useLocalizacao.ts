@@ -1,6 +1,7 @@
 import * as Location from 'expo-location';
 import { useCallback, useState } from 'react';
 import type { Coordenada } from '../utils/geo';
+import { irParaOndeEstou } from './useLugar';
 
 export class LocalizacaoError extends Error {}
 
@@ -61,6 +62,8 @@ export function useLocalizacao() {
         try {
             const c = await obterLocalizacao();
             setCoordenada(c);
+            // a lista passa a começar pela cidade onde a pessoa está
+            irParaOndeEstou(c);
             return { coordenada: c };
         } catch (e) {
             const mensagem = e instanceof LocalizacaoError ? e.message : 'Não foi possível obter sua localização.';

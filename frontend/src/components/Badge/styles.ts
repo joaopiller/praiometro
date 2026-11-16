@@ -13,4 +13,5 @@ export default StyleSheet.create({
         borderWidth: 1,
     },
     text: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
+    frase: { fontSize: 13, fontWeight: '700', letterSpacing: 0 },
 });

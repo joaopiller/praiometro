@@ -42,10 +42,10 @@ export function nivelBalneabilidade(balneabilidade?: boolean | null): Nivel {
 }
 
 const NIVEL_PRAIA: Record<SituacaoPraia, Nivel> = {
-    propria: { rotulo: 'Própria', tom: 'success', mensagem: 'Própria para banho' },
-    impropria: { rotulo: 'Imprópria', tom: 'danger', mensagem: 'Imprópria para banho' },
-    parcial: { rotulo: 'Em parte', tom: 'warning', mensagem: 'Própria só em parte da praia' },
-    sem_dados: { rotulo: 'Sem dados', tom: 'neutral', mensagem: 'Balneabilidade sem informação' },
+    propria: { rotulo: 'Própria para banho', tom: 'success', mensagem: 'Própria para banho' },
+    impropria: { rotulo: 'Imprópria para banho', tom: 'danger', mensagem: 'Imprópria para banho' },
+    parcial: { rotulo: 'Parcialmente própria', tom: 'warning', mensagem: 'Parcialmente própria para banho' },
+    sem_dados: { rotulo: 'Sem boletim recente', tom: 'neutral', mensagem: 'Sem informação sobre o banho' },
 };
 
 /** A praia toda: "Em parte" quando uns trechos estão próprios e outros não. */

@@ -14,12 +14,14 @@ export default StyleSheet.create({
     },
     searchFundo: { backgroundColor: colors.surfaceStrong, borderColor: colors.border, borderWidth: 1 },
     input: { flex: 1, color: colors.text, fontSize: 16 },
-    chips: { flexDirection: 'row', gap: spacing.sm },
+    // a rolagem vai até a borda da tela; os filtros continuam alinhados com o conteúdo
+    chipsRolagem: { marginHorizontal: -spacing.lg },
+    chips: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.lg },
     chip: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
-        paddingHorizontal: spacing.lg,
+        gap: 5,
+        paddingHorizontal: 12,
         paddingVertical: 7,
         borderRadius: radius.pill,
         borderWidth: 1,
@@ -30,7 +32,9 @@ export default StyleSheet.create({
     chipActive: { backgroundColor: colors.sand, borderColor: colors.sand },
     chipText: { color: colors.text, fontWeight: '600' },
     chipTextActive: { color: colors.brand },
-    count: { color: colors.textSubtle, fontSize: 13 },
+    secao: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: spacing.sm },
+    secaoTitulo: { color: colors.text, fontSize: 18, fontWeight: '800' },
+    secaoTotal: { color: colors.textSubtle, fontSize: 13 },
     separator: { height: spacing.md },
     empty: { color: colors.textMuted, fontSize: 16, textAlign: 'center', marginTop: spacing.xl },
 });

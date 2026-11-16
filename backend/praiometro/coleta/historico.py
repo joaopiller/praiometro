@@ -10,7 +10,7 @@ import pdfplumber
 import requests
 from bs4 import BeautifulSoup
 
-from .inea import CODIGO_PONTO, MESES, interpretar_status
+from .inea import CODIGO_PONTO, MESES, interpretar_status, normalizar_codigo
 
 log = logging.getLogger(__name__)
 
@@ -19,9 +19,11 @@ def _normalizar(texto: str) -> str:
     return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode().lower()
 
 
-def link_do_ano(html: str, ano: int) -> str | None:
+def link_do_ano(html: str, ano: int, arquivo: str | None = None) -> str | None:
     soup = BeautifulSoup(html, "html.parser")
     for a in soup.find_all("a", href=True):
+        if arquivo and not re.search(arquivo, a["href"].lower()):
+            continue
         if a.get_text(strip=True) == str(ano) and "historico" in a["href"].lower():
             return a["href"]
     return None
@@ -69,6 +71,7 @@ def ler_historico(caminho_pdf: Path) -> dict[str, dict[str, bool]]:
                     codigo = (linha[1] or "").strip()
                     if not CODIGO_PONTO.match(codigo):
                         continue
+                    codigo = normalizar_codigo(codigo)
                     for data, valor in zip(datas, linha[3 : 3 + len(datas)], strict=False):
                         status = interpretar_status(valor)
                         if status is not None:
@@ -76,11 +79,13 @@ def ler_historico(caminho_pdf: Path) -> dict[str, dict[str, bool]]:
     return resultado
 
 
-def baixar_historico(sessao: requests.Session, url_pagina: str, ano: int, destino: Path) -> bool:
+def baixar_historico(
+    sessao: requests.Session, url_pagina: str, ano: int, destino: Path, arquivo: str | None = None
+) -> bool:
     try:
         pagina = sessao.get(url_pagina, timeout=20)
         pagina.raise_for_status()
-        url = link_do_ano(pagina.text, ano)
+        url = link_do_ano(pagina.text, ano, arquivo)
         if not url:
             log.info("Histórico de %d ainda não publicado", ano)
             return False

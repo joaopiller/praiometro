@@ -1,8 +1,9 @@
 """Praias: os pontos de coleta do INEA agrupados pela praia a que pertencem.
 
-O código de cada ponto começa com o da praia (IC003 e IC00 são de Icaraí), então
-a praia é identificada pelas duas primeiras letras. As avaliações e os relatos
-são da praia; a balneabilidade continua sendo de cada ponto.
+O catálogo diz de qual praia é cada ponto (campo `praia`). Em Niterói o id da praia
+são as duas letras do código (IC003 e IC00 são de Icaraí); no Rio isso não vale (BD
+aparece no Recreio, na Reserva e na Barra), então lá o id é o nome da praia. As
+avaliações e os relatos são da praia; a balneabilidade continua sendo de cada ponto.
 """
 
 import json
@@ -25,8 +26,9 @@ def centros() -> dict[str, list[float]]:
         return {}
 
 
-def id_da_praia(codigo: str) -> str:
-    return codigo[:2].upper()
+def id_da_praia(codigo: str, info: dict | None = None) -> str:
+    """Id da praia de um ponto. Sem catálogo (votos antigos de Niterói), as duas letras do código."""
+    return (info or {}).get("praia") or codigo[:2].upper()
 
 
 def _local(info: dict) -> str:
@@ -52,12 +54,15 @@ def agrupar(pontos: dict[str, dict]) -> dict[str, dict]:
     """
     praias: dict[str, dict] = {}
     for codigo, info in pontos.items():
+        pid = id_da_praia(codigo, info)
         praia = praias.setdefault(
-            id_da_praia(codigo),
+            pid,
             {
-                "id": id_da_praia(codigo),
+                "id": pid,
                 "ordem": len(praias),
                 "nome": (info.get("nome") or [""])[0],
+                "cidade": info.get("cidade", "niteroi"),
+                "bairro": info.get("bairro", ""),
                 "pontos": [],
             },
         )
@@ -92,6 +97,8 @@ def resumir(praia: dict, pontos: dict[str, dict]) -> dict:
         "id": praia["id"],
         "ordem": praia["ordem"],
         "nome": praia["nome"],
+        "cidade": praia["cidade"],
+        "bairro": praia["bairro"],
         "principal": praia["principal"],
         "centro": centros().get(praia["id"]) or principal.get("coordenadas_terra_decimais"),
         "mar": principal.get("mar"),

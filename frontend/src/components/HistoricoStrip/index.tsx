@@ -20,7 +20,7 @@ function HistoricoStrip({ historico, trecho }: { historico?: Historico; trecho?:
             accessibilityLabel={`Histórico${trecho ? ` de ${trecho}` : ''}: própria em ${pct}% das coletas dos últimos 12 meses`}
         >
             <View>
-                <CardLabel right={<Text style={styles.pct}>{pct}% própria</Text>}>Últimas coletas</CardLabel>
+                <CardLabel right={<Text style={styles.pct}>{pct}% própria</Text>}>Banho nas últimas coletas</CardLabel>
                 {trecho ? <Text style={styles.trecho}>{trecho}</Text> : null}
             </View>
             <View style={styles.barras}>

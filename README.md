@@ -3,7 +3,7 @@
 [![Backend](https://github.com/joaopiller/praiometro/actions/workflows/backend.yml/badge.svg)](https://github.com/joaopiller/praiometro/actions/workflows/backend.yml)
 [![Frontend](https://github.com/joaopiller/praiometro/actions/workflows/frontend.yml/badge.svg)](https://github.com/joaopiller/praiometro/actions/workflows/frontend.yml)
 
-App com informações das praias de Niterói (RJ): balneabilidade, ondas, vento, índice UV, previsão do tempo e avaliações dos banhistas, tudo em um só lugar.
+App com informações das praias de Niterói e do Rio de Janeiro (Zona Sul e Sudoeste): balneabilidade, ondas, vento, índice UV, previsão do tempo e avaliações dos banhistas, tudo em um só lugar.
 
 O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF), desenvolvido por alunos de Sistemas de Informação.
 
@@ -11,16 +11,18 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 
 ## Funcionalidades
 
-- Mapa com as 14 praias de Niterói, um pin por praia no meio da faixa de areia, colorido pela situação, e carrossel que percorre o litoral de Gragoatá a Itacoatiara
-- Situação de cada praia: própria, imprópria ou própria só em parte, quando os trechos medidos pelo INEA (29 pontos de coleta) discordam
+- 36 praias: as 14 de Niterói e 22 do Rio, da Barra de Guaratiba ao Flamengo
+- O app abre na cidade onde você está (pela localização, pedida uma vez); dá para trocar de cidade no mapa e no clima
+- Mapa com um pin por praia no meio da faixa de areia, colorido pela situação, e carrossel que percorre o litoral de cada cidade
+- Situação para banho de cada praia: própria, imprópria ou parcialmente própria, quando os trechos medidos pelo INEA (68 pontos de coleta) discordam
 - Trechos de cada praia com a situação de cada um e o histórico das últimas coletas
 - Aviso quando choveu recentemente
 - Praia mais próxima de você (no mapa e na lista)
 - Ondas (nas praias oceânicas), vento, temperatura da água, índice UV e previsão para as próximas 24 horas
-- Clima por área da cidade (Centro e baía ou Região Oceânica), maré e nascer/pôr do sol
+- Clima por área da cidade (em Niterói, Centro e baía ou Região Oceânica; no Rio, Zona Sul ou Barra e Recreio), maré e nascer/pôr do sol
 - Avaliação das praias pelos usuários (limpeza, acessibilidade, infraestrutura, segurança e tranquilidade), com meia estrela
 - Relatos rápidos de quem está na praia (lotada, água limpa, água-viva, bandeira vermelha...), vários de uma vez, que expiram em 5 horas
-- Busca sem acento e filtros de praias próprias e mais próximas
+- Busca sem acento, com as praias separadas por cidade (a sua primeiro), e filtros de praias próprias para banho e mais próximas
 - Login com Google (e com Apple no iPhone) para avaliar e relatar
 - Funciona offline com os últimos dados baixados
 
@@ -28,15 +30,16 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 
 | Dado | Fonte |
 | --- | --- |
-| Balneabilidade e histórico | Boletins do [INEA](https://www.inea.rj.gov.br/niteroi/) |
+| Balneabilidade e histórico | Boletins do INEA para [Niterói](https://www.inea.rj.gov.br/niteroi/) e para a [Zona Sul e Sudoeste do Rio](https://www.inea.rj.gov.br/rio-de-janeiro/) |
 | Clima, ondas, maré, temperatura da água e sol | [Open-Meteo](https://open-meteo.com/) |
 | Mapa | [OpenFreeMap](https://openfreemap.org/) + MapLibre (dados do OpenStreetMap) |
+| Fotos das praias do Rio | [Wikimedia Commons](https://commons.wikimedia.org/), em domínio público ou licenças Creative Commons; autor e licença de cada foto aparecem na página da praia |
 
 Limitações conhecidas:
 
 - O boletim do INEA reflete as últimas coletas (cerca de duas por semana), não o dia de hoje.
 - O modelo de ondas da Open-Meteo tem resolução de ~5 km e não representa o interior da Baía de Guanabara; por isso as praias da baía não exibem altura de onda.
-- O modelo de clima tem resolução de cerca de 10 km: as praias da baía compartilham uma célula e as da Região Oceânica outra. Por isso a aba Clima oferece as duas áreas.
+- O modelo de clima tem resolução de cerca de 10 km: as praias da baía compartilham uma célula e as da Região Oceânica outra (no Rio, a Zona Sul e a Barra). Por isso a aba Clima oferece duas áreas por cidade.
 - Maré e temperatura da água são previsões de modelo, não medições.
 
 ## Estrutura
@@ -106,22 +109,24 @@ ruff check . && ruff format --check .
 | Método | Rota | Descrição |
 | --- | --- | --- |
 | GET | `/health` | Status da API e do MongoDB |
-| GET | `/praias` | As 14 praias, com a situação geral, o pin no mapa e cada ponto de coleta |
+| GET | `/praias` | As 36 praias, com cidade, bairro, a situação geral, o pin no mapa e cada ponto de coleta |
 | GET | `/praias/{id}` | Uma praia, com leitura atual e previsão de 24h do ponto principal |
 | GET | `/praias/{id}/avaliacao` | Médias das avaliações da praia |
 | GET | `/praias/{id}/relatos` | Relatos ativos, agrupados por tipo |
 | POST | `/praias/{id}/relatos` | Envia um ou vários relatos (`{"tipos": [...], "latitude", "longitude"}`; exige login e estar a até 2 km de algum ponto da praia) |
 | POST | `/praias/{id}/relatos/{tipo}/denuncia` | Contesta um relato |
 | POST | `/votar?praia_id=...` | Envia/atualiza uma avaliação (header `Authorization: Bearer <id_token>`) |
-| GET | `/pontos` | Os 29 pontos de coleta com a balneabilidade atual |
+| GET | `/pontos` | Os 68 pontos de coleta com a balneabilidade atual |
 | GET | `/pontos/{codigo}` | Leitura atual e previsão de 24h de um ponto |
 | GET | `/pontos/{codigo}/dados?tipo=meteo\|marine\|ambos` | Apenas os indicadores |
 | GET | `/pontos/{codigo}/historico?dias=365` | Histórico de balneabilidade de um ponto |
 | GET | `/regiao` | Maré e nascer/pôr do sol |
 
-O id da praia são as duas letras do começo do código dos pontos (`IC` para Icaraí, cujos pontos são `IC00`, `IC001`...). As avaliações e os relatos são da praia; as rotas antigas por ponto (`/pontos/{codigo}/avaliacao` e `/pontos/{codigo}/relatos`) continuam respondendo pela praia do ponto.
+Em Niterói, o id da praia são as duas letras do começo do código dos pontos (`IC` para Icaraí, cujos pontos são `IC00`, `IC001`...); no Rio, onde várias praias dividem o mesmo prefixo, é um nome (`copacabana`, `sao-conrado`). Cada ponto do catálogo (`praiometro/dados/praias.json`) diz a cidade, a praia e o bairro. `/praias/{id}` também aceita o código de um ponto e responde com a praia dele. As avaliações e os relatos são da praia; as rotas antigas por ponto (`/pontos/{codigo}/avaliacao` e `/pontos/{codigo}/relatos`) continuam respondendo pela praia do ponto.
 
-O pin de cada praia fica em `praiometro/dados/centro_das_praias.json`, gerado por `scripts/centro_das_praias.py` a partir dos contornos de areia do OpenStreetMap: o ponto bem dentro da areia mais perto do meio da praia.
+O pin de cada praia fica em `praiometro/dados/centro_das_praias.json`, gerado por `scripts/centro_das_praias.py` a partir dos contornos de areia do OpenStreetMap (um ou mais arquivos do Overpass, por exemplo um por cidade): o ponto bem dentro da areia mais perto do meio da praia.
+
+Cada cidade tem o próprio boletim do INEA. A página do Rio publica vários (um por região), e o worker baixa só o da Zona Sul e Sudoeste. Os códigos dos pontos são normalizados para três dígitos (`BG00` vira `BG000`).
 
 ### Moderação dos relatos
 
@@ -174,7 +179,7 @@ A pasta `android/` é gerada a partir do `app.config.ts` (`npm run prebuild`), e
 
 Scripts em `frontend/scripts/` (requerem Python com Pillow: `pip install pillow`):
 
-- `python scripts/comprimir-imagens.py`: reduz as fotos de `assets/images/praias` para 1280 px de largura. Rode sempre que adicionar uma foto nova; ele não mexe no que já está otimizado.
+- `python scripts/comprimir-imagens.py`: reduz as fotos de `assets/images/praias` (e subpastas) para 1280 px de largura. Rode sempre que adicionar uma foto nova; ele não mexe no que já está otimizado.
 - `python scripts/gerar-icones.py`: gera o ícone do app e o ícone adaptativo do Android a partir de `assets/images/logo-header.png`.
 - `python scripts/gerar-pins.py`: gera os pins do mapa (própria, imprópria, só em parte e sem dados, cada um com a versão selecionada).
 

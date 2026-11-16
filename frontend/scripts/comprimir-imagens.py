@@ -48,17 +48,17 @@ def main() -> None:
     args = parser.parse_args()
 
     total_antes = total_depois = 0
-    for caminho in sorted(args.pasta.iterdir()):
+    for caminho in sorted(args.pasta.rglob("*")):
         if caminho.suffix.lower() not in (".jpg", ".jpeg", ".webp"):
             continue
         resultado = comprimir(caminho, args.largura, args.qualidade)
         if resultado is None:
-            print(f"  ok        {caminho.name}")
+            print(f"  ok        {caminho.relative_to(args.pasta)}")
             continue
         antes, depois = resultado
         total_antes += antes
         total_depois += depois
-        print(f"  {antes // 1024:4d} KB -> {depois // 1024:4d} KB  {caminho.name}")
+        print(f"  {antes // 1024:4d} KB -> {depois // 1024:4d} KB  {caminho.relative_to(args.pasta)}")
     if total_antes:
         print(f"economia: {(total_antes - total_depois) / 1024 / 1024:.1f} MB")
 

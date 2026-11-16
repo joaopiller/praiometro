@@ -33,7 +33,9 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["*"]
 
     # Coleta
+    # páginas do INEA com o boletim de cada cidade
     inea_url: str = "https://www.inea.rj.gov.br/niteroi/"
+    inea_rio_url: str = "https://www.inea.rj.gov.br/rio-de-janeiro/"
     open_meteo_url: str = "https://api.open-meteo.com/v1/forecast"
     open_meteo_marine_url: str = "https://marine-api.open-meteo.com/v1/marine"
     timezone: str = "America/Sao_Paulo"

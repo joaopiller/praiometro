@@ -12,6 +12,8 @@ export const praiaDeTeste = (id: string, nome: string, pontos: PontoDaPraia[], c
     id,
     ordem: 0,
     nome,
+    cidade: 'niteroi',
+    bairro: '',
     principal: pontos[0].codigo,
     centro,
     situacao: 'sem_dados',

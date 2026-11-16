@@ -14,8 +14,15 @@ from bs4 import BeautifulSoup
 
 log = logging.getLogger(__name__)
 
-# Códigos de ponto do INEA: duas letras + três dígitos (ex.: IC003)
-CODIGO_PONTO = re.compile(r"^[A-Z]{2}\d{3}$")
+# Códigos de ponto do INEA: duas letras + dígitos. Niterói usa três (IC003); o boletim
+# do Rio às vezes usa dois (BG00) e o histórico, três (BG000).
+CODIGO_PONTO = re.compile(r"^[A-Z]{2}\d{2,3}$")
+
+
+def normalizar_codigo(codigo: str) -> str:
+    """BG00 → BG000; códigos de três dígitos ficam como estão."""
+    return codigo[:2] + codigo[2:].zfill(3)
+
 
 MESES = {
     m: i
@@ -85,21 +92,27 @@ def data_do_nome(nome: str) -> date | None:
         return None
 
 
-def encontrar_link_boletim(html: str, url_base: str) -> str | None:
+def encontrar_link_boletim(html: str, url_base: str, arquivo: str | None = None) -> str | None:
+    """Link do "Último Boletim Divulgado". Páginas com vários boletins (a do Rio tem um por
+    região) pedem `arquivo`, um trecho do nome do PDF."""
     soup = BeautifulSoup(html, "html.parser")
     for link in soup.find_all("a", href=True):
+        if arquivo and not re.search(arquivo, _normalizar(link["href"])):
+            continue
         if "ultimo boletim" in _normalizar(link.get_text(" ")):
             # o link do site costuma ser relativo
             return urljoin(url_base, link["href"])
     return None
 
 
-def baixar_boletim(sessao: requests.Session, url_pagina: str, destino: Path, timeout: float = 20) -> bool:
+def baixar_boletim(
+    sessao: requests.Session, url_pagina: str, destino: Path, timeout: float = 20, arquivo: str | None = None
+) -> bool:
     """Baixa o boletim mais recente; se falhar, mantém o arquivo anterior."""
     try:
         pagina = sessao.get(url_pagina, timeout=timeout)
         pagina.raise_for_status()
-        url_pdf = encontrar_link_boletim(pagina.text, url_pagina)
+        url_pdf = encontrar_link_boletim(pagina.text, url_pagina, arquivo)
         if not url_pdf:
             log.warning("Link do último boletim não encontrado em %s", url_pagina)
             return False
@@ -132,9 +145,12 @@ def ler_boletim(caminho_pdf: Path) -> Boletim:
                     for linha in tabela:
                         if not linha or len(linha) < 4:
                             continue
-                        codigo = (linha[1] or "").strip()
-                        medicoes = [m for m in linha[3:] if m and m.strip()]
-                        if CODIGO_PONTO.match(codigo) and medicoes:
+                        # Niterói: praia, código, local; Rio: praia, local, código
+                        celulas = [(c or "").strip() for c in linha]
+                        indice = next((i for i in (1, 2) if CODIGO_PONTO.match(celulas[i])), None)
+                        medicoes = [m for m in celulas[(indice or 0) + 1 :] if m]
+                        if indice is not None and medicoes:
+                            codigo = normalizar_codigo(celulas[indice])
                             boletim.status[codigo] = interpretar_status(medicoes[-1])
     except FileNotFoundError:
         log.warning("Boletim %s não encontrado", caminho_pdf)

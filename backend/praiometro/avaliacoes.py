@@ -124,7 +124,7 @@ def gravar_snapshot_medias(repo: RepositorioVotos, estado_file) -> int:
 
     def alterar(estado: dict) -> dict:
         for codigo, ponto in estado.items():
-            r = resumos.get(id_da_praia(codigo))
+            r = resumos.get(id_da_praia(codigo, ponto))
             if r:
                 ponto["avaliacao_media"] = r.estrelas
                 ponto["total_avaliacoes"] = r.total

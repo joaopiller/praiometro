@@ -2,7 +2,8 @@ import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Pressable, Text, View } from 'react-native';
 import { useClima } from '../../hooks/queries';
-import { useZonaClima } from '../../hooks/useZonaClima';
+import { CIDADES } from '../../config/cidades';
+import { useCidade, useZonaClima } from '../../hooks/useLugar';
 import { formatTemp, parseTimestamp } from '../../utils/format';
 import { getCondicao } from '../../utils/weather';
 import { colors } from '../../theme';
@@ -14,6 +15,7 @@ const logo = require('../../../assets/images/logo-header.png');
 
 export default function HomeHeader({ onPress }: { onPress?: () => void }) {
     const [zona] = useZonaClima();
+    const [cidade] = useCidade();
     const { data, isPending } = useClima(zona);
     const leitura = data?.leitura_atual;
     const condicao = getCondicao(leitura?.weather_code);
@@ -26,7 +28,7 @@ export default function HomeHeader({ onPress }: { onPress?: () => void }) {
                 style={({ pressed }) => [styles.clima, pressed && styles.pressed]}
                 accessibilityRole="button"
                 accessibilityLabel={
-                    leitura ? `Niterói agora: ${formatTemp(leitura.temperature_2m)}, ${condicao.descricao}. Ver previsão` : 'Ver clima'
+                    leitura ? `${CIDADES[cidade].curto} agora: ${formatTemp(leitura.temperature_2m)}, ${condicao.descricao}. Ver previsão` : 'Ver clima'
                 }
             >
                 {leitura ? (

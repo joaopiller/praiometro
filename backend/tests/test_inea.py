@@ -80,3 +80,32 @@ def test_data_pelo_nome_quando_o_pdf_nao_tem(tmp_path, monkeypatch):
     pdf.with_suffix(".url").write_text("https://x/Niteroi-05-01-26.pdf")
     monkeypatch.setattr(inea.pdfplumber, "open", lambda _p: (_ for _ in ()).throw(ValueError("pdf ruim")))
     assert inea.ler_boletim(pdf).data.isoformat() == "2026-01-05"
+
+
+def test_boletim_do_rio_tem_codigo_em_outra_coluna():
+    boletim = inea.ler_boletim(Path(__file__).parent / "fixtures" / "boletim_inea_rio.pdf")
+    assert len(boletim.status) == 39
+    assert boletim.data.isoformat() == "2026-11-11"
+    # BG00 no boletim vira BG000, como no histórico
+    assert boletim.status["BG000"] is False
+    assert boletim.status["CP004"] is True
+    assert boletim.status["BD011"] is True
+    # "Não Realizada" não é própria nem imprópria
+    assert boletim.status["JT000"] is None
+
+
+def test_pagina_com_varios_boletins_escolhe_pelo_nome():
+    html = (
+        '<a href="/u/Zona-sudoeste-e-Zona-sul-11-11-26.pdf">Último Boletim Divulgado</a>'
+        '<a href="/u/Sepetiba-28-11-24.pdf">Último Boletim Divulgado</a>'
+        '<a href="/u/Paqueta-09-11-26.pdf">Último Boletim Divulgado</a>'
+    )
+    url = "https://www.inea.rj.gov.br/rio-de-janeiro/"
+    assert inea.encontrar_link_boletim(html, url, "paqueta").endswith("Paqueta-09-11-26.pdf")
+    assert inea.encontrar_link_boletim(html, url, "zona-sudoeste|zona-sul").endswith("Zona-sul-11-11-26.pdf")
+
+
+def test_normalizar_codigo():
+    assert inea.normalizar_codigo("BG00") == "BG000"
+    assert inea.normalizar_codigo("BD011") == "BD011"
+    assert inea.normalizar_codigo("CP100") == "CP100"

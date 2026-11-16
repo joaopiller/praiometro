@@ -14,8 +14,10 @@ import MapBeachCard from '../../components/MapBeachCard';
 import Screen from '../../components/Screen';
 import StateView from '../../components/StateView';
 import Vidro from '../../components/Vidro';
-import { MAPA_INICIAL } from '../../constants/beaches';
+import CidadeSwitch from '../../components/CidadeSwitch';
+import type { Cidade } from '../../config/cidades';
 import { usePraias } from '../../hooks/queries';
+import { useCidade } from '../../hooks/useLugar';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
 import type { TabScreenProps } from '../../navigation/types';
 import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
@@ -39,6 +41,19 @@ const PIN_DA_SITUACAO = { propria: 'propria', impropria: 'impropria', parcial: '
 const COR_DO_TRECHO = (b: boolean | null) => toneColors[b === true ? 'success' : b === false ? 'danger' : 'neutral'].solid;
 
 const VISIBILIDADE = { itemVisiblePercentThreshold: 70 };
+// menor área enquadrada ao escolher uma praia (~1 km), em graus
+const FAIXA_MINIMA = 0.009;
+
+type Limites = [number, number, number, number];
+
+/** Retângulo que enquadra as praias da cidade (oeste, sul, leste, norte). */
+function limitesDaCidade(praias: PraiaResumo[], cidade: Cidade): Limites | null {
+    const c = praias.filter((p) => p.cidade === cidade).flatMap((p) => centroDaPraia(p) ?? []);
+    if (!c.length) return null;
+    const lons = c.map((l) => l.longitude);
+    const lats = c.map((l) => l.latitude);
+    return [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)];
+}
 
 export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const { data, isPending, error, refetch } = usePraias();
@@ -52,20 +67,27 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const base = useEspacoDasAbas();
     const { coordenada: origem, carregando: localizando, localizar } = useLocalizacao();
     const avisar = useAviso();
+    const [cidade, setCidade] = useCidade();
+    // praia a focar assim que a cidade dela entrar no carrossel
+    const focarDepois = useRef<string | null>(null);
 
     const cardLargura = Math.min(width - 56, 380);
 
     // na ordem do litoral: cada card do carrossel é vizinho do anterior
-    const praias = useMemo(
+    const todas = useMemo(
         () => (data ?? []).filter((p) => centroDaPraia(p)).sort((a, b) => a.ordem - b.ordem),
         [data],
     );
+    const praias = useMemo(() => todas.filter((p) => p.cidade === cidade), [todas, cidade]);
+    // a escolha some quando a praia sai do carrossel (troca de cidade)
+    const escolhida = praias.some((p) => p.id === selecionado) ? selecionado : null;
+    const espaco = { bottom: base + CARROSSEL_ALTURA + 24, top: insets.top + 150, left: 40, right: 40 };
 
     // um pin por praia, no meio da areia
     const pins = useMemo<GeoJSON.FeatureCollection>(
         () => ({
             type: 'FeatureCollection',
-            features: praias.map((p) => {
+            features: todas.map((p) => {
                 const c = centroDaPraia(p)!;
                 return {
                     type: 'Feature',
@@ -75,12 +97,12 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 };
             }),
         }),
-        [praias],
+        [todas],
     );
 
     // os trechos medidos aparecem, pequenos, só na praia escolhida
     const trechos = useMemo<GeoJSON.FeatureCollection>(() => {
-        const praia = praias.find((p) => p.id === selecionado);
+        const praia = praias.find((p) => p.id === escolhida);
         return {
             type: 'FeatureCollection',
             features: (praia && praia.pontos.length > 1 ? praia.pontos : []).flatMap((t) => {
@@ -97,7 +119,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                     : [];
             }),
         };
-    }, [praias, selecionado]);
+    }, [praias, escolhida]);
 
     const focar = useCallback(
         (id: string, rolarLista: boolean) => {
@@ -105,27 +127,43 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             if (indice < 0) return;
             const praia = praias[indice];
             setSelecionado(id);
-            const padding = { bottom: base + CARROSSEL_ALTURA + 24, top: insets.top + 110, left: 40, right: 84 };
+            const padding = { ...espaco, right: 84 };
             const lugares = [centroDaPraia(praia)!, ...praia.pontos.flatMap((t) => {
                 const c = t.coordenadas_terra ?? t.coordenadas;
                 return c ? [{ latitude: c[0], longitude: c[1] }] : [];
             })];
             if (lugares.length > 2) {
-                // praia com vários trechos: enquadra todos
+                // praia com vários trechos: enquadra todos, sem chegar perto demais quando eles estão juntos
                 const lons = lugares.map((l) => l.longitude);
                 const lats = lugares.map((l) => l.latitude);
-                camera.current?.fitBounds([Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)], {
-                    padding,
-                    duration: 700,
-                });
+                const folga = (min: number, max: number) => Math.max(0, (FAIXA_MINIMA - (max - min)) / 2);
+                const [o, l] = [Math.min(...lons), Math.max(...lons)];
+                const [sul, norte] = [Math.min(...lats), Math.max(...lats)];
+                camera.current?.fitBounds(
+                    [o - folga(o, l), sul - folga(sul, norte), l + folga(o, l), norte + folga(sul, norte)],
+                    { padding, duration: 700 },
+                );
             } else {
+                // praia de um trecho só costuma ser pequena: chega perto para a areia aparecer
                 const c = lugares[0];
-                camera.current?.flyTo({ center: [c.longitude, c.latitude], zoom: 14.5, duration: 700, padding });
+                camera.current?.flyTo({ center: [c.longitude, c.latitude], zoom: 15.6, duration: 700, padding });
             }
             if (rolarLista) lista.current?.scrollToOffset({ offset: indice * (cardLargura + CARD_GAP), animated: true });
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [praias, cardLargura, base, insets.top],
     );
+
+    // praia de outra cidade (pin tocado ou a mais perto de você): troca a cidade antes
+    const irPara = (praia: PraiaResumo) => {
+        if (praia.cidade === cidade) {
+            focar(praia.id, true);
+            return;
+        }
+        focarDepois.current = praia.id;
+        setCidade(praia.cidade);
+    };
+
 
     const irParaMaisProxima = async () => {
         const r = await localizar();
@@ -133,8 +171,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             avisar(r.erro, 'erro');
             return;
         }
-        const [maisProxima] = ordenarPraiasPorDistancia(praias, r.coordenada);
-        if (maisProxima) focar(maisProxima.praia.id, true);
+        const [maisProxima] = ordenarPraiasPorDistancia(todas, r.coordenada);
+        if (maisProxima) irPara(maisProxima.praia);
     };
 
     const abrirPraia = useCallback(
@@ -150,18 +188,19 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 <MapBeachCard
                     praia={item}
                     largura={cardLargura}
-                    selecionado={item.id === selecionado}
+                    selecionado={item.id === escolhida}
                     distancia={km !== null ? formatDistancia(km) : undefined}
                     onAbrir={abrirPraia}
                 />
             );
         },
-        [origem, cardLargura, selecionado, abrirPraia],
+        [origem, cardLargura, escolhida, abrirPraia],
     );
 
     const recentralizar = () => {
         setSelecionado(null);
-        camera.current?.easeTo({ center: MAPA_INICIAL.centro, zoom: MAPA_INICIAL.zoom, duration: 700, padding: { top: 0, right: 0, bottom: 0, left: 0 } });
+        const limites = limitesDaCidade(todas, cidade);
+        if (limites) camera.current?.fitBounds(limites, { padding: espaco, duration: 700 });
     };
 
     const arrastando = useRef(false);
@@ -174,6 +213,20 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
         const atual: PraiaResumo | undefined = viewableItems.find((v) => v.isViewable)?.item;
         if (atual && arrastando.current) focarRef.current(atual.id, false);
     });
+
+    // a cidade mudou (escolha, localização ou praia de outra cidade): leva o mapa até ela
+    useEffect(() => {
+        lista.current?.scrollToOffset({ offset: 0, animated: false });
+        if (focarDepois.current) {
+            const id = focarDepois.current;
+            focarDepois.current = null;
+            focarRef.current(id, true);
+            return;
+        }
+        const limites = limitesDaCidade(todas, cidade);
+        if (limites) camera.current?.fitBounds(limites, { padding: espaco, duration: 800 });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cidade, todas.length > 0]);
 
     if (isPending || (error && !data)) {
         return (
@@ -197,7 +250,11 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             >
                 <Camera
                     ref={camera}
-                    initialViewState={{ center: MAPA_INICIAL.centro, zoom: MAPA_INICIAL.zoom }}
+                    initialViewState={
+                        limitesDaCidade(todas, cidade)
+                            ? { bounds: limitesDaCidade(todas, cidade)!, padding: espaco }
+                            : { center: [-43.0835, -22.944], zoom: 11.1 }
+                    }
                     minZoom={9}
                     maxZoom={17}
                 />
@@ -219,15 +276,15 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                     id="praias"
                     data={pins}
                     onPress={(e) => {
-                        const id = e.nativeEvent.features[0]?.properties?.id;
-                        if (id) focar(id, true);
+                        const praia = todas.find((p) => p.id === e.nativeEvent.features[0]?.properties?.id);
+                        if (praia) irPara(praia);
                     }}
                     hitbox={{ top: 18, right: 18, bottom: 18, left: 18 }}
                 >
                     <Layer
                         type="symbol"
                         id="praias-pin"
-                        filter={['!=', ['get', 'id'], selecionado ?? '']}
+                        filter={['!=', ['get', 'id'], escolhida ?? '']}
                         layout={{
                             'icon-image': ['get', 'status'],
                             'icon-anchor': 'bottom',
@@ -239,7 +296,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                         type="symbol"
                         id="praias-nome"
                         minzoom={11.8}
-                        filter={['!=', ['get', 'id'], selecionado ?? '']}
+                        filter={['!=', ['get', 'id'], escolhida ?? '']}
                         layout={{
                             'text-field': ['get', 'nome'],
                             'text-font': ['Noto Sans Bold'],
@@ -253,7 +310,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                     <Layer
                         type="symbol"
                         id="praias-pin-selecionado"
-                        filter={['==', ['get', 'id'], selecionado ?? '']}
+                        filter={['==', ['get', 'id'], escolhida ?? '']}
                         layout={{
                             'icon-image': ['concat', ['get', 'status'], '-sel'],
                             'icon-anchor': 'bottom',
@@ -279,6 +336,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             />
             <View style={[styles.top, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
                 <HomeHeader onPress={() => navigation.navigate('Clima')} />
+                <CidadeSwitch cidade={cidade} onChange={setCidade} sobreMapa />
             </View>
 
             {mapaFalhou && (
@@ -287,7 +345,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 </View>
             )}
 
-            {selecionado && (
+            {escolhida && (
                 <BotaoMapa onPress={recentralizar} rotulo="Ver todas as praias" bottom={base + CARROSSEL_ALTURA + 70}>
                     <MaterialCommunityIcons name="arrow-expand-all" size={20} color={colors.brand} />
                 </BotaoMapa>

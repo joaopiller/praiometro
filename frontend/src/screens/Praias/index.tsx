@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, SectionList, Text, TextInput, View } from 'react-native';
 import { getErrorMessage } from '../../api/client';
 import BeachCard from '../../components/BeachCard';
 import DataNotice from '../../components/DataNotice';
@@ -8,7 +8,10 @@ import Screen from '../../components/Screen';
 import StateView from '../../components/StateView';
 import Vidro from '../../components/Vidro';
 import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
+import type { PraiaResumo } from '../../api/types';
+import { CIDADES, ORDEM_CIDADES } from '../../config/cidades';
 import { usePraias } from '../../hooks/queries';
+import { useCidadeDaPessoa } from '../../hooks/useLugar';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
 import { formatDistancia, ordenarPraiasPorDistancia } from '../../utils/geo';
 import type { PraiasScreenProps } from '../../navigation/types';
@@ -17,9 +20,12 @@ import { buscaPraia, nomeSemPrefixo } from '../../utils/search';
 import styles from './styles';
 
 type Filtro = 'todas' | 'proprias' | 'perto';
+type Item = { praia: PraiaResumo; distancia?: string };
+/** sem título quando a lista está em ordem de distância, misturando as cidades */
+type Secao = { titulo: string | null; data: Item[] };
 const FILTROS: { id: Filtro; label: string; icone?: 'crosshairs-gps' }[] = [
     { id: 'todas', label: 'Todas' },
-    { id: 'proprias', label: 'Próprias' },
+    { id: 'proprias', label: 'Própria para banho' },
     { id: 'perto', label: 'Perto de mim', icone: 'crosshairs-gps' },
 ];
 
@@ -28,21 +34,31 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
     const [busca, setBusca] = useState('');
     const [filtro, setFiltro] = useState<Filtro>('todas');
     const espacoAbas = useEspacoDasAbas();
+    // a cidade onde a pessoa está vem primeiro, mesmo que ela tenha trocado a do mapa
+    const cidade = useCidadeDaPessoa();
 
     const { coordenada, carregando: localizando, erro: erroLocal, localizar } = useLocalizacao();
 
-    const praias = useMemo(() => {
-        // "Próprias" inclui as que estão boas só em parte: o card avisa quantos trechos
+    const secoes = useMemo((): Secao[] => {
+        // "Própria para banho" inclui as que estão boas só em parte: o card avisa quantos trechos
         const filtradas = (data ?? []).filter(
             (p) => buscaPraia(p, busca) && (filtro !== 'proprias' || p.situacao === 'propria' || p.situacao === 'parcial'),
         );
         if (filtro === 'perto' && coordenada) {
-            return ordenarPraiasPorDistancia(filtradas, coordenada).map(({ praia, km }) => ({ praia, distancia: formatDistancia(km) }));
+            const data = ordenarPraiasPorDistancia(filtradas, coordenada).map(({ praia, km }) => ({ praia, distancia: formatDistancia(km) }));
+            return data.length ? [{ titulo: null, data }] : [];
         }
-        return filtradas
-            .sort((a, b) => nomeSemPrefixo(a.nome).localeCompare(nomeSemPrefixo(b.nome), 'pt-BR'))
-            .map((praia) => ({ praia, distancia: undefined as string | undefined }));
-    }, [data, busca, filtro, coordenada]);
+        // uma seção por cidade, a da pessoa primeiro
+        return [cidade, ...ORDEM_CIDADES.filter((c) => c !== cidade)]
+            .map((c) => ({
+                titulo: CIDADES[c].nome,
+                data: filtradas
+                    .filter((p) => p.cidade === c)
+                    .sort((a, b) => nomeSemPrefixo(a.nome).localeCompare(nomeSemPrefixo(b.nome), 'pt-BR'))
+                    .map((praia) => ({ praia })),
+            }))
+            .filter((s) => s.data.length);
+    }, [data, busca, filtro, coordenada, cidade]);
 
     const escolherFiltro = (f: Filtro) => {
         setFiltro(f);
@@ -59,8 +75,9 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
 
     return (
         <Screen scroll={false}>
-            <FlatList
-                data={praias}
+            <SectionList
+                sections={secoes}
+                stickySectionHeadersEnabled={false}
                 keyExtractor={(p) => p.praia.id}
                 contentContainerStyle={[styles.list, espacoAbas > 0 && { paddingBottom: espacoAbas + 32 }]}
                 keyboardShouldPersistTaps="handled"
@@ -89,7 +106,14 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                                 </Pressable>
                             ) : null}
                         </Vidro>
-                        <View style={styles.chips} accessibilityRole="radiogroup">
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            // em telas estreitas os filtros rolam de lado em vez de cortar
+                            style={styles.chipsRolagem}
+                            contentContainerStyle={styles.chips}
+                            accessibilityRole="radiogroup"
+                        >
                             {FILTROS.map((f) => {
                                 const ativo = filtro === f.id;
                                 return (
@@ -114,14 +138,22 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                                     </Pressable>
                                 );
                             })}
-                        </View>
+                        </ScrollView>
                         {filtro === 'perto' && erroLocal ? <Text style={styles.aviso}>{erroLocal}</Text> : null}
-                        <Text style={styles.count}>
-                            {praias.length} {praias.length === 1 ? 'praia' : 'praias'}
-                        </Text>
                     </View>
                 }
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
+                renderSectionHeader={({ section }) =>
+                    section.titulo ? (
+                        <View style={styles.secao} accessibilityRole="header">
+                            <Text style={styles.secaoTitulo}>{section.titulo}</Text>
+                            <Text style={styles.secaoTotal}>
+                                {section.data.length} {section.data.length === 1 ? 'praia' : 'praias'}
+                            </Text>
+                        </View>
+                    ) : null
+                }
+                SectionSeparatorComponent={() => <View style={styles.separator} />}
                 renderItem={({ item }) => (
                     <BeachCard
                         praia={item.praia}

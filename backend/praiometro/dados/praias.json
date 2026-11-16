@@ -16,7 +16,10 @@
             -22.902147,
             -43.136078
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "GR",
+        "bairro": "Gragoatá"
     },
     "BV001": {
         "nome": [
@@ -35,7 +38,10 @@
             -22.908413,
             -43.130129
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "BV",
+        "bairro": "Boa Viagem"
     },
     "FC001": {
         "nome": [
@@ -54,7 +60,10 @@
             -22.905217,
             -43.124309
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "FC",
+        "bairro": "Icaraí"
     },
     "FC000": {
         "nome": [
@@ -73,7 +82,10 @@
             -22.90547,
             -43.12123
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "FC",
+        "bairro": "Icaraí"
     },
     "IC003": {
         "nome": [
@@ -92,7 +104,10 @@
             -22.904336,
             -43.117841
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "IC",
+        "bairro": "Icaraí"
     },
     "IC00": {
         "nome": [
@@ -112,7 +127,10 @@
             -43.116207
         ],
         "codigo_inea": "IC000",
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "IC",
+        "bairro": "Icaraí"
     },
     "IC002": {
         "nome": [
@@ -131,7 +149,10 @@
             -22.908285,
             -43.111768
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "IC",
+        "bairro": "Icaraí"
     },
     "IC001": {
         "nome": [
@@ -150,7 +171,10 @@
             -22.910977,
             -43.109953
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "IC",
+        "bairro": "Icaraí"
     },
     "SF000": {
         "nome": [
@@ -169,7 +193,10 @@
             -22.915933,
             -43.095355
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "SF",
+        "bairro": "São Francisco"
     },
     "SF002": {
         "nome": [
@@ -188,7 +215,10 @@
             -22.918179,
             -43.094823
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "SF",
+        "bairro": "São Francisco"
     },
     "SF001": {
         "nome": [
@@ -207,7 +237,10 @@
             -22.920511,
             -43.094515
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "SF",
+        "bairro": "São Francisco"
     },
     "CH002": {
         "nome": [
@@ -226,7 +259,10 @@
             -22.923943,
             -43.095071
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "CH",
+        "bairro": "Charitas"
     },
     "CH001": {
         "nome": [
@@ -245,7 +281,10 @@
             -22.93131,
             -43.098221
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "CH",
+        "bairro": "Charitas"
     },
     "CH000": {
         "nome": [
@@ -264,7 +303,10 @@
             -22.935965,
             -43.105534
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "CH",
+        "bairro": "Charitas"
     },
     "JR000": {
         "nome": [
@@ -283,7 +325,10 @@
             -22.934451,
             -43.113049
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "JR",
+        "bairro": "Jurujuba"
     },
     "JR001": {
         "nome": [
@@ -302,7 +347,10 @@
             -22.931322,
             -43.116554
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "JR",
+        "bairro": "Jurujuba"
     },
     "EA000": {
         "nome": [
@@ -321,7 +369,10 @@
             -22.929624,
             -43.122534
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "EA",
+        "bairro": "Jurujuba"
     },
     "AD000": {
         "nome": [
@@ -340,7 +391,10 @@
             -22.927865,
             -43.12268
         ],
-        "mar": "baia"
+        "mar": "baia",
+        "cidade": "niteroi",
+        "praia": "AD",
+        "bairro": "Jurujuba"
     },
     "PR000": {
         "nome": [
@@ -361,7 +415,10 @@
             -22.952823,
             -43.098123
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "PR",
+        "bairro": "Piratininga"
     },
     "PR001": {
         "nome": [
@@ -380,7 +437,10 @@
             -22.953726,
             -43.095542
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "PR",
+        "bairro": "Piratininga"
     },
     "PR002": {
         "nome": [
@@ -399,7 +459,10 @@
             -22.954461,
             -43.087731
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "PR",
+        "bairro": "Piratininga"
     },
     "PR003": {
         "nome": [
@@ -418,7 +481,10 @@
             -22.956014,
             -43.075238
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "PR",
+        "bairro": "Piratininga"
     },
     "SG000": {
         "nome": [
@@ -437,7 +503,10 @@
             -22.958076,
             -43.069852
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "SG",
+        "bairro": "Piratininga"
     },
     "CM000": {
         "nome": [
@@ -456,7 +525,10 @@
             -22.961378,
             -43.05776
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "CM",
+        "bairro": "Camboinhas"
     },
     "CM001": {
         "nome": [
@@ -475,7 +547,10 @@
             -22.966637,
             -43.048199
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "CM",
+        "bairro": "Camboinhas"
     },
     "II000": {
         "nome": [
@@ -494,7 +569,10 @@
             -22.968655,
             -43.046871
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "II",
+        "bairro": "Itaipu"
     },
     "II001": {
         "nome": [
@@ -513,7 +591,10 @@
             -22.972734,
             -43.045586
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "II",
+        "bairro": "Itaipu"
     },
     "IA001": {
         "nome": [
@@ -532,7 +613,10 @@
             -22.974128,
             -43.036233
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "IA",
+        "bairro": "Itacoatiara"
     },
     "IA000": {
         "nome": [
@@ -551,6 +635,789 @@
             -22.975158,
             -43.030642
         ],
-        "mar": "oceanico"
+        "mar": "oceanico",
+        "cidade": "niteroi",
+        "praia": "IA",
+        "bairro": "Itacoatiara"
+    },
+    "BG000": {
+        "nome": [
+            "Praia da Barra de Guaratiba"
+        ],
+        "specific_location": [
+            "Escola Ana Neri"
+        ],
+        "coordenadas_decimais": [
+            -23.068182,
+            -43.569095
+        ],
+        "coordenadas_terra_decimais": [
+            -23.067726,
+            -43.567902
+        ],
+        "mar": "baia",
+        "cidade": "rio",
+        "praia": "barra-de-guaratiba",
+        "bairro": "Guaratiba"
+    },
+    "GM000": {
+        "nome": [
+            "Praia de Grumari"
+        ],
+        "specific_location": [
+            "Canto direito da praia"
+        ],
+        "coordenadas_decimais": [
+            -23.052212,
+            -43.535167
+        ],
+        "coordenadas_terra_decimais": [
+            -23.052333,
+            -43.536463
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "grumari",
+        "bairro": "Grumari"
+    },
+    "GM001": {
+        "nome": [
+            "Praia de Grumari"
+        ],
+        "specific_location": [
+            ""
+        ],
+        "coordenadas_decimais": [
+            -23.049902,
+            -43.525505
+        ],
+        "coordenadas_terra_decimais": [
+            -23.048657,
+            -43.525689
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "grumari",
+        "bairro": "Grumari"
+    },
+    "PN000": {
+        "nome": [
+            "Prainha"
+        ],
+        "specific_location": [
+            ""
+        ],
+        "coordenadas_decimais": [
+            -23.042128,
+            -43.504961
+        ],
+        "coordenadas_terra_decimais": [
+            -23.041014,
+            -43.505548
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "prainha",
+        "bairro": "Recreio"
+    },
+    "PS001": {
+        "nome": [
+            "Praia do Pontal"
+        ],
+        "specific_location": [
+            "Canal de Sernambetiba"
+        ],
+        "coordenadas_decimais": [
+            -23.033943,
+            -43.471871
+        ],
+        "coordenadas_terra_decimais": [
+            -23.032887,
+            -43.471015
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "pontal",
+        "bairro": "Recreio"
+    },
+    "PS000": {
+        "nome": [
+            "Praia do Pontal"
+        ],
+        "specific_location": [
+            "Nº 6.287 da Estrada do Pontal"
+        ],
+        "coordenadas_decimais": [
+            -23.032709,
+            -43.475782
+        ],
+        "coordenadas_terra_decimais": [
+            -23.031445,
+            -43.475736
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "pontal",
+        "bairro": "Recreio"
+    },
+    "BD000": {
+        "nome": [
+            "Praia do Recreio"
+        ],
+        "specific_location": [
+            "Rua Manuel Jorge Lydia"
+        ],
+        "coordenadas_decimais": [
+            -23.031328,
+            -43.467031
+        ],
+        "coordenadas_terra_decimais": [
+            -23.030112,
+            -43.467883
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "recreio",
+        "bairro": "Recreio"
+    },
+    "BD002": {
+        "nome": [
+            "Praia do Recreio"
+        ],
+        "specific_location": [
+            "Canto direito da Reserva Biológica de Marapendi"
+        ],
+        "coordenadas_decimais": [
+            -23.024292,
+            -43.447315
+        ],
+        "coordenadas_terra_decimais": [
+            -23.022977,
+            -43.447666
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "recreio",
+        "bairro": "Recreio"
+    },
+    "BD003": {
+        "nome": [
+            "Praia da Reserva"
+        ],
+        "specific_location": [
+            "Canto esquerdo da Reserva Biológica de Marapendi"
+        ],
+        "coordenadas_decimais": [
+            -23.02411,
+            -43.44652
+        ],
+        "coordenadas_terra_decimais": [
+            -23.022861,
+            -43.446961
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "reserva",
+        "bairro": "Barra da Tijuca"
+    },
+    "BD011": {
+        "nome": [
+            "Praia da Reserva"
+        ],
+        "specific_location": [
+            "Salão de eventos"
+        ],
+        "coordenadas_decimais": [
+            -23.014617,
+            -43.392874
+        ],
+        "coordenadas_terra_decimais": [
+            -23.013419,
+            -43.393267
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "reserva",
+        "bairro": "Barra da Tijuca"
+    },
+    "BD005": {
+        "nome": [
+            "Praia da Barra da Tijuca"
+        ],
+        "specific_location": [
+            "Avenida Ayrton Senna"
+        ],
+        "coordenadas_decimais": [
+            -23.012643,
+            -43.367491
+        ],
+        "coordenadas_terra_decimais": [
+            -23.011314,
+            -43.367511
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "barra",
+        "bairro": "Barra da Tijuca"
+    },
+    "BD007": {
+        "nome": [
+            "Praia da Barra da Tijuca"
+        ],
+        "specific_location": [
+            "Riviera Country Club"
+        ],
+        "coordenadas_decimais": [
+            -23.012498,
+            -43.33424
+        ],
+        "coordenadas_terra_decimais": [
+            -23.011242,
+            -43.334069
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "barra",
+        "bairro": "Barra da Tijuca"
+    },
+    "BD009": {
+        "nome": [
+            "Praia da Barra da Tijuca"
+        ],
+        "specific_location": [
+            "2º GMAR (Bombeiros)"
+        ],
+        "coordenadas_decimais": [
+            -23.016873,
+            -43.304949
+        ],
+        "coordenadas_terra_decimais": [
+            -23.015566,
+            -43.30524
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "barra",
+        "bairro": "Barra da Tijuca"
+    },
+    "BD010": {
+        "nome": [
+            "Praia da Barra da Tijuca"
+        ],
+        "specific_location": [
+            "Quebra-mar, em frente à Rua Sargento João de Faria"
+        ],
+        "coordenadas_decimais": [
+            -23.016374,
+            -43.298336
+        ],
+        "coordenadas_terra_decimais": [
+            -23.014882,
+            -43.298321
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "barra",
+        "bairro": "Barra da Tijuca"
+    },
+    "JT000": {
+        "nome": [
+            "Praia da Joatinga"
+        ],
+        "specific_location": [
+            ""
+        ],
+        "coordenadas_decimais": [
+            -23.01588,
+            -43.290067
+        ],
+        "coordenadas_terra_decimais": [
+            -23.014636,
+            -43.290439
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "joatinga",
+        "bairro": "Joá"
+    },
+    "PP010": {
+        "nome": [
+            "Praia do Pepino"
+        ],
+        "specific_location": [
+            "Rua Princesa Diana de Gales"
+        ],
+        "coordenadas_decimais": [
+            -23.002114,
+            -43.269204
+        ],
+        "coordenadas_terra_decimais": [
+            -23.000701,
+            -43.269547
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "pepino",
+        "bairro": "São Conrado"
+    },
+    "GV001": {
+        "nome": [
+            "Praia de São Conrado"
+        ],
+        "specific_location": [
+            "Nº 220 da Avenida Prefeito Mendes de Morais"
+        ],
+        "coordenadas_decimais": [
+            -23.001612,
+            -43.266592
+        ],
+        "coordenadas_terra_decimais": [
+            -23.000196,
+            -43.266844
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "sao-conrado",
+        "bairro": "São Conrado"
+    },
+    "GV002": {
+        "nome": [
+            "Praia de São Conrado"
+        ],
+        "specific_location": [
+            "Canto esquerdo da praia, perto do costão"
+        ],
+        "coordenadas_decimais": [
+            -22.999989,
+            -43.254413
+        ],
+        "coordenadas_terra_decimais": [
+            -22.998791,
+            -43.254844
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "sao-conrado",
+        "bairro": "São Conrado"
+    },
+    "VD000": {
+        "nome": [
+            "Praia do Vidigal"
+        ],
+        "specific_location": [
+            ""
+        ],
+        "coordenadas_decimais": [
+            -22.992801,
+            -43.231459
+        ],
+        "coordenadas_terra_decimais": [
+            -22.991886,
+            -43.232219
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "vidigal",
+        "bairro": "Vidigal"
+    },
+    "LB000": {
+        "nome": [
+            "Praia do Leblon"
+        ],
+        "specific_location": [
+            "Rua Rita Ludolf"
+        ],
+        "coordenadas_decimais": [
+            -22.989929,
+            -43.226276
+        ],
+        "coordenadas_terra_decimais": [
+            -22.988687,
+            -43.22683
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "leblon",
+        "bairro": "Leblon"
+    },
+    "LB001": {
+        "nome": [
+            "Praia do Leblon"
+        ],
+        "specific_location": [
+            "Rua Bartolomeu Mitre"
+        ],
+        "coordenadas_decimais": [
+            -22.988694,
+            -43.221687
+        ],
+        "coordenadas_terra_decimais": [
+            -22.98739,
+            -43.221821
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "leblon",
+        "bairro": "Leblon"
+    },
+    "LB003": {
+        "nome": [
+            "Praia do Leblon"
+        ],
+        "specific_location": [
+            "Rua Afrânio de Melo Franco"
+        ],
+        "coordenadas_decimais": [
+            -22.988369,
+            -43.216832
+        ],
+        "coordenadas_terra_decimais": [
+            -22.986922,
+            -43.216776
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "leblon",
+        "bairro": "Leblon"
+    },
+    "IP003": {
+        "nome": [
+            "Praia de Ipanema"
+        ],
+        "specific_location": [
+            "Rua Paul Redfern"
+        ],
+        "coordenadas_decimais": [
+            -22.988366,
+            -43.214477
+        ],
+        "coordenadas_terra_decimais": [
+            -22.986808,
+            -43.214467
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "ipanema",
+        "bairro": "Ipanema"
+    },
+    "IP010": {
+        "nome": [
+            "Praia de Ipanema"
+        ],
+        "specific_location": [
+            "Rua Garcia D'Ávila"
+        ],
+        "coordenadas_decimais": [
+            -22.988352,
+            -43.209733
+        ],
+        "coordenadas_terra_decimais": [
+            -22.986844,
+            -43.209746
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "ipanema",
+        "bairro": "Ipanema"
+    },
+    "IP006": {
+        "nome": [
+            "Praia de Ipanema"
+        ],
+        "specific_location": [
+            "Rua Joana Angélica"
+        ],
+        "coordenadas_decimais": [
+            -22.988457,
+            -43.205375
+        ],
+        "coordenadas_terra_decimais": [
+            -22.987025,
+            -43.205277
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "ipanema",
+        "bairro": "Ipanema"
+    },
+    "AR000": {
+        "nome": [
+            "Praia do Arpoador"
+        ],
+        "specific_location": [
+            "Canto esquerdo da praia"
+        ],
+        "coordenadas_decimais": [
+            -22.990045,
+            -43.192614
+        ],
+        "coordenadas_terra_decimais": [
+            -22.989114,
+            -43.191814
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "arpoador",
+        "bairro": "Ipanema"
+    },
+    "PD000": {
+        "nome": [
+            "Praia do Diabo"
+        ],
+        "specific_location": [
+            ""
+        ],
+        "coordenadas_decimais": [
+            -22.990049,
+            -43.189558
+        ],
+        "coordenadas_terra_decimais": [
+            -22.989507,
+            -43.190721
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "diabo",
+        "bairro": "Copacabana"
+    },
+    "CP100": {
+        "nome": [
+            "Praia de Copacabana"
+        ],
+        "specific_location": [
+            "Rua Francisco Otaviano"
+        ],
+        "coordenadas_decimais": [
+            -22.984934,
+            -43.187564
+        ],
+        "coordenadas_terra_decimais": [
+            -22.985541,
+            -43.18863
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "copacabana",
+        "bairro": "Copacabana"
+    },
+    "CP004": {
+        "nome": [
+            "Praia de Copacabana"
+        ],
+        "specific_location": [
+            "Rua Sousa Lima"
+        ],
+        "coordenadas_decimais": [
+            -22.98205,
+            -43.187988
+        ],
+        "coordenadas_terra_decimais": [
+            -22.981865,
+            -43.189279
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "copacabana",
+        "bairro": "Copacabana"
+    },
+    "CP005": {
+        "nome": [
+            "Praia de Copacabana"
+        ],
+        "specific_location": [
+            "Rua Santa Clara"
+        ],
+        "coordenadas_decimais": [
+            -22.974699,
+            -43.183823
+        ],
+        "coordenadas_terra_decimais": [
+            -22.973577,
+            -43.185062
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "copacabana",
+        "bairro": "Copacabana"
+    },
+    "CP008": {
+        "nome": [
+            "Praia de Copacabana"
+        ],
+        "specific_location": [
+            "Rua República do Peru"
+        ],
+        "coordenadas_decimais": [
+            -22.970822,
+            -43.179146
+        ],
+        "coordenadas_terra_decimais": [
+            -22.969433,
+            -43.179981
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "copacabana",
+        "bairro": "Copacabana"
+    },
+    "LM002": {
+        "nome": [
+            "Praia do Leme"
+        ],
+        "specific_location": [
+            "Rua Aurelino Leal"
+        ],
+        "coordenadas_decimais": [
+            -22.965028,
+            -43.167539
+        ],
+        "coordenadas_terra_decimais": [
+            -22.963698,
+            -43.168222
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "leme",
+        "bairro": "Leme"
+    },
+    "VR000": {
+        "nome": [
+            "Praia Vermelha"
+        ],
+        "specific_location": [
+            ""
+        ],
+        "coordenadas_decimais": [
+            -22.955307,
+            -43.163452
+        ],
+        "coordenadas_terra_decimais": [
+            -22.955611,
+            -43.164754
+        ],
+        "mar": "oceanico",
+        "cidade": "rio",
+        "praia": "vermelha",
+        "bairro": "Urca"
+    },
+    "UR000": {
+        "nome": [
+            "Praia da Urca"
+        ],
+        "specific_location": [
+            ""
+        ],
+        "coordenadas_decimais": [
+            -22.947075,
+            -43.164059
+        ],
+        "coordenadas_terra_decimais": [
+            -22.947992,
+            -43.16315
+        ],
+        "mar": "baia",
+        "cidade": "rio",
+        "praia": "urca",
+        "bairro": "Urca"
+    },
+    "BT000": {
+        "nome": [
+            "Praia de Botafogo"
+        ],
+        "specific_location": [
+            "Rua Marquês de Olinda"
+        ],
+        "coordenadas_decimais": [
+            -22.945745,
+            -43.17922
+        ],
+        "coordenadas_terra_decimais": [
+            -22.945353,
+            -43.180804
+        ],
+        "mar": "baia",
+        "cidade": "rio",
+        "praia": "botafogo",
+        "bairro": "Botafogo"
+    },
+    "BT001": {
+        "nome": [
+            "Praia de Botafogo"
+        ],
+        "specific_location": [
+            "Comporta de Botafogo"
+        ],
+        "coordenadas_decimais": [
+            -22.947697,
+            -43.179403
+        ],
+        "coordenadas_terra_decimais": [
+            -22.947551,
+            -43.18084
+        ],
+        "mar": "baia",
+        "cidade": "rio",
+        "praia": "botafogo",
+        "bairro": "Botafogo"
+    },
+    "FL000": {
+        "nome": [
+            "Praia do Flamengo"
+        ],
+        "specific_location": [
+            "Foz do rio Carioca"
+        ],
+        "coordenadas_decimais": [
+            -22.932786,
+            -43.170264
+        ],
+        "coordenadas_terra_decimais": [
+            -22.932829,
+            -43.1717
+        ],
+        "mar": "baia",
+        "cidade": "rio",
+        "praia": "flamengo",
+        "bairro": "Flamengo"
+    },
+    "FL004": {
+        "nome": [
+            "Praia do Flamengo"
+        ],
+        "specific_location": [
+            "Rua Corrêa Dutra"
+        ],
+        "coordenadas_decimais": [
+            -22.930236,
+            -43.170012
+        ],
+        "coordenadas_terra_decimais": [
+            -22.929946,
+            -43.171376
+        ],
+        "mar": "baia",
+        "cidade": "rio",
+        "praia": "flamengo",
+        "bairro": "Flamengo"
+    },
+    "FL008": {
+        "nome": [
+            "Praia da Glória"
+        ],
+        "specific_location": [
+            "Ao lado da Marina da Glória"
+        ],
+        "coordenadas_decimais": [
+            -22.923514,
+            -43.16717
+        ],
+        "coordenadas_terra_decimais": [
+            -22.922631,
+            -43.168349
+        ],
+        "mar": "baia",
+        "cidade": "rio",
+        "praia": "gloria",
+        "bairro": "Glória"
     }
 }

@@ -34,13 +34,22 @@ const trecho = (codigo: string, balneabilidade: boolean | null, local = '', coor
     balneabilidade_data: '2026-11-12',
 });
 
-const praia = (id: string, nome: string, pontos: PontoDaPraia[], centro: [number, number] = [-22.9, -43.1]): PraiaResumo => {
+const praia = (
+    id: string,
+    nome: string,
+    pontos: PontoDaPraia[],
+    centro: [number, number] = [-22.9, -43.1],
+    cidade: PraiaResumo['cidade'] = 'niteroi',
+    bairro = '',
+): PraiaResumo => {
     const valores = pontos.map((p) => p.balneabilidade).filter((v) => v !== null);
     const proprios = valores.filter(Boolean).length;
     return {
         id,
         ordem: 0,
         nome,
+        cidade,
+        bairro,
         principal: pontos[0].codigo,
         centro,
         mar: 'baia',
@@ -53,27 +62,37 @@ const praia = (id: string, nome: string, pontos: PontoDaPraia[], centro: [number
     };
 };
 
-const ICARAI = praia('IC', 'Praia de Icaraí', [
-    trecho('IC00', true, 'Praça Getúlio Vargas'),
-    trecho('IC001', false, 'Rua Mariz e Barros'),
-]);
-const GRAGOATA = praia('GR', 'Praia de Gragoatá', [trecho('GR000', true)]);
-const ADAO = praia('AD', 'Praia de Adão', [trecho('AD000', null)]);
+const ICARAI = praia(
+    'IC',
+    'Praia de Icaraí',
+    [trecho('IC00', true, 'Praça Getúlio Vargas'), trecho('IC001', false, 'Rua Mariz e Barros')],
+    undefined,
+    'niteroi',
+    'Icaraí',
+);
+const GRAGOATA = praia('GR', 'Praia de Gragoatá', [trecho('GR000', true)], undefined, 'niteroi', 'Gragoatá');
+const ADAO = praia('AD', 'Praia de Adão', [trecho('AD000', null)], undefined, 'niteroi', 'Jurujuba');
+const COPACABANA = praia('copacabana', 'Praia de Copacabana', [trecho('CP004', true, 'Rua Sousa Lima')], [-22.97, -43.18], 'rio', 'Copacabana');
 
 describe('Praias', () => {
     beforeEach(() => {
-        mockPraias.mockResolvedValue([ICARAI, GRAGOATA, ADAO]);
+        mockPraias.mockResolvedValue([ICARAI, COPACABANA, GRAGOATA, ADAO]);
     });
 
-    it('lista uma praia por card, em ordem alfabética, com a situação', async () => {
+    it('separa por cidade, em ordem alfabética, dizendo se dá para tomar banho', async () => {
         renderWithClient(<Praias navigation={navigation} route={{} as any} />);
-        expect(await screen.findByText('3 praias')).toBeTruthy();
-        expect(screen.getByText('EM PARTE')).toBeTruthy();
-        expect(screen.getByText('PRÓPRIA')).toBeTruthy();
-        expect(screen.getByText('SEM DADOS')).toBeTruthy();
-        expect(screen.getByText('Própria em 1 de 2 trechos')).toBeTruthy();
+        expect(await screen.findByText('Niterói')).toBeTruthy();
+        expect(screen.getByText('3 praias')).toBeTruthy();
+        expect(screen.getByText('Rio de Janeiro')).toBeTruthy();
+        expect(screen.getByText('1 praia')).toBeTruthy();
+        expect(screen.getByText('Parcialmente própria')).toBeTruthy();
+        // dois selos e o filtro
+        expect(screen.getAllByText('Própria para banho')).toHaveLength(3);
+        expect(screen.getByText('Sem boletim recente')).toBeTruthy();
+        expect(screen.getByText('Icaraí, Niterói')).toBeTruthy();
+        expect(screen.getByText('Copacabana, Rio de Janeiro')).toBeTruthy();
         const nomes = screen.getAllByText(/^Praia d/).map((n) => n.props.children);
-        expect(nomes).toEqual(['Praia de Adão', 'Praia de Gragoatá', 'Praia de Icaraí']);
+        expect(nomes).toEqual(['Praia de Adão', 'Praia de Gragoatá', 'Praia de Icaraí', 'Praia de Copacabana']);
     });
 
     it('busca sem acentos, também pelo nome de um trecho', async () => {
@@ -81,14 +100,16 @@ describe('Praias', () => {
         fireEvent.changeText(await screen.findByLabelText('Buscar praia'), 'getulio');
         expect(screen.getByText('1 praia')).toBeTruthy();
         expect(screen.getByText('Praia de Icaraí')).toBeTruthy();
+        expect(screen.queryByText('Rio de Janeiro')).toBeNull();
         fireEvent.changeText(screen.getByLabelText('Buscar praia'), 'xyz');
         expect(screen.getByText('Nenhuma praia encontrada.')).toBeTruthy();
     });
 
-    it('"Próprias" inclui as que estão boas só em parte e navega ao tocar', async () => {
+    it('"Própria para banho" inclui as que estão boas só em parte e navega ao tocar', async () => {
         renderWithClient(<Praias navigation={navigation} route={{} as any} />);
-        fireEvent.press(await screen.findByText('Próprias'));
+        fireEvent.press((await screen.findAllByText('Própria para banho'))[0]);
         expect(screen.getByText('2 praias')).toBeTruthy();
+        expect(screen.queryByText('Praia de Adão')).toBeNull();
         fireEvent.press(screen.getByText('Praia de Gragoatá'));
         expect(navigation.navigate).toHaveBeenCalledWith('Praia', { id: 'GR' });
     });
@@ -101,6 +122,8 @@ describe('Praias', () => {
         renderWithClient(<Praias navigation={navigation} route={{} as any} />);
         fireEvent.press(await screen.findByText('Perto de mim'));
         expect((await screen.findAllByText(/^\d+ m · |^[\d,]+ km · /)).length).toBe(2);
+        // em ordem de distância as cidades se misturam: sem títulos de seção
+        expect(screen.queryByText('Niterói')).toBeNull();
         const nomes = screen.getAllByText(/^Praia de/).map((n) => n.props.children);
         expect(nomes).toEqual(['Praia de Icaraí', 'Praia de Itacoatiara']);
     });
@@ -135,18 +158,18 @@ describe('Praia', () => {
     it('balneabilidade desconhecida não aparece como imprópria', async () => {
         mockPraia.mockResolvedValue(detalhe({ timestamp: '2026-11-16T14:00', balneabilidade: null, wave_height: 0.5 }));
         renderWithClient(<Praia route={rota} navigation={navigation} />);
-        expect(await screen.findByText('Balneabilidade sem informação')).toBeTruthy();
+        expect(await screen.findByText('Sem informação sobre o banho')).toBeTruthy();
         expect(screen.queryByText('Imprópria para banho')).toBeNull();
         // praia de um trecho só não mostra a lista de trechos
-        expect(screen.queryByText('TRECHOS DA PRAIA')).toBeNull();
+        expect(screen.queryByText('BANHO POR TRECHO')).toBeNull();
     });
 
     it('praia boa só em parte lista os trechos e troca o histórico ao tocar', async () => {
         mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }, ICARAI));
         renderWithClient(<Praia route={{ params: { id: 'IC' } } as any} navigation={navigation} />);
-        expect(await screen.findByText('Própria só em parte da praia')).toBeTruthy();
+        expect(await screen.findByText('Parcialmente própria para banho')).toBeTruthy();
         expect(screen.getByText(/Veja abaixo em quais trechos dá para nadar/)).toBeTruthy();
-        expect(screen.getByText('TRECHOS DA PRAIA')).toBeTruthy();
+        expect(screen.getByText('BANHO POR TRECHO')).toBeTruthy();
         expect(screen.getByLabelText('Rua Mariz e Barros: Imprópria para banho')).toBeTruthy();
         await waitFor(() => expect(mockHistorico).toHaveBeenCalledWith('IC00'));
         fireEvent.press(screen.getByText('Rua Mariz e Barros'));

@@ -44,11 +44,14 @@ def obter_ponto(pontos: dict[str, dict], codigo: str) -> dict:
 
 
 def obter_praia(pontos: dict[str, dict], id_ou_codigo: str) -> dict:
-    """Aceita o id da praia (IC) ou o código de um ponto dela (IC003), como nas versões antigas."""
-    praia = agrupar(pontos).get(id_da_praia(id_ou_codigo))
-    if praia is None or (len(id_ou_codigo) > 2 and id_ou_codigo not in pontos):
-        raise HTTPException(status_code=404, detail="Praia não encontrada")
-    return praia
+    """Id da praia (IC, copacabana) ou código de um ponto dela (IC003), como nas versões antigas."""
+    praias = agrupar(pontos)
+    for chave in (id_ou_codigo, id_ou_codigo.upper(), id_ou_codigo.lower()):
+        if chave in praias:
+            return praias[chave]
+        if chave in pontos:
+            return praias[id_da_praia(chave, pontos[chave])]
+    raise HTTPException(status_code=404, detail="Praia não encontrada")
 
 
 async def get_relatos(request: Request) -> RepositorioRelatos:
