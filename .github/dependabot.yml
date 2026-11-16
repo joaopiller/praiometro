@@ -2,16 +2,60 @@ version: 2
 updates:
   - package-ecosystem: pip
     directory: /backend
-    schedule: { interval: weekly }
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      backend:
+        patterns: ["*"]
+
+  # Pacotes casados com a versão do Expo SDK ficam de fora: eles são
+  # atualizados juntos, com `npx expo install --fix`, ao trocar de SDK.
   - package-ecosystem: npm
     directory: /frontend
-    schedule: { interval: weekly }
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 2
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "expo"
+      - dependency-name: "expo-*"
+      - dependency-name: "@expo/*"
+      - dependency-name: "jest-expo"
+      - dependency-name: "eslint-config-expo"
+      - dependency-name: "react"
+      - dependency-name: "react-dom"
+      - dependency-name: "react-test-renderer"
+      - dependency-name: "@types/react"
+      - dependency-name: "react-native"
+      - dependency-name: "react-native-*"
+      - dependency-name: "@react-native/*"
+      - dependency-name: "@react-native-async-storage/*"
+      - dependency-name: "@react-native-google-signin/*"
+      - dependency-name: "@react-navigation/*"
+      - dependency-name: "@maplibre/*"
+      - dependency-name: "typescript"
     groups:
-      expo:
-        patterns: ["expo*", "@expo/*", "react-native*", "@react-native*"]
+      frontend:
+        patterns: ["*"]
+
   - package-ecosystem: github-actions
     directory: /
-    schedule: { interval: monthly }
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+
   - package-ecosystem: docker
     directory: /backend
-    schedule: { interval: monthly }
+    schedule:
+      interval: monthly
+    ignore:
+      # a versão do Python acompanha a matriz testada no CI
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
