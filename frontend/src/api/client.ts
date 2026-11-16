@@ -1,7 +1,7 @@
-import axios, { isAxiosError, type AxiosError } from 'axios';
+import { create, isAxiosError, type AxiosError } from 'axios';
 import { env } from '../config/env';
 
-export const api = axios.create({
+export const api = create({
     baseURL: env.apiUrl,
     timeout: 15_000,
 });
