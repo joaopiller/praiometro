@@ -15,15 +15,15 @@ interface Props {
     largura: number;
     selecionado: boolean;
     distancia?: string;
-    onPress: () => void;
+    onAbrir: (codigo: string) => void;
 }
 
-function MapBeachCard({ ponto, nome, local, largura, selecionado, distancia, onPress }: Props) {
+function MapBeachCard({ ponto, nome, local, largura, selecionado, distancia, onAbrir }: Props) {
     const nivel = nivelBalneabilidade(ponto.balneabilidade);
     const foto = getBeachPhoto(ponto.codigo);
     return (
         <Pressable
-            onPress={onPress}
+            onPress={() => onAbrir(ponto.codigo)}
             accessibilityRole="button"
             accessibilityLabel={`${nome}${local ? `, ${local}` : ''}. ${nivel.mensagem}. Abrir detalhes`}
             style={({ pressed }) => [

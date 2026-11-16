@@ -218,6 +218,19 @@ describe('Clima', () => {
         jest.useRealTimers();
     });
 
+    it('troca entre centro e Região Oceânica', async () => {
+        mockPonto.mockImplementation(async (codigo: string) =>
+            detalhe({ timestamp: '2026-11-16T14:00', temperature_2m: codigo === 'PR001' ? 27 : 29, weather_code: 0 }),
+        );
+        renderWithClient(<Clima />);
+        expect(await screen.findByText('29°')).toBeTruthy();
+        fireEvent.press(screen.getByText('Região Oceânica'));
+        expect(await screen.findByText('27°')).toBeTruthy();
+        expect(mockPonto).toHaveBeenCalledWith('PR001');
+        fireEvent.press(screen.getByText('Centro e baía'));
+        expect(await screen.findByText('29°')).toBeTruthy();
+    });
+
     it('timeout mostra mensagem específica', async () => {
         mockPonto.mockRejectedValue(axiosError(undefined, undefined, 'ECONNABORTED'));
         renderWithClient(<Clima />);

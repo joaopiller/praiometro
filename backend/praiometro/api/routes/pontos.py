@@ -26,11 +26,13 @@ MARINE = ("wave_height", "wave_period", "balneabilidade", "balneabilidade_data")
 
 def _montar_lista(pontos: dict) -> ListaPontos:
     resumo = []
-    for codigo, info in pontos.items():
+    # o catálogo segue o litoral (ordem dos boletins do INEA), então a posição nele é a ordem
+    for ordem, (codigo, info) in enumerate(pontos.items()):
         leitura = info.get("leitura_atual") or {}
         resumo.append(
             PontoResumo(
                 codigo=codigo,
+                ordem=ordem,
                 nome=info.get("nome") or [],
                 specific_location=info.get("specific_location") or [],
                 coordenadas=info.get("coordenadas_decimais"),

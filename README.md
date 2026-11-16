@@ -11,12 +11,12 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 
 ## Funcionalidades
 
-- Mapa com os 29 pontos de coleta do INEA em Niterói
+- Mapa com os 29 pontos de coleta do INEA em Niterói, com pins pela balneabilidade e carrossel que percorre o litoral de Gragoatá a Itacoatiara
 - Situação de cada praia: própria/imprópria para banho, data do boletim e histórico das últimas coletas
 - Aviso quando choveu recentemente
 - Praia mais próxima de você (no mapa e na lista)
 - Ondas (nas praias oceânicas), vento, temperatura da água, índice UV e previsão para as próximas 24 horas
-- Maré e nascer/pôr do sol
+- Clima por área da cidade (Centro e baía ou Região Oceânica), maré e nascer/pôr do sol
 - Avaliação das praias pelos usuários (limpeza, acessibilidade, infraestrutura, segurança e tranquilidade), com meia estrela
 - Relatos rápidos de quem está na praia (lotada, água-viva, mar agitado, bandeira vermelha...), que expiram em 5 horas
 - Busca sem acento e filtros de praias próprias e mais próximas
@@ -35,6 +35,7 @@ Limitações conhecidas:
 
 - O boletim do INEA reflete as últimas coletas (cerca de duas por semana), não o dia de hoje.
 - O modelo de ondas da Open-Meteo tem resolução de ~5 km e não representa o interior da Baía de Guanabara; por isso as praias da baía não exibem altura de onda.
+- O modelo de clima tem resolução de cerca de 10 km: as praias da baía compartilham uma célula e as da Região Oceânica outra. Por isso a aba Clima oferece as duas áreas.
 - Maré e temperatura da água são previsões de modelo, não medições.
 
 ## Estrutura

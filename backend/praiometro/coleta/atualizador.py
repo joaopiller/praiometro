@@ -64,18 +64,22 @@ def executar_coleta(settings: Settings, sessao: requests.Session | None = None) 
     sessao = sessao or criar_sessao()
     catalogo = carregar_catalogo(settings.catalogo_file)
     codigos = list(catalogo)
-    coordenadas = [catalogo[c]["coordenadas_decimais"] for c in codigos]
+    # clima no ponto em terra (onde fica o banhista); mar no ponto de coleta, dentro da água
+    em_terra = [
+        catalogo[c].get("coordenadas_terra_decimais") or catalogo[c]["coordenadas_decimais"] for c in codigos
+    ]
+    na_agua = [catalogo[c]["coordenadas_decimais"] for c in codigos]
     chave = chave_hora_atual(settings.timezone)
 
-    def buscar(url: str, variaveis) -> list[dict]:
+    def buscar(url: str, variaveis, coordenadas) -> list[dict]:
         try:
             return open_meteo.buscar_lote(sessao, url, coordenadas, variaveis, settings.timezone)
         except (requests.RequestException, ValueError) as e:
             log.error("Falha ao consultar %s: %s", url, e)
             return [{} for _ in codigos]
 
-    meteo = buscar(settings.open_meteo_url, open_meteo.METEO_VARIAVEIS)
-    marine = buscar(settings.open_meteo_marine_url, open_meteo.MARINE_VARIAVEIS)
+    meteo = buscar(settings.open_meteo_url, open_meteo.METEO_VARIAVEIS, em_terra)
+    marine = buscar(settings.open_meteo_marine_url, open_meteo.MARINE_VARIAVEIS, na_agua)
     # o modelo de ondas (~5 km) não enxerga a baía: lá ele repete a ondulação do mar aberto
     marine = [
         {k: v for k, v in m.items() if k not in ("wave_height", "wave_period")}

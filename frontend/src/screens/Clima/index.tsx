@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { getErrorMessage } from '../../api/client';
 import DataNotice from '../../components/DataNotice';
 import ForecastStrip from '../../components/ForecastStrip';
@@ -8,14 +8,17 @@ import SolMare from '../../components/SolMare';
 import StateView from '../../components/StateView';
 import UVCard from '../../components/UVCard';
 import WeatherIcon from '../../components/WeatherIcon';
+import { ZONAS_CLIMA } from '../../config/env';
 import { useClima, useRegiao } from '../../hooks/queries';
+import { useZonaClima } from '../../hooks/useZonaClima';
 import { colors, MAX_FONT_SCALE_NUMEROS } from '../../theme';
 import { formatTemp, formatUpdated, parseTimestamp } from '../../utils/format';
 import { getCondicao } from '../../utils/weather';
 import styles from './styles';
 
 export default function Clima() {
-    const { data, isPending, error, refetch, isRefetching } = useClima();
+    const [zona, setZona] = useZonaClima();
+    const { data, isPending, error, refetch, isRefetching } = useClima(zona);
     const regiao = useRegiao();
 
     if (isPending || (error && !data)) {
@@ -42,8 +45,24 @@ export default function Clima() {
                 regiao.refetch();
             }}
         >
-            <View style={styles.hero} accessible accessibilityLabel={`Niterói: ${formatTemp(leitura.temperature_2m)}, ${condicao.descricao}`}>
+            <View style={styles.hero}>
                 <Text style={styles.city}>Niterói, Rio de Janeiro</Text>
+                <View style={styles.zonas} accessibilityRole="radiogroup">
+                    {ZONAS_CLIMA.map((z) => {
+                        const ativa = z.id === zona;
+                        return (
+                            <Pressable
+                                key={z.id}
+                                onPress={() => setZona(z.id)}
+                                accessibilityRole="radio"
+                                accessibilityState={{ selected: ativa }}
+                                style={[styles.zona, ativa && styles.zonaAtiva]}
+                            >
+                                <Text style={[styles.zonaTexto, ativa && styles.zonaTextoAtivo]}>{z.rotulo}</Text>
+                            </Pressable>
+                        );
+                    })}
+                </View>
                 <Text style={styles.temperature} maxFontSizeMultiplier={1.1}>
                     {formatTemp(leitura.temperature_2m)}
                 </Text>

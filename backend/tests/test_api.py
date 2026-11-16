@@ -29,6 +29,15 @@ def test_listar_pontos_inclui_balneabilidade(client):
     assert pontos["IA000"]["mar"] == "oceanico"
 
 
+def test_pontos_seguem_o_litoral(client):
+    pontos = client.get("/pontos").json()["pontos"]
+    assert [p["ordem"] for p in pontos] == list(range(len(pontos)))
+    codigos = [p["codigo"] for p in pontos]
+    # Jurujuba vem depois de Charitas e antes de Adão e Eva; Itacoatiara fecha a lista
+    assert codigos.index("CH000") < codigos.index("JR000") < codigos.index("AD000")
+    assert codigos[0] == "GR000" and codigos[-1].startswith("IA")
+
+
 def test_nome_de_charitas_corrigido(client):
     nomes = {p["codigo"]: p["nome"][0] for p in client.get("/pontos").json()["pontos"]}
     assert nomes["CH000"] == "Praia de Charitas"

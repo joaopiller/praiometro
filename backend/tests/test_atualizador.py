@@ -84,3 +84,21 @@ def test_praias_da_baia_ficam_sem_dados_de_onda(settings):
     assert estado["CH000"]["leitura_atual"]["wave_height"] is None
     assert estado["CH000"]["previsao"][0]["wave_height"] is None
     assert estado["IA000"]["leitura_atual"]["wave_height"] == 1.0
+
+
+def test_clima_em_terra_e_mar_na_agua(settings):
+    chamadas = {}
+
+    def buscar_lote(_sessao, url, coordenadas, *_a, **_k):
+        chamadas["marine" if "marine" in url else "meteo"] = coordenadas
+        return [{} for _ in coordenadas]
+
+    with (
+        patch("praiometro.coleta.open_meteo.buscar_lote", side_effect=buscar_lote),
+        patch("praiometro.coleta.inea.baixar_boletim", return_value=False),
+    ):
+        executar_coleta(settings, sessao=object())
+    catalogo = json.loads(settings.catalogo_file.read_text(encoding="utf-8"))
+    primeiro = next(iter(catalogo.values()))
+    assert chamadas["meteo"][0] == primeiro["coordenadas_terra_decimais"]
+    assert chamadas["marine"][0] == primeiro["coordenadas_decimais"]

@@ -12,7 +12,7 @@ import {
 } from '../api/praiometro';
 import type { Notas, TipoRelato } from '../api/types';
 import type { Coordenada } from '../utils/geo';
-import { PONTO_CLIMA } from '../config/env';
+import { ZONAS_CLIMA, type ZonaClima } from '../config/env';
 
 export const queryKeys = {
     pontos: ['pontos'] as const,
@@ -31,8 +31,8 @@ export function usePonto(codigo: string) {
     return useQuery({ queryKey: queryKeys.ponto(codigo), queryFn: () => fetchPonto(codigo) });
 }
 
-export function useClima() {
-    return usePonto(PONTO_CLIMA);
+export function useClima(zona: ZonaClima = 'centro') {
+    return usePonto(ZONAS_CLIMA.find((z) => z.id === zona)!.ponto);
 }
 
 export function useAvaliacao(codigo: string) {

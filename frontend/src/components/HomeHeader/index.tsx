@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Pressable, Text } from 'react-native';
 import { useClima } from '../../hooks/queries';
+import { useZonaClima } from '../../hooks/useZonaClima';
 import { formatTemp, parseTimestamp } from '../../utils/format';
 import { getCondicao } from '../../utils/weather';
 import { colors } from '../../theme';
@@ -11,7 +12,8 @@ import styles from './styles';
 const logo = require('../../../assets/images/logo-header.png');
 
 export default function HomeHeader({ onPress }: { onPress?: () => void }) {
-    const { data, isPending } = useClima();
+    const [zona] = useZonaClima();
+    const { data, isPending } = useClima(zona);
     const leitura = data?.leitura_atual;
     const condicao = getCondicao(leitura?.weather_code);
 

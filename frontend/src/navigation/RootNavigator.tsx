@@ -63,7 +63,9 @@ export default function RootNavigator() {
                     component={PraiasStackScreen}
                     options={{
                         title: 'Praias',
-                        tabBarIcon: ({ color }) => <MaterialCommunityIcons name="beach" size={26} color={color} />,
+                        tabBarIcon: ({ color, focused }) => (
+                            <MaterialCommunityIcons name={focused ? 'umbrella-beach' : 'umbrella-beach-outline'} size={26} color={color} />
+                        ),
                     }}
                     listeners={({ navigation }) => ({
                         // Tocar na aba sempre volta para a lista de praias

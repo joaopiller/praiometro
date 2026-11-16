@@ -21,7 +21,8 @@ jest.mock('@maplibre/maplibre-react-native', () => {
 });
 
 jest.mock('expo-location', () => ({
-    requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted', canAskAgain: true }),
+    getForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: false, status: 'undetermined', canAskAgain: true }),
+    requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ granted: true, status: 'granted', canAskAgain: true }),
     hasServicesEnabledAsync: jest.fn().mockResolvedValue(true),
     getLastKnownPositionAsync: jest.fn().mockResolvedValue({ coords: { latitude: -22.905, longitude: -43.11 } }),
     getCurrentPositionAsync: jest.fn(),

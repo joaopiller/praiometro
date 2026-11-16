@@ -28,12 +28,17 @@ const PINS = {
     propria: require('../../../assets/images/pins/pin-propria.png'),
     impropria: require('../../../assets/images/pins/pin-impropria.png'),
     'sem-dados': require('../../../assets/images/pins/pin-sem-dados.png'),
+    'propria-sel': require('../../../assets/images/pins/pin-propria-sel.png'),
+    'impropria-sel': require('../../../assets/images/pins/pin-impropria-sel.png'),
+    'sem-dados-sel': require('../../../assets/images/pins/pin-sem-dados-sel.png'),
 };
 
 const status = (p: PontoResumo) => (p.balneabilidade === true ? 'propria' : p.balneabilidade === false ? 'impropria' : 'sem-dados');
 
 // [lat, lon] da API → [lon, lat] do GeoJSON
 const posicao = (p: PontoResumo): [number, number] => [p.coordenadas_terra![1], p.coordenadas_terra![0]];
+
+const VISIBILIDADE = { itemVisiblePercentThreshold: 70 };
 
 const LEGENDA = [
     { cor: '#2FA35A', texto: 'Própria' },
@@ -55,9 +60,9 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
 
     const cardLargura = Math.min(width - 56, 380);
 
-    // ordenadas de oeste para leste, seguindo a orla
+    // na ordem do litoral: cada card do carrossel é vizinho do anterior
     const praias = useMemo(
-        () => (data ?? []).filter((p) => p.coordenadas_terra?.length === 2).sort((a, b) => posicao(a)[0] - posicao(b)[0]),
+        () => (data ?? []).filter((p) => p.coordenadas_terra?.length === 2).sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0)),
         [data],
     );
 
@@ -101,10 +106,30 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
         if (maisProxima) focar(maisProxima.ponto.codigo, true);
     };
 
-    const distancia = (p: PontoResumo) => {
-        const c = origem && coordenadaDoPonto(p);
-        return c ? formatDistancia(distanciaKm(origem, c)) : undefined;
-    };
+
+    const abrirPraia = useCallback(
+        (codigo: string) => navigation.navigate('PraiasTab', { screen: 'Praia', params: { id: codigo } }),
+        [navigation],
+    );
+
+    // cards memorizados: mudar a seleção só redesenha os dois cards afetados
+    const renderCard = useCallback(
+        ({ item }: { item: PontoResumo }) => {
+            const c = origem && coordenadaDoPonto(item);
+            return (
+                <MapBeachCard
+                    ponto={item}
+                    nome={nomePrincipal(item)}
+                    local={localEspecifico(item)}
+                    largura={cardLargura}
+                    selecionado={item.codigo === selecionado}
+                    distancia={c ? formatDistancia(distanciaKm(origem, c)) : undefined}
+                    onAbrir={abrirPraia}
+                />
+            );
+        },
+        [origem, cardLargura, selecionado, abrirPraia],
+    );
 
     const recentralizar = () => {
         setSelecionado(null);
@@ -163,7 +188,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                             iconImage: ['get', 'status'],
                             iconAnchor: 'bottom',
                             iconAllowOverlap: true,
-                            iconSize: ['interpolate', ['linear'], ['zoom'], 10, 0.24, 13, 0.32, 16, 0.4],
+                            iconSize: ['interpolate', ['linear'], ['zoom'], 10, 0.3, 13, 0.36, 16, 0.44],
                         }}
                     />
                     <MapLibreGL.SymbolLayer
@@ -186,10 +211,10 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                         id="praias-pin-selecionado"
                         filter={['==', ['get', 'codigo'], selecionado ?? '']}
                         style={{
-                            iconImage: ['get', 'status'],
+                            iconImage: ['concat', ['get', 'status'], '-sel'],
                             iconAnchor: 'bottom',
                             iconAllowOverlap: true,
-                            iconSize: 0.6,
+                            iconSize: 0.52,
                             textField: ['get', 'nome'],
                             textFont: ['Noto Sans Bold'],
                             textSize: 14,
@@ -270,18 +295,10 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 onScrollBeginDrag={() => (arrastando.current = true)}
                 onMomentumScrollEnd={() => (arrastando.current = false)}
                 onViewableItemsChanged={aoMudarCard}
-                viewabilityConfig={{ itemVisiblePercentThreshold: 70 }}
-                renderItem={({ item }) => (
-                    <MapBeachCard
-                        ponto={item}
-                        nome={nomePrincipal(item)}
-                        local={localEspecifico(item)}
-                        largura={cardLargura}
-                        selecionado={item.codigo === selecionado}
-                        distancia={distancia(item)}
-                        onPress={() => navigation.navigate('PraiasTab', { screen: 'Praia', params: { id: item.codigo } })}
-                    />
-                )}
+                viewabilityConfig={VISIBILIDADE}
+                initialNumToRender={3}
+                windowSize={5}
+                renderItem={renderCard}
             />
         </View>
     );

@@ -34,6 +34,8 @@ export interface PrevisaoHora {
 
 export interface PontoResumo {
     codigo: string;
+    /** posição ao longo do litoral (de Gragoatá a Itacoatiara) */
+    ordem?: number;
     nome: string[];
     specific_location: string[];
     coordenadas: [number, number] | null;

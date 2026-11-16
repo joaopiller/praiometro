@@ -19,6 +19,7 @@ class VotoIn(BaseModel):
 
 class PontoResumo(BaseModel):
     codigo: str
+    ordem: int = Field(0, description="Posição ao longo do litoral, de Gragoatá a Itacoatiara")
     nome: list[str]
     specific_location: list[str] = []
     coordenadas: list[float] | None = None

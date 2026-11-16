@@ -11,8 +11,14 @@ export const env = {
     appVersion: Constants.expoConfig?.version ?? 'dev',
 };
 
-// ponto usado para o clima geral de Niterói
-export const PONTO_CLIMA = 'GR000';
+// O modelo de clima (~10 km) enxerga Niterói como duas áreas: a baía/centro e a
+// Região Oceânica. Cada uma usa um ponto representativo.
+export const ZONAS_CLIMA = [
+    { id: 'centro', rotulo: 'Centro e baía', ponto: 'GR000' },
+    { id: 'oceanica', rotulo: 'Região Oceânica', ponto: 'PR001' },
+] as const;
+
+export type ZonaClima = (typeof ZONAS_CLIMA)[number]['id'];
 
 export const CONTATO = {
     instagram: 'https://www.instagram.com/praiometronit',
