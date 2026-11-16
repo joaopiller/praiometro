@@ -1,4 +1,5 @@
 import type { PontoDaPraia, PraiaResumo } from '../api/types';
+import { CIDADES } from '../config/cidades';
 
 export function normalize(texto: string): string {
     return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -19,9 +20,14 @@ export function nomeDoTrecho(ponto: Pick<PontoDaPraia, 'local'>): string {
     return ponto.local || 'Trecho principal';
 }
 
-/** Busca pelo nome da praia ou pela referência de qualquer trecho dela ("mariz e barros" acha Icaraí). */
+/**
+ * Busca pelo nome da praia, pelo bairro, pela cidade ou pela referência de qualquer trecho
+ * ("mariz e barros" acha Icaraí; "rio" lista as praias do Rio).
+ */
 export function buscaPraia(praia: PraiaResumo, busca: string): boolean {
     const termo = normalize(busca);
     if (!termo) return true;
-    return [praia.nome, ...praia.pontos.map((p) => p.local)].some((t) => normalize(t).includes(termo));
+    return [praia.nome, praia.bairro, CIDADES[praia.cidade]?.nome ?? '', ...praia.pontos.map((p) => p.local)].some((t) =>
+        normalize(t).includes(termo),
+    );
 }

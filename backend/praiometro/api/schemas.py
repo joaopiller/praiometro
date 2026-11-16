@@ -19,7 +19,7 @@ class VotoIn(BaseModel):
 
 class PontoResumo(BaseModel):
     codigo: str
-    ordem: int = Field(0, description="Posição ao longo do litoral, de Gragoatá a Itacoatiara")
+    ordem: int = Field(0, description="Posição ao longo do litoral, dentro da cidade")
     nome: list[str]
     specific_location: list[str] = []
     coordenadas: list[float] | None = None
@@ -45,7 +45,7 @@ class PontoDaPraia(BaseModel):
 
 class PraiaResumo(BaseModel):
     id: str = Field(description="IC para Icaraí; no Rio, o nome (copacabana)")
-    ordem: int = Field(description="Posição ao longo do litoral, de Gragoatá a Itacoatiara")
+    ordem: int = Field(description="Posição ao longo do litoral, dentro da cidade")
     nome: str
     cidade: Literal["niteroi", "rio"]
     bairro: str = ""

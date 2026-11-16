@@ -315,3 +315,19 @@ def test_ponto_sem_leitura_nao_quebra(settings, repo):
     with _cliente(settings, repo) as c:
         assert c.get("/pontos").json()["pontos"][0]["balneabilidade"] is None
         assert c.get("/pontos/GR000/dados").json()["dados"] == {}
+
+
+def test_estado_vazio_cai_no_catalogo(client, settings):
+    client.app.state.cache.intervalo = 0
+    settings.estado_file.write_text("{}", encoding="utf-8")
+    import os
+
+    st = settings.estado_file.stat()
+    os.utime(settings.estado_file, (st.st_atime, st.st_mtime + 10))
+    client.app.state.cache.recarregar(forcar=True)
+    assert len(client.get("/pontos").json()["pontos"]) == 68
+
+
+def test_codigo_do_ponto_sem_diferenciar_maiusculas(client):
+    assert client.get("/pontos/gr000").status_code == 200
+    assert client.get("/pontos/zz999").status_code == 404

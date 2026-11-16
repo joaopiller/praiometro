@@ -126,3 +126,18 @@ def test_rotas_de_regiao_e_historico(client, settings):
 
 def test_regiao_sem_arquivo(client):
     assert client.get("/regiao").json() == {"mare": None, "sol": []}
+
+
+def test_historico_com_link_relativo_e_download_cortado(tmp_path):
+    pagina = MagicMock(text='<a href="/wp/niteroi_historico.pdf">2026</a>')
+    pdf = MagicMock(content=b"%PDF-1.7 conteudo")
+    sessao = MagicMock()
+    sessao.get.side_effect = [pagina, pdf]
+    destino = tmp_path / "historico.pdf"
+    assert historico.baixar_historico(sessao, "https://inea.rj.gov.br/niteroi/", 2026, destino)
+    assert sessao.get.call_args_list[1].args[0] == "https://inea.rj.gov.br/wp/niteroi_historico.pdf"
+    assert destino.read_bytes() == b"%PDF-1.7 conteudo"
+    # página de erro no lugar do PDF: o arquivo bom continua
+    sessao.get.side_effect = [pagina, MagicMock(content=b"<html>erro</html>")]
+    assert not historico.baixar_historico(sessao, "https://inea.rj.gov.br/niteroi/", 2026, destino)
+    assert destino.read_bytes() == b"%PDF-1.7 conteudo"

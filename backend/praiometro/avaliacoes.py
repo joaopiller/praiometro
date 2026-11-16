@@ -3,6 +3,7 @@
 import logging
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import Any
 
 from pymongo.collection import Collection
@@ -56,14 +57,14 @@ class RepositorioVotos:
     def garantir_indices(self) -> None:
         self.colecao.create_index([("praia_id", 1), ("user_id", 1)], unique=True)
 
-    def migrar_para_praias(self) -> int:
+    def migrar_para_praias(self, catalogo: dict[str, dict]) -> int:
         """Votos antigos eram por ponto de coleta; passam para a praia.
 
         Quem avaliou dois pontos da mesma praia fica com a avaliação mais recente.
         """
         from .relatos import _juntar_por_praia
 
-        movidos = _juntar_por_praia(self.colecao, ("user_id",), "timestamp")
+        movidos = _juntar_por_praia(self.colecao, ("user_id",), "timestamp", catalogo)
         if movidos:
             log.info("%d avaliações passaram de ponto para praia", movidos)
         return movidos
@@ -120,6 +121,10 @@ class RepositorioVotos:
 
 def gravar_snapshot_medias(repo: RepositorioVotos, estado_file) -> int:
     """Copia as médias para o estado, usado como fallback se o Mongo cair."""
+    # sem estado ainda (primeira coleta não terminou) não há onde copiar: gravar aqui
+    # criaria um arquivo vazio, que a API leria no lugar do catálogo
+    if not Path(estado_file).exists():
+        return 0
     resumos = repo.resumos()
 
     def alterar(estado: dict) -> dict:

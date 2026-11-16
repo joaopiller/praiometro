@@ -1,5 +1,5 @@
 import { praiaDeTeste, trecho } from '../../test/praias';
-import { centroDaPraia, distanciaKm, formatDistancia, ordenarPraiasPorDistancia } from '../geo';
+import { centroDaPraia, distanciaAtePraia, distanciaKm, formatDistancia, ordenarPraiasPorDistancia } from '../geo';
 import { estadoMare, solDeHoje } from '../mare';
 
 describe('geo', () => {
@@ -25,6 +25,18 @@ describe('geo', () => {
         ];
         const r = ordenarPraiasPorDistancia(praias, { latitude: -22.905, longitude: -43.117 });
         expect(r.map((x) => x.praia.id)).toEqual(['IC', 'IA']);
+    });
+
+    it('quem está no meio de uma praia comprida está na praia', () => {
+        // os dois trechos da Reserva ficam a mais de 5 km um do outro
+        const reserva = praiaDeTeste('reserva', 'Praia da Reserva', [
+            trecho('BD003', '', [-23.012, -43.389]),
+            trecho('BD011', '', [-23.0105, -43.335]),
+        ]);
+        expect(distanciaAtePraia(reserva, { latitude: -23.0113, longitude: -43.362 })).toBeLessThan(0.2);
+        const depoisDaPonta = distanciaAtePraia(reserva, { latitude: -23.0105, longitude: -43.325 })!;
+        expect(depoisDaPonta).toBeGreaterThan(0.9);
+        expect(depoisDaPonta).toBeLessThan(1.2);
     });
 
     it('o pin fica no meio da areia; sem ele, no ponto principal', () => {

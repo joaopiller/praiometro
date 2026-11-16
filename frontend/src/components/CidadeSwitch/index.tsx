@@ -1,5 +1,6 @@
 import { Pressable, Text } from 'react-native';
 import { CIDADES, ORDEM_CIDADES, type Cidade } from '../../config/cidades';
+import { MAX_FONT_SCALE_FIXO } from '../../theme';
 import Vidro from '../Vidro';
 import styles from './styles';
 
@@ -30,10 +31,11 @@ export default function CidadeSwitch({ cidade, onChange, sobreMapa }: Props) {
                         accessibilityRole="radio"
                         accessibilityState={{ selected: ativa }}
                         accessibilityLabel={CIDADES[c].nome}
-                        hitSlop={4}
+                        hitSlop={6}
                         style={[styles.opcao, ativa && (sobreMapa ? styles.ativaMapa : styles.ativaTela)]}
                     >
                         <Text
+                            maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}
                             style={[
                                 styles.texto,
                                 sobreMapa ? styles.textoMapa : styles.textoTela,

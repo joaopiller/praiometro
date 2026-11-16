@@ -14,6 +14,16 @@ describe('busca', () => {
         expect(buscaPraia(p, '')).toBe(true);
     });
 
+    it('acha as praias pelo bairro e pela cidade', () => {
+        const adao = { ...praiaDeTeste('AD', 'Praia de Adão', [trecho('AD000')]), bairro: 'Jurujuba' };
+        const leme = { ...praiaDeTeste('leme', 'Praia do Leme', [trecho('LM002')]), cidade: 'rio' as const, bairro: 'Leme' };
+        expect(buscaPraia(adao, 'jurujuba')).toBe(true);
+        expect(buscaPraia(adao, 'niteroi')).toBe(true);
+        expect(buscaPraia(leme, 'Rio de Janeiro')).toBe(true);
+        expect(buscaPraia(leme, 'rio')).toBe(true);
+        expect(buscaPraia(adao, 'rio de janeiro')).toBe(false);
+    });
+
     it('nomes curtos e de trecho', () => {
         expect(nomeCurto('Praia das Flechas')).toBe('Flechas');
         expect(nomeCurto('Praia do Sossego')).toBe('Sossego');

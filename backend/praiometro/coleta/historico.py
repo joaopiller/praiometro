@@ -5,6 +5,7 @@ import re
 import unicodedata
 from datetime import date
 from pathlib import Path
+from urllib.parse import urljoin
 
 import pdfplumber
 import requests
@@ -89,12 +90,15 @@ def baixar_historico(
         if not url:
             log.info("Histórico de %d ainda não publicado", ano)
             return False
-        pdf = sessao.get(url, timeout=30)
+        pdf = sessao.get(urljoin(url_pagina, url), timeout=30)
         pdf.raise_for_status()
         if not pdf.content.startswith(b"%PDF"):
             return False
         destino.parent.mkdir(parents=True, exist_ok=True)
-        destino.write_bytes(pdf.content)
+        # grava ao lado e troca: um download cortado não fica no lugar do arquivo bom
+        parcial = destino.with_suffix(".parcial")
+        parcial.write_bytes(pdf.content)
+        parcial.replace(destino)
         return True
     except requests.RequestException as e:
         log.warning("Falha ao baixar histórico de %d: %s", ano, e)

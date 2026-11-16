@@ -12,9 +12,12 @@ interface Props {
 export default function DataNotice({ timestamp, refreshError }: Props) {
     const velho = isStale(timestamp);
     if (!refreshError && !velho) return null;
+    const quando = timestamp ? formatUpdated(timestamp) : null;
     const texto = refreshError
-        ? `Sem conexão com o servidor. Mostrando dados de ${formatUpdated(timestamp)}.`
-        : `Dados de ${formatUpdated(timestamp)}. Podem não refletir a situação atual.`;
+        ? `Não foi possível atualizar agora.${quando ? ` Mostrando dados de ${quando}.` : ''}`
+        : quando
+          ? `Dados de ${quando}. Podem não refletir a situação atual.`
+          : 'Sem dados recentes. As informações podem não refletir a situação atual.';
     return (
         <View style={styles.box} accessibilityRole="alert">
             <Feather name={refreshError ? 'wifi-off' : 'clock'} size={18} color={colors.warning} />

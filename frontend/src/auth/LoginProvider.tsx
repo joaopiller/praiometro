@@ -5,8 +5,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import BottomSheet from '../components/BottomSheet';
 import { FOLHA } from '../components/BottomSheet/styles';
 import { colors, radius, spacing } from '../theme';
-import { appleDisponivel, obterTokenApple } from './apple';
-import { obterIdToken } from './google';
+import { appleDisponivel } from './apple';
+import { contaLembrada, entrar, tokenDaSessao } from './sessao';
 
 type Pedido = { resolve: (token: string | null) => void; reject: (erro: unknown) => void };
 /** sobreModal: o pedido vem de dentro de um Modal aberto, que precisa mostrar <LoginSobreModal /> */
@@ -21,7 +21,7 @@ type Folha = {
 };
 
 // fora do provider (ou no Android) o login é sempre o do Google
-const LoginContext = createContext<Login>({ pedirLogin: obterIdToken });
+const LoginContext = createContext<Login>({ pedirLogin: async () => (await tokenDaSessao()) ?? entrar('google') });
 const FolhaContext = createContext<Folha | null>(null);
 
 export function useLogin() {
@@ -56,8 +56,13 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const pedirLogin = useCallback(
-        (opcoes?: Opcoes) => {
-            if (!comApple) return obterIdToken();
+        async (opcoes?: Opcoes) => {
+            // quem já entrou segue direto, sem ver o login de novo
+            const guardado = await tokenDaSessao();
+            if (guardado) return guardado;
+            if (!comApple) return entrar('google');
+            // o token da Apple não se renova sozinho, mas dá para pular a escolha da conta
+            if ((await contaLembrada()) === 'apple') return entrar('apple');
             return new Promise<string | null>((resolve, reject) => {
                 pedido.current = { resolve, reject };
                 setSobreModal(!!opcoes?.sobreModal);
@@ -88,8 +93,8 @@ export function LoginProvider({ children }: { children: ReactNode }) {
     const folha: Folha = {
         aberto,
         sobreModal,
-        entrarComApple: () => entrarCom(obterTokenApple),
-        entrarComGoogle: () => entrarCom(obterIdToken),
+        entrarComApple: () => entrarCom(() => entrar('apple')),
+        entrarComGoogle: () => entrarCom(() => entrar('google')),
         cancelar,
     };
 

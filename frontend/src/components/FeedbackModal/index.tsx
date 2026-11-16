@@ -75,8 +75,14 @@ export default function FeedbackModal({ visible, onClose, beachName, beachId }: 
 
     return (
         <Modal visible={visible} transparent animationType="fade" onRequestClose={fechar} statusBarTranslucent>
-            <Pressable style={styles.backdrop} onPress={fechar} accessibilityLabel="Fechar avaliação">
-                <Pressable style={styles.container} onPress={() => {}} accessible={false}>
+            <Pressable style={styles.backdrop} onPress={fechar} accessible={false}>
+                <Pressable
+                    style={styles.container}
+                    onPress={() => {}}
+                    accessible={false}
+                    accessibilityViewIsModal
+                    onAccessibilityEscape={fechar}
+                >
                     <Text style={styles.title} accessibilityRole="header">
                         Avalie a {beachName}
                     </Text>

@@ -30,10 +30,34 @@ export function centroDaPraia(praia: PraiaResumo): Coordenada | null {
     return paraCoordenada(praia.centro) ?? paraCoordenada(principal?.coordenadas_terra ?? principal?.coordenadas);
 }
 
-/** Distância até a parte mais próxima da praia (qualquer trecho ou o meio dela). */
+/** Distância até a linha que liga os lugares, na ordem (com um lugar só, até ele). */
+function distanciaAteFaixa(origem: Coordenada, lugares: Coordenada[]): number {
+    if (lugares.length === 1) return distanciaKm(origem, lugares[0]);
+    // plano local em km, com origem em quem pergunta
+    const kmLon = 111.32 * Math.cos(rad(origem.latitude));
+    const xy = lugares.map((l) => [(l.longitude - origem.longitude) * kmLon, (l.latitude - origem.latitude) * 110.57]);
+    let menor = Infinity;
+    for (let i = 0; i < xy.length - 1; i++) {
+        const [x1, y1] = xy[i];
+        const [dx, dy] = [xy[i + 1][0] - x1, xy[i + 1][1] - y1];
+        const tamanho = dx * dx + dy * dy;
+        const t = tamanho === 0 ? 0 : Math.max(0, Math.min(1, -(x1 * dx + y1 * dy) / tamanho));
+        menor = Math.min(menor, Math.hypot(x1 + t * dx, y1 + t * dy));
+    }
+    return menor;
+}
+
+/**
+ * Distância até a parte mais próxima da praia: a faixa entre os trechos, na ordem do
+ * litoral, ou o meio dela. O servidor usa a mesma conta para aceitar um relato.
+ */
 export function distanciaAtePraia(praia: PraiaResumo, origem: Coordenada): number | null {
-    const lugares = [centroDaPraia(praia), ...praia.pontos.map((p) => paraCoordenada(p.coordenadas_terra ?? p.coordenadas))];
-    const km = lugares.flatMap((c) => (c ? [distanciaKm(origem, c)] : []));
+    const trechos = praia.pontos.flatMap((p) => paraCoordenada(p.coordenadas_terra ?? p.coordenadas) ?? []);
+    const centro = centroDaPraia(praia);
+    const km = [
+        ...(trechos.length ? [distanciaAteFaixa(origem, trechos)] : []),
+        ...(centro ? [distanciaKm(origem, centro)] : []),
+    ];
     return km.length ? Math.min(...km) : null;
 }
 

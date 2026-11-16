@@ -3,7 +3,13 @@ from datetime import UTC, datetime, timedelta
 import mongomock
 import pytest
 
-from praiometro.relatos import RegrasRelatos, RelatoRecusadoError, RepositorioRelatos, distancia_km
+from praiometro.relatos import (
+    RegrasRelatos,
+    RelatoRecusadoError,
+    RepositorioRelatos,
+    distancia_ate_praia_km,
+    distancia_km,
+)
 
 PRAIA = (-22.905, -43.117)  # Icaraí
 NA_PRAIA = (-22.906, -43.118)
@@ -20,6 +26,17 @@ def relatos():
 def test_distancia():
     assert distancia_km(*PRAIA, *NA_PRAIA) < 0.2
     assert 11 < distancia_km(*PRAIA, *LONGE) < 12.5
+
+
+def test_distancia_ate_praia_comprida():
+    # os dois pontos da Reserva ficam a mais de 5 km um do outro
+    reserva = [(-23.012, -43.389), (-23.0105, -43.335)]
+    no_meio = (-23.0113, -43.362)
+    assert min(distancia_km(*no_meio, *p) for p in reserva) > 2
+    assert distancia_ate_praia_km(no_meio, reserva) < 0.2
+    # passando da ponta, conta a distância até a ponta
+    assert 0.9 < distancia_ate_praia_km((-23.0105, -43.325), reserva) < 1.2
+    assert distancia_ate_praia_km(NA_PRAIA, [PRAIA]) == distancia_km(*NA_PRAIA, *PRAIA)
 
 
 def test_relatar_e_confirmar(relatos):
@@ -58,17 +75,30 @@ def test_tipo_invalido(relatos):
         relatos.denunciar("IC", "u1", "tubarao", agora=AGORA)
 
 
-def test_limite_diario():
-    relatos = RepositorioRelatos(mongomock.MongoClient().db, RegrasRelatos(maximo_por_dia=5))
+def test_limite_de_relatos_ativos():
+    relatos = RepositorioRelatos(mongomock.MongoClient().db, RegrasRelatos(maximo_ativos=5))
     tipos = ["lotada", "agua_limpa", "agua_viva", "lixo", "mar_agitado"]
     for i, tipo in enumerate(tipos):
         relatos.registrar("IC", "u1", tipo, NA_PRAIA, [PRAIA], agora=AGORA + timedelta(minutes=i))
     with pytest.raises(RelatoRecusadoError) as erro:
-        relatos.registrar("IC", "u1", "agua_turva", NA_PRAIA, [PRAIA], agora=AGORA + timedelta(minutes=10))
+        relatos.registrar(
+            "IC", "u1", "bandeira_vermelha", NA_PRAIA, [PRAIA], agora=AGORA + timedelta(minutes=10)
+        )
     assert erro.value.status == 429
-    relatos.registrar(
-        "IC", "u1", "agua_turva", NA_PRAIA, [PRAIA], agora=AGORA + timedelta(days=1, minutes=10)
-    )
+    # renovar os que já existem não esbarra no limite
+    relatos.registrar("IC", "u1", tipos, NA_PRAIA, [PRAIA], agora=AGORA + timedelta(hours=2))
+    # depois que expiram, dá para relatar de novo
+    relatos.registrar("IC", "u1", "bandeira_vermelha", NA_PRAIA, [PRAIA], agora=AGORA + timedelta(hours=8))
+
+
+def test_so_da_para_contestar_relato_ativo(relatos):
+    with pytest.raises(RelatoRecusadoError) as erro:
+        relatos.denunciar("IC", "d1", "lotada", agora=AGORA)
+    assert erro.value.status == 404
+    relatos.registrar("IC", "u1", "lotada", NA_PRAIA, [PRAIA], agora=AGORA)
+    relatos.denunciar("IC", "d1", "lotada", agora=AGORA)
+    with pytest.raises(RelatoRecusadoError):
+        relatos.denunciar("IC", "d1", "lotada", agora=AGORA + timedelta(hours=6))
 
 
 def test_denuncias_escondem_relato_falso(relatos):

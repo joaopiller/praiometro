@@ -1,5 +1,6 @@
 import json
 from datetime import UTC, datetime
+from pathlib import Path
 
 import mongomock
 from fastapi.testclient import TestClient
@@ -11,6 +12,9 @@ from praiometro.relatos import RepositorioRelatos
 
 from .conftest import verificador_falso
 
+CATALOGO = json.loads(
+    (Path(__file__).parent.parent / "praiometro/dados/praias.json").read_text(encoding="utf-8")
+)
 VOTOS = dict.fromkeys(("limpeza", "acessibilidade", "infraestrutura", "seguranca", "tranquilidade"), 4.0)
 AUTH = {"Authorization": "Bearer valido-u1"}
 
@@ -104,13 +108,32 @@ def test_migracao_junta_votos_antigos_na_praia():
         ]
     )
     repo = RepositorioVotos(colecao)
-    repo.migrar_para_praias()
+    repo.migrar_para_praias(CATALOGO)
     repo.garantir_indices()
     assert colecao.count_documents({"praia_id": "IC"}) == 2
     # de quem avaliou dois pontos, fica a avaliação mais recente
     assert colecao.find_one({"praia_id": "IC", "user_id": "u1"})["votos"]["limpeza"] == 2.0
     assert colecao.count_documents({}) == 3
-    assert repo.migrar_para_praias() == 0
+    assert repo.migrar_para_praias(CATALOGO) == 0
+
+
+def test_migracao_nao_mexe_nos_ids_de_praia():
+    colecao = mongomock.MongoClient().db.votos
+    ids = ["copacabana", "prainha", "grumari", "leme", "leblon", "IC"]
+    colecao.insert_many(
+        [
+            {"praia_id": i, "user_id": "u1", "votos": VOTOS, "timestamp": "2026-11-01T10:00:00+00:00"}
+            for i in ids
+        ]
+    )
+    assert RepositorioVotos(colecao).migrar_para_praias(CATALOGO) == 0
+    assert sorted(d["praia_id"] for d in colecao.find()) == sorted(ids)
+    # um voto antigo num ponto do Rio vai para a praia certa
+    colecao.insert_one(
+        {"praia_id": "CP004", "user_id": "u2", "votos": VOTOS, "timestamp": "2026-11-02T10:00:00+00:00"}
+    )
+    assert RepositorioVotos(colecao).migrar_para_praias(CATALOGO) == 1
+    assert colecao.count_documents({"praia_id": "copacabana"}) == 2
 
 
 def test_migracao_com_dois_processos_ao_mesmo_tempo_nao_perde_votos():
@@ -131,8 +154,8 @@ def test_migracao_com_dois_processos_ao_mesmo_tempo_nao_perde_votos():
     RepositorioVotos(colecao).garantir_indices()
     # os dois processos leem a mesma lista antes de qualquer um mexer
     lista = list(colecao.find())
-    _juntar_por_praia(colecao, ("user_id",), "timestamp", docs=[dict(d) for d in lista])
-    _juntar_por_praia(colecao, ("user_id",), "timestamp", docs=[dict(d) for d in lista])
+    _juntar_por_praia(colecao, ("user_id",), "timestamp", CATALOGO, docs=[dict(d) for d in lista])
+    _juntar_por_praia(colecao, ("user_id",), "timestamp", CATALOGO, docs=[dict(d) for d in lista])
     assert colecao.count_documents({"praia_id": "AD"}) == 5
     assert colecao.count_documents({}) == 5
 
@@ -143,5 +166,5 @@ def test_migracao_dos_relatos():
     db.relatos.insert_one(
         {"praia_id": "PR001", "tipo": "lotada", "user_id": "u1", "criado_em": agora, "expira_em": agora}
     )
-    RepositorioRelatos(db).migrar_para_praias()
+    RepositorioRelatos(db).migrar_para_praias(CATALOGO)
     assert db.relatos.find_one()["praia_id"] == "PR"

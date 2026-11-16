@@ -12,7 +12,7 @@ export default StyleSheet.create({
         elevation: 4,
     },
     fundoTela: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-    opcao: { minWidth: 92, alignItems: 'center', paddingVertical: 7, paddingHorizontal: 16, borderRadius: radius.pill },
+    opcao: { minWidth: 92, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: radius.pill },
     ativaMapa: { backgroundColor: colors.brand },
     ativaTela: { backgroundColor: colors.sand },
     texto: { fontSize: 14, fontWeight: '700' },

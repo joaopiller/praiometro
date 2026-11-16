@@ -38,9 +38,10 @@ async def get_pontos(request: Request) -> dict[str, dict]:
 
 
 def obter_ponto(pontos: dict[str, dict], codigo: str) -> dict:
-    if codigo not in pontos:
-        raise HTTPException(status_code=404, detail="Praia não encontrada")
-    return pontos[codigo]
+    for chave in (codigo, codigo.upper()):
+        if chave in pontos:
+            return pontos[chave]
+    raise HTTPException(status_code=404, detail="Praia não encontrada")
 
 
 def obter_praia(pontos: dict[str, dict], id_ou_codigo: str) -> dict:

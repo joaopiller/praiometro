@@ -21,7 +21,18 @@ def test_mesclar_mantem_leitura_anterior_quando_falha():
     anterior = {"AA000": {"leitura_atual": {"timestamp": "velho", "balneabilidade": True}}}
     novo = mesclar_estado(CATALOGO, anterior, {"AA000": None, "BB000": None}, {}, {})
     assert novo["AA000"]["leitura_atual"]["timestamp"] == "velho"
-    assert novo["BB000"]["leitura_atual"] == {}
+    assert novo["AA000"]["leitura_atual"]["balneabilidade"] is True
+    assert novo["BB000"]["leitura_atual"] == {"balneabilidade": None, "balneabilidade_data": None}
+
+
+def test_boletim_novo_entra_mesmo_sem_clima():
+    anterior = {"AA000": {"leitura_atual": {"timestamp": "velho", "balneabilidade": True}}}
+    novo = mesclar_estado(CATALOGO, anterior, {"AA000": None}, {}, {"AA000": False}, "2026-11-12")
+    assert novo["AA000"]["leitura_atual"] == {
+        "timestamp": "velho",
+        "balneabilidade": False,
+        "balneabilidade_data": "2026-11-12",
+    }
 
 
 def test_mesclar_usa_codigo_inea_e_fallback_de_balneabilidade():

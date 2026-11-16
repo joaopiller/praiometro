@@ -8,6 +8,7 @@ somem sozinhos pelo índice TTL do MongoDB. Relatar o mesmo tipo funciona como
 import math
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from itertools import pairwise
 
 from pymongo.database import Database
 from pymongo.errors import DuplicateKeyError
@@ -39,7 +40,8 @@ class RelatoRecusadoError(Exception):
 class RegrasRelatos:
     validade: timedelta = timedelta(hours=5)
     intervalo_mesmo_tipo: timedelta = timedelta(hours=1)
-    maximo_por_dia: int = 12
+    # relatos valendo ao mesmo tempo, por pessoa
+    maximo_ativos: int = 12
     raio_km: float = 2.0
     denuncias_para_ocultar: int = 3
 
@@ -51,6 +53,26 @@ def distancia_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         + math.cos(r(lat1)) * math.cos(r(lat2)) * math.sin(r(lon2 - lon1) / 2) ** 2
     )
     return 2 * 6371 * math.asin(math.sqrt(h))
+
+
+def distancia_ate_praia_km(local: tuple[float, float], praia: list[tuple[float, float]]) -> float:
+    """Distância até a faixa da praia: a linha que liga os pontos de coleta, na ordem do litoral.
+
+    Só a distância até os pontos deixaria de fora quem está no meio de uma praia comprida
+    (os dois pontos da Reserva ficam a mais de 5 km um do outro).
+    """
+    if len(praia) == 1:
+        return distancia_km(*local, *praia[0])
+    # plano local em km, com origem em quem relata
+    km_lon = 111.32 * math.cos(math.radians(local[0]))
+    xy = [((lon - local[1]) * km_lon, (lat - local[0]) * 110.57) for lat, lon in praia]
+    menor = math.inf
+    for (x1, y1), (x2, y2) in pairwise(xy):
+        dx, dy = x2 - x1, y2 - y1
+        tamanho = dx * dx + dy * dy
+        t = 0.0 if tamanho == 0 else max(0.0, min(1.0, -(x1 * dx + y1 * dy) / tamanho))
+        menor = min(menor, math.hypot(x1 + t * dx, y1 + t * dy))
+    return menor
 
 
 class RepositorioRelatos:
@@ -65,10 +87,11 @@ class RepositorioRelatos:
             colecao.create_index([("praia_id", 1), ("tipo", 1), ("user_id", 1)], unique=True)
         self.relatos.create_index([("user_id", 1), ("criado_em", -1)])
 
-    def migrar_para_praias(self) -> int:
+    def migrar_para_praias(self, catalogo: dict[str, dict]) -> int:
         """Relatos e denúncias antigos eram por ponto de coleta; passam para a praia."""
         return sum(
-            _juntar_por_praia(c, ("tipo", "user_id"), "criado_em") for c in (self.relatos, self.denuncias)
+            _juntar_por_praia(c, ("tipo", "user_id"), "criado_em", catalogo)
+            for c in (self.relatos, self.denuncias)
         )
 
     def listar(self, praia_id: str, agora: datetime | None = None) -> list[dict]:
@@ -122,7 +145,8 @@ class RepositorioRelatos:
     ) -> None:
         """Registra um ou vários relatos de uma vez.
 
-        `praia` são as coordenadas dos pontos de coleta; basta estar perto de um deles.
+        `praia` são as coordenadas dos pontos de coleta, na ordem do litoral; vale estar
+        perto de qualquer lugar da faixa entre eles.
         """
         agora = agora or datetime.now(UTC)
         tipos = list(dict.fromkeys([tipos] if isinstance(tipos, str) else tipos))
@@ -130,7 +154,7 @@ class RepositorioRelatos:
             raise RelatoRecusadoError("Tipo de relato inválido.")
         if any(par <= set(tipos) for par in OPOSTOS):
             raise RelatoRecusadoError("Escolha só uma opção de cada par (ex.: lotada ou tranquila).")
-        if min(distancia_km(*local, *p) for p in praia) > self.regras.raio_km:
+        if distancia_ate_praia_km(local, praia) > self.regras.raio_km:
             raise RelatoRecusadoError("Você precisa estar na praia para relatar.", status=403)
 
         novos = []
@@ -142,11 +166,15 @@ class RepositorioRelatos:
         if not novos:
             return
 
-        hoje = self.relatos.count_documents(
-            {"user_id": user_id, "criado_em": {"$gt": agora - timedelta(days=1)}}
-        )
-        if hoje + len(novos) > self.regras.maximo_por_dia:
-            raise RelatoRecusadoError("Você atingiu o limite de relatos de hoje.", status=429)
+        # os relatos somem ao expirar, então o limite é de relatos valendo ao mesmo tempo;
+        # renovar um que já existe não soma
+        ativos = {"user_id": user_id, "expira_em": {"$gt": agora}}
+        total = self.relatos.count_documents(ativos)
+        renovados = self.relatos.count_documents({**ativos, "praia_id": praia_id, "tipo": {"$in": novos}})
+        if total - renovados + len(novos) > self.regras.maximo_ativos:
+            raise RelatoRecusadoError(
+                "Você já tem muitos relatos ativos. Tente de novo mais tarde.", status=429
+            )
 
         for tipo in novos:
             self.relatos.update_one(
@@ -159,6 +187,9 @@ class RepositorioRelatos:
         agora = agora or datetime.now(UTC)
         if tipo not in TIPOS:
             raise RelatoRecusadoError("Tipo de relato inválido.")
+        # só dá para contestar o que está no ar; senão contestações antecipadas esconderiam relatos futuros
+        if not self.relatos.find_one({"praia_id": praia_id, "tipo": tipo, "expira_em": {"$gt": agora}}):
+            raise RelatoRecusadoError("Esse relato não está mais ativo.", status=404)
         self.denuncias.update_one(
             {"praia_id": praia_id, "tipo": tipo, "user_id": user_id},
             {"$set": {"criado_em": agora, "expira_em": agora + self.regras.validade}},
@@ -171,20 +202,30 @@ def _utc(valor: datetime) -> datetime:
 
 
 def _juntar_por_praia(
-    colecao, chave: tuple[str, ...], campo_data: str, docs: list[dict] | None = None
+    colecao,
+    chave: tuple[str, ...],
+    campo_data: str,
+    catalogo: dict[str, dict],
+    docs: list[dict] | None = None,
 ) -> int:
     """Troca o código do ponto pelo id da praia. Se o usuário já tem o mesmo registro
     na praia (veio de outro ponto), fica o mais recente.
+
+    Só mexe em códigos de ponto que estão no catálogo: ids de praia (IC, copacabana)
+    ficam como estão.
 
     Seguro com mais de um processo rodando ao mesmo tempo: cada passo só mexe no
     documento se ele ainda estiver com o código antigo.
     """
     if docs is None:
-        docs = list(colecao.find({"praia_id": {"$regex": "^.{3,}$"}}).sort(campo_data, -1))
+        docs = list(colecao.find({"praia_id": {"$in": list(catalogo)}}).sort(campo_data, -1))
     movidos = 0
     for doc in docs:
-        antigo = {"_id": doc["_id"], "praia_id": doc["praia_id"]}
-        filtro = {"praia_id": id_da_praia(doc["praia_id"]), **{k: doc[k] for k in chave}}
+        codigo = doc["praia_id"]
+        if codigo not in catalogo:
+            continue
+        antigo = {"_id": doc["_id"], "praia_id": codigo}
+        filtro = {"praia_id": id_da_praia(codigo, catalogo[codigo]), **{k: doc[k] for k in chave}}
         if colecao.find_one({**filtro, "_id": {"$ne": doc["_id"]}}):
             movidos += colecao.delete_one(antigo).deleted_count
             continue

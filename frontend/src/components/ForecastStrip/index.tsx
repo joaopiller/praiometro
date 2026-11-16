@@ -5,6 +5,7 @@ import Svg, { Circle, Path } from 'react-native-svg';
 import type { PrevisaoHora } from '../../api/types';
 import { colors } from '../../theme';
 import { formatHour, formatTemp, parseTimestamp } from '../../utils/format';
+import { getCondicao } from '../../utils/weather';
 import GlassCard, { CardLabel } from '../GlassCard';
 import WeatherIcon from '../WeatherIcon';
 import styles, { COLUMN_WIDTH, CHART_HEIGHT } from './styles';
@@ -30,6 +31,18 @@ function caminhoSuave(pontos: { x: number; y: number }[]): string {
         d += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${p2.x} ${p2.y}`;
     }
     return d;
+}
+
+/** "17:00, 24°, garoa, 96% de chance de chuva" */
+function descreverHora(p: PrevisaoHora): string {
+    return [
+        formatHour(p.hora),
+        formatTemp(p.temperature_2m),
+        p.weather_code != null ? getCondicao(p.weather_code).descricao : null,
+        p.precipitation_probability != null ? `${p.precipitation_probability}% de chance de chuva` : null,
+    ]
+        .filter(Boolean)
+        .join(', ');
 }
 
 export default function ForecastStrip({ previsao, title = 'Previsão próximas 24h' }: Props) {
@@ -65,7 +78,7 @@ export default function ForecastStrip({ previsao, title = 'Previsão próximas 2
                 <View style={{ width: largura }}>
                     <View style={styles.row}>
                         {itens.map((p) => (
-                            <View key={p.hora} style={styles.column} accessible accessibilityLabel={`${formatHour(p.hora)}, ${formatTemp(p.temperature_2m)}`}>
+                            <View key={p.hora} style={styles.column} accessible accessibilityLabel={descreverHora(p)}>
                                 <Text style={styles.hour}>{formatHour(p.hora)}</Text>
                                 <WeatherIcon code={p.weather_code} size={26} hour={parseTimestamp(p.hora)?.hora} />
                                 <Text style={styles.temp}>{formatTemp(p.temperature_2m)}</Text>
@@ -80,12 +93,15 @@ export default function ForecastStrip({ previsao, title = 'Previsão próximas 2
                             ))}
                         </Svg>
                     )}
-                    <View style={styles.row}>
+                    {/* a chuva já vai no rótulo de cada hora, acima */}
+                    <View style={styles.row} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
                         {itens.map((p) => (
                             <View key={p.hora} style={styles.column}>
                                 <View style={styles.rainRow}>
                                     <MaterialCommunityIcons name="water" size={11} color={colors.accent} />
-                                    <Text style={styles.rain}>{p.precipitation_probability ?? 0}%</Text>
+                                    <Text style={styles.rain}>
+                                        {p.precipitation_probability != null ? `${p.precipitation_probability}%` : '–'}
+                                    </Text>
                                 </View>
                             </View>
                         ))}

@@ -8,7 +8,9 @@ from ..schemas import Historico, Regiao, RegistroHistorico
 router = APIRouter(tags=["região"])
 
 
-@router.get("/regiao", response_model=Regiao, summary="Maré e nascer/pôr do sol em Niterói")
+@router.get(
+    "/regiao", response_model=Regiao, summary="Maré e nascer/pôr do sol na entrada da Baía de Guanabara"
+)
 async def obter_regiao(request: Request):
     return request.app.state.cache_regiao.dados or {}
 

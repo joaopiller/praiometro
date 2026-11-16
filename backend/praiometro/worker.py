@@ -11,6 +11,7 @@ import time
 import schedule
 
 from .avaliacoes import RepositorioVotos, gravar_snapshot_medias
+from .catalogo import carregar_catalogo
 from .coleta.atualizador import atualizar_historico, atualizar_regiao, executar_coleta
 from .config import configurar_logging, get_settings
 from .db import criar_colecao_votos
@@ -47,7 +48,10 @@ def main(argv: list[str] | None = None) -> None:
     historico = _seguro("histórico", lambda: atualizar_historico(settings))
 
     # votos e relatos antigos eram por ponto de coleta; aqui roda num processo só
-    praias = _seguro("migração para praias", lambda: [r.migrar_para_praias() for r in (repo, relatos)])
+    catalogo = carregar_catalogo(settings.catalogo_file)
+    praias = _seguro(
+        "migração para praias", lambda: [r.migrar_para_praias(catalogo) for r in (repo, relatos)]
+    )
 
     for tarefa in (praias, coleta, regiao, historico, medias):
         tarefa()

@@ -46,7 +46,7 @@ def create_app(
 
     app = FastAPI(
         title="Praiômetro API",
-        description="Clima, mar, balneabilidade e avaliações das praias de Niterói",
+        description="Clima, mar, balneabilidade e avaliações das praias de Niterói e do Rio de Janeiro",
         version=__version__,
         lifespan=lifespan,
     )
@@ -75,7 +75,9 @@ def create_app(
         return JSONResponse(
             status_code=422,
             content={
-                "detail": "Dados inválidos: avalie todos os critérios com 0,5 a 5 estrelas.",
+                "detail": "Dados inválidos: avalie todos os critérios com 0,5 a 5 estrelas."
+                if _request.url.path.rstrip("/").endswith("/votar")
+                else "Dados inválidos. Confira o que foi enviado e tente de novo.",
                 "erros": jsonable(exc.errors()),
             },
         )

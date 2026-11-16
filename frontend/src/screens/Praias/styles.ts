@@ -22,7 +22,7 @@ export default StyleSheet.create({
         alignItems: 'center',
         gap: 5,
         paddingHorizontal: 12,
-        paddingVertical: 7,
+        minHeight: 36,
         borderRadius: radius.pill,
         borderWidth: 1,
         borderColor: colors.border,

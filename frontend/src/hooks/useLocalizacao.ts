@@ -18,19 +18,19 @@ function comLimite<T>(promessa: Promise<T>, ms: number): Promise<T> {
     return Promise.race([promessa, limite]).finally(() => clearTimeout(timer));
 }
 
-export async function obterLocalizacao(): Promise<Coordenada> {
+export async function obterLocalizacao(motivo = 'para encontrar a praia mais próxima'): Promise<Coordenada> {
     // só pede se ainda não tiver: no Android o pedido pode ficar sem resposta quando já foi concedido
     const atual = await Location.getForegroundPermissionsAsync();
     const { status, canAskAgain } = atual.granted ? atual : await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
         throw new LocalizacaoError(
             canAskAgain
-                ? 'Permita o acesso à localização para encontrar a praia mais próxima.'
+                ? `Permita o acesso à localização ${motivo}.`
                 : 'A localização está bloqueada para o Praiômetro. Libere nas configurações do aparelho.',
         );
     }
     if (!(await Location.hasServicesEnabledAsync())) {
-        throw new LocalizacaoError('Ative a localização do aparelho para encontrar a praia mais próxima.');
+        throw new LocalizacaoError(`Ative a localização do aparelho ${motivo}.`);
     }
     // o limite cobre a busca inteira: em alguns aparelhos até a "última posição" pode não responder
     const posicao = await comLimite(

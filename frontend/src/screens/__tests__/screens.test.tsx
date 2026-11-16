@@ -206,7 +206,7 @@ describe('Praia', () => {
         });
         renderWithClient(<Praia route={rota} navigation={navigation} />);
         expect(await screen.findByText('Águas abrigadas')).toBeTruthy();
-        expect(screen.getByText('MAR DE BAÍA')).toBeTruthy();
+        expect(screen.getByText('Mar de baía')).toBeTruthy();
         expect(screen.queryByText('1,0')).toBeNull();
         expect(screen.getByText(/Boletim do INEA de 12\/11/)).toBeTruthy();
     });
@@ -264,7 +264,7 @@ describe('Clima', () => {
         expect(await screen.findByText('31°')).toBeTruthy();
         expect(screen.getByText('Nublado')).toBeTruthy();
         expect(screen.getByText(/Umidade 51%/)).toBeTruthy();
-        expect(screen.getByText('BAIXO')).toBeTruthy();
+        expect(screen.getByText('Baixo')).toBeTruthy();
     });
 
     it('mostra sol e maré', async () => {

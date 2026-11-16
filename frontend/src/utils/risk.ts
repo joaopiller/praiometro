@@ -21,7 +21,7 @@ export const NIVEL_BAIA: Nivel = { rotulo: 'Mar de baía', tom: 'neutral' };
 
 export function nivelVento(velocidade?: number | null): Nivel {
     if (vazio(velocidade)) return SEM_DADOS;
-    if (velocidade < 20) return { rotulo: 'Seguro', tom: 'success' };
+    if (velocidade < 20) return { rotulo: 'Fraco', tom: 'success' };
     if (velocidade < 35) return { rotulo: 'Moderado', tom: 'warning' };
     return { rotulo: 'Forte', tom: 'danger' };
 }
@@ -38,7 +38,7 @@ export function nivelUV(uv?: number | null): Nivel {
 export function nivelBalneabilidade(balneabilidade?: boolean | null): Nivel {
     if (balneabilidade === true) return { rotulo: 'Própria', tom: 'success', mensagem: 'Própria para banho' };
     if (balneabilidade === false) return { rotulo: 'Imprópria', tom: 'danger', mensagem: 'Imprópria para banho' };
-    return { rotulo: 'Sem dados', tom: 'neutral', mensagem: 'Balneabilidade sem informação' };
+    return { rotulo: 'Sem dados', tom: 'neutral', mensagem: 'Sem informação sobre o banho' };
 }
 
 const NIVEL_PRAIA: Record<SituacaoPraia, Nivel> = {

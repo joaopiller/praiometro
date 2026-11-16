@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Animated, Pressable, Text } from 'react-native';
+import { AccessibilityInfo, Animated, Platform, Pressable, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { toneColors, type Tone } from '../../theme';
 import styles from './styles';
@@ -47,6 +47,8 @@ function AvisoFlutuante({ mensagem, onFim }: { mensagem: Mensagem | null; onFim:
 
     useEffect(() => {
         if (!mensagem) return;
+        // no Android quem lê é o accessibilityLiveRegion; no iOS é preciso pedir
+        if (Platform.OS === 'ios') AccessibilityInfo.announceForAccessibility(mensagem.texto);
         progresso.setValue(0);
         const animacao = Animated.sequence([
             Animated.spring(progresso, { toValue: 1, useNativeDriver: true, speed: 18, bounciness: 6 }),

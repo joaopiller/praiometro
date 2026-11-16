@@ -69,11 +69,30 @@ describe('LoginProvider', () => {
         montar();
         await act(async () => {});
         fireEvent.press(screen.getByText('entrar'));
+        const google = await screen.findByText('Continuar com o Google');
         await act(async () => {
-            fireEvent.press(await screen.findByText('Continuar com o Google'));
+            fireEvent.press(google);
             await new Promise((r) => setTimeout(r, 400));
         });
         expect(await screen.findByText('resultado: token-google')).toBeTruthy();
+    });
+
+    it('quem já entrou não vê o login de novo', async () => {
+        mockAppleDisponivel.mockResolvedValue(true);
+        montar();
+        await act(async () => {});
+        fireEvent.press(screen.getByText('entrar'));
+        const google = await screen.findByText('Continuar com o Google');
+        await act(async () => {
+            fireEvent.press(google);
+            await new Promise((r) => setTimeout(r, 400));
+        });
+        await screen.findByText('resultado: token-google');
+        mockGoogle.mockResolvedValue('outro-token');
+        await act(async () => fireEvent.press(screen.getByText('entrar')));
+        expect(screen.queryByText('Entre para continuar')).toBeNull();
+        expect(screen.getByText('resultado: token-google')).toBeTruthy();
+        expect(mockGoogle).toHaveBeenCalledTimes(1);
     });
 
     it('"Agora não" cancela sem erro', async () => {
@@ -81,7 +100,8 @@ describe('LoginProvider', () => {
         montar();
         await act(async () => {});
         fireEvent.press(screen.getByText('entrar'));
-        await act(async () => fireEvent.press(await screen.findByText('Agora não')));
+        const agoraNao = await screen.findByText('Agora não');
+        await act(async () => fireEvent.press(agoraNao));
         expect(await screen.findByText('resultado: null')).toBeTruthy();
         expect(mockGoogle).not.toHaveBeenCalled();
     });
@@ -92,8 +112,9 @@ describe('LoginProvider', () => {
         montar();
         await act(async () => {});
         fireEvent.press(screen.getByText('entrar'));
+        const apple = await screen.findByTestId('botao-apple');
         await act(async () => {
-            fireEvent.press(await screen.findByTestId('botao-apple'));
+            fireEvent.press(apple);
             await new Promise((r) => setTimeout(r, 400));
         });
         expect(await screen.findByText('resultado: null')).toBeTruthy();

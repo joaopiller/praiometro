@@ -130,7 +130,7 @@ function AbasAndroid() {
                     // Tocar na aba sempre volta para a lista de praias
                     tabPress: (e) => {
                         e.preventDefault();
-                        navigation.navigate('PraiasTab', { screen: 'Praias' });
+                        navigation.navigate('PraiasTab', { screen: 'Praias', pop: true });
                     },
                 })}
             />

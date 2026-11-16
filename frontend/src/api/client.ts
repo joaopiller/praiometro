@@ -1,9 +1,16 @@
 import { create, isAxiosError, type AxiosError } from 'axios';
+import { esquecerToken } from '../auth/sessao';
 import { env } from '../config/env';
 
 export const api = create({
     baseURL: env.apiUrl,
     timeout: 15_000,
+});
+
+// login recusado pelo servidor: o token guardado não serve mais
+api.interceptors.response.use(undefined, (error) => {
+    if (isAxiosError(error) && error.response?.status === 401) esquecerToken();
+    return Promise.reject(error);
 });
 
 export function getErrorMessage(error: unknown): string {

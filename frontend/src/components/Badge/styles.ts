@@ -1,17 +1,7 @@
 import { StyleSheet } from 'react-native';
-import { radius } from '../../theme';
 
 export default StyleSheet.create({
-    badge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        alignSelf: 'flex-start',
-        gap: 5,
-        paddingHorizontal: 9,
-        paddingVertical: 4,
-        borderRadius: radius.sm,
-        borderWidth: 1,
-    },
-    text: { fontSize: 12, fontWeight: '800', letterSpacing: 0.5 },
-    frase: { fontSize: 13, fontWeight: '700', letterSpacing: 0 },
+    badge: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', gap: 7 },
+    ponto: { width: 10, height: 10, borderRadius: 5 },
+    text: { fontSize: 14, fontWeight: '600', flexShrink: 1 },
 });

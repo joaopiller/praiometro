@@ -9,7 +9,7 @@ describe('níveis de risco', () => {
     });
 
     it('vento', () => {
-        expect(nivelVento(10.4).rotulo).toBe('Seguro');
+        expect(nivelVento(10.4).rotulo).toBe('Fraco');
         expect(nivelVento(25).tom).toBe('warning');
         expect(nivelVento(40).tom).toBe('danger');
     });

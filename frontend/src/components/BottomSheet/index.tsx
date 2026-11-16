@@ -35,8 +35,11 @@ export default function BottomSheet({ visible, onClose, children, bloqueado, emb
     };
 
     const folha = (
-        <Pressable style={styles.fundo} onPress={fechar} accessibilityLabel="Fechar">
+        // o fundo fecha ao toque, mas não é um elemento do leitor de tela: se fosse, esconderia a folha inteira
+        <Pressable style={styles.fundo} onPress={fechar} accessible={false}>
             <Animated.View
+                accessibilityViewIsModal
+                onAccessibilityEscape={fechar}
                 style={[styles.folha, { paddingBottom: insets.bottom + 24, transform: [{ translateY: deslocamento }] }]}
             >
                 <Pressable onPress={() => {}} accessible={false}>

@@ -7,6 +7,9 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
         configure: jest.fn(),
         hasPlayServices: jest.fn().mockResolvedValue(true),
         signIn: jest.fn(),
+        hasPreviousSignIn: jest.fn(() => false),
+        signInSilently: jest.fn(),
+        signOut: jest.fn().mockResolvedValue(null),
     },
     isSuccessResponse: (r: { type?: string }) => r?.type === 'success',
     isErrorWithCode: (e: unknown) => typeof e === 'object' && e !== null && 'code' in e,
@@ -52,3 +55,8 @@ jest.mock('expo-font', () => ({
     isLoaded: jest.fn(() => true),
     loadAsync: jest.fn(() => Promise.resolve()),
 }));
+
+// a sessão de login fica na memória do módulo: cada teste começa sem ninguém conectado
+afterEach(async () => {
+    await require('./src/auth/sessao').sair();
+});

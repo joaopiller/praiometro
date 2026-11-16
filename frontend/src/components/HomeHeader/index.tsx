@@ -6,7 +6,7 @@ import { CIDADES } from '../../config/cidades';
 import { useCidade, useZonaClima } from '../../hooks/useLugar';
 import { formatTemp, parseTimestamp } from '../../utils/format';
 import { getCondicao } from '../../utils/weather';
-import { colors } from '../../theme';
+import { colors, MAX_FONT_SCALE_FIXO } from '../../theme';
 import Vidro, { temVidro } from '../Vidro';
 import WeatherIcon from '../WeatherIcon';
 import styles from './styles';
@@ -35,14 +35,14 @@ export default function HomeHeader({ onPress }: { onPress?: () => void }) {
                     <>
                         <WeatherIcon code={leitura.weather_code} size={28} hour={parseTimestamp(leitura.timestamp)?.hora} />
                         <View style={styles.climaTexto}>
-                            <Text style={styles.temp}>{formatTemp(leitura.temperature_2m)}</Text>
-                            <Text style={styles.condicao} numberOfLines={1}>
+                            <Text style={styles.temp} maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}>{formatTemp(leitura.temperature_2m)}</Text>
+                            <Text style={styles.condicao} numberOfLines={1} maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}>
                                 {condicao.descricao}
                             </Text>
                         </View>
                     </>
                 ) : (
-                    <Text style={[styles.condicao, styles.climaTexto]}>{isPending ? '...' : 'Clima'}</Text>
+                    <Text style={[styles.condicao, styles.climaTexto]} maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}>{isPending ? '...' : 'Clima'}</Text>
                 )}
                 <Feather name="chevron-right" size={16} color="rgba(255,255,255,0.7)" />
             </Pressable>

@@ -20,6 +20,26 @@ export function configureGoogleSignIn() {
 
 export class LoginError extends Error {}
 
+/** Renova o login de quem já entrou, sem abrir nada. Null se a pessoa nunca entrou ou saiu. */
+export async function renovarIdToken(): Promise<string | null> {
+    if (!configurado) return null;
+    try {
+        if (!GoogleSignin.hasPreviousSignIn()) return null;
+        const resposta = await GoogleSignin.signInSilently();
+        return resposta.type === 'success' ? resposta.data.idToken : null;
+    } catch {
+        return null;
+    }
+}
+
+export async function sairDoGoogle() {
+    try {
+        await GoogleSignin.signOut();
+    } catch {
+        // sem sessão do Google não há do que sair
+    }
+}
+
 /** Abre o login do Google. Retorna null se o usuário cancelar. */
 export async function obterIdToken(): Promise<string | null> {
     if (!configurado) throw new LoginError('Login com Google não está configurado neste app.');

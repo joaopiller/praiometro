@@ -61,7 +61,9 @@ describe('ForecastStrip', () => {
 
     it('mostra no máximo 24 horas', () => {
         render(<ForecastStrip previsao={previsao} />);
-        expect(screen.getAllByText(/^\d+%$/)).toHaveLength(24);
+        // a chuva fica fora do leitor de tela porque já vai no rótulo de cada hora
+        expect(screen.getAllByText(/^\d+%$/, { includeHiddenElements: true })).toHaveLength(24);
+        expect(screen.getAllByLabelText(/% de chance de chuva$/)).toHaveLength(24);
         expect(screen.getByText('PREVISÃO PRÓXIMAS 24H')).toBeTruthy();
     });
 
@@ -107,12 +109,17 @@ describe('FeedbackSection', () => {
 describe('UVCard e DataNotice', () => {
     it('UV sem dados não quebra', () => {
         render(<UVCard uv={null} />);
-        expect(screen.getByText('SEM DADOS')).toBeTruthy();
+        expect(screen.getByText('Sem dados')).toBeTruthy();
     });
 
     it('avisa quando está offline', () => {
         render(<DataNotice timestamp="2026-11-16T10:00" refreshError />);
-        expect(screen.getByText(/Sem conexão com o servidor/)).toBeTruthy();
+        expect(screen.getByText(/Não foi possível atualizar agora\. Mostrando dados de/)).toBeTruthy();
+    });
+
+    it('sem horário, não inventa uma data', () => {
+        render(<DataNotice timestamp={null} />);
+        expect(screen.getByText(/^Sem dados recentes\./)).toBeTruthy();
     });
 });
 

@@ -56,5 +56,5 @@ export default StyleSheet.create({
     },
     pressed: { opacity: 0.8 },
     mapsText: { color: colors.text, fontSize: 16, fontWeight: '700' },
-    credit: { color: colors.textSubtle, fontSize: 11, textAlign: 'center' },
+    credit: { color: colors.textSubtle, fontSize: 12, textAlign: 'center' },
 });

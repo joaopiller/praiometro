@@ -6,7 +6,13 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 
-from praiometro.auth import APPLE_ISSUER, TokenInvalidoError, VerificadorTokens
+from praiometro.auth import (
+    APPLE_ISSUER,
+    TokenInvalidoError,
+    VerificacaoIndisponivelError,
+    VerificadorTokens,
+    _CertificadosGoogle,
+)
 
 BUNDLE = "com.praiometro.app"
 CHAVE = rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -88,3 +94,39 @@ def test_token_google_invalido(verificador):
 def test_token_malformado(verificador, token):
     with pytest.raises(TokenInvalidoError):
         verificador(token)
+
+
+def test_token_que_nao_e_objeto_json(verificador):
+    with pytest.raises(TokenInvalidoError):
+        verificador("a.WzFd.c")
+
+
+def test_google_fora_do_ar_nao_e_login_invalido(verificador):
+    from google.auth.exceptions import TransportError
+
+    token = jwt.encode({"iss": "accounts.google.com", "sub": "1"}, SEGREDO, algorithm="HS256")
+    with (
+        patch("praiometro.auth.id_token.verify_oauth2_token", side_effect=TransportError("sem rede")),
+        pytest.raises(VerificacaoIndisponivelError),
+    ):
+        verificador(token)
+
+
+def test_certificados_do_google_ficam_guardados():
+    certificados = _CertificadosGoogle()
+    resposta = SimpleNamespace(status=200, data=b"{}")
+    with patch.object(certificados, "_request", return_value=resposta) as baixar:
+        assert certificados("https://google/certs") is resposta
+        assert certificados("https://google/certs") is resposta
+        assert baixar.call_count == 1
+        assert certificados.esquecer() is True
+        certificados("https://google/certs")
+        assert baixar.call_count == 2
+
+
+def test_chave_nova_do_google_tenta_de_novo_com_certificados_frescos(verificador):
+    token = jwt.encode({"iss": "accounts.google.com", "sub": "9"}, SEGREDO, algorithm="HS256")
+    verificador._google_request._guardado["https://google/certs"] = (time.monotonic(), object())
+    respostas = [ValueError("chave desconhecida"), {"sub": "9"}]
+    with patch("praiometro.auth.id_token.verify_oauth2_token", side_effect=respostas):
+        assert verificador(token) == "9"

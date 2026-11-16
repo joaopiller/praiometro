@@ -156,14 +156,14 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
 
     // praia de outra cidade (pin tocado ou a mais perto de você): troca a cidade antes
     const irPara = (praia: PraiaResumo) => {
-        if (praia.cidade === cidade) {
-            focar(praia.id, true);
+        // a cidade pode ter acabado de mudar pela localização: vale o que já está no carrossel
+        if (noCarrossel.current.some((p) => p.id === praia.id)) {
+            focarRef.current(praia.id, true);
             return;
         }
         focarDepois.current = praia.id;
         setCidade(praia.cidade);
     };
-
 
     const irParaMaisProxima = async () => {
         const r = await localizar();
@@ -176,7 +176,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     };
 
     const abrirPraia = useCallback(
-        (id: string) => navigation.navigate('PraiasTab', { screen: 'Praia', params: { id } }),
+        // initial: false mantém a lista embaixo da praia, mesmo que a aba Praias nunca tenha sido aberta
+        (id: string) => navigation.navigate('PraiasTab', { screen: 'Praia', params: { id, doMapa: true }, initial: false }),
         [navigation],
     );
 
@@ -203,11 +204,17 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
         if (limites) camera.current?.fitBounds(limites, { padding: espaco, duration: 700 });
     };
 
+    // o toque num pin também chega ao mapa como toque comum, antes ou depois: não pode desfazer a escolha
+    const toquePin = useRef(0);
     const arrastando = useRef(false);
+    const fimDoArrasto = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => clearTimeout(fimDoArrasto.current ?? undefined), []);
     const focarRef = useRef(focar);
+    const noCarrossel = useRef(praias);
     useEffect(() => {
         focarRef.current = focar;
-    }, [focar]);
+        noCarrossel.current = praias;
+    }, [focar, praias]);
     // a FlatList não aceita trocar onViewableItemsChanged depois de montada
     const [aoMudarCard] = useState(() => ({ viewableItems }: { viewableItems: ListViewToken[] }) => {
         const atual: PraiaResumo | undefined = viewableItems.find((v) => v.isViewable)?.item;
@@ -246,7 +253,9 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 attributionPosition={{ bottom: base + CARROSSEL_ALTURA + 4, left: 8 }}
                 onDidFailLoadingMap={() => setMapaFalhou(true)}
                 onDidFinishLoadingMap={() => setMapaFalhou(false)}
-                onPress={() => setSelecionado(null)}
+                onPress={() => {
+                    if (Date.now() - toquePin.current > 400) setSelecionado(null);
+                }}
             >
                 <Camera
                     ref={camera}
@@ -277,7 +286,9 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                     data={pins}
                     onPress={(e) => {
                         const praia = todas.find((p) => p.id === e.nativeEvent.features[0]?.properties?.id);
-                        if (praia) irPara(praia);
+                        if (!praia) return;
+                        toquePin.current = Date.now();
+                        irPara(praia);
                     }}
                     hitbox={{ top: 18, right: 18, bottom: 18, left: 18 }}
                 >
@@ -378,7 +389,15 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                     offset: (cardLargura + CARD_GAP) * index,
                     index,
                 })}
-                onScrollBeginDrag={() => (arrastando.current = true)}
+                onScrollBeginDrag={() => {
+                    clearTimeout(fimDoArrasto.current ?? undefined);
+                    arrastando.current = true;
+                }}
+                // soltar o card já no lugar não gera o movimento final que encerra o arrasto
+                onScrollEndDrag={() => {
+                    fimDoArrasto.current = setTimeout(() => (arrastando.current = false), 200);
+                }}
+                onMomentumScrollBegin={() => clearTimeout(fimDoArrasto.current ?? undefined)}
                 onMomentumScrollEnd={() => (arrastando.current = false)}
                 onViewableItemsChanged={aoMudarCard}
                 viewabilityConfig={VISIBILIDADE}

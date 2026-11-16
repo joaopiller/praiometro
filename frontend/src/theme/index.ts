@@ -18,8 +18,8 @@ export const colors = {
     overlay: 'rgba(8,24,44,0.55)',
 
     text: '#FFFFFF',
-    textMuted: 'rgba(255,255,255,0.72)',
-    textSubtle: 'rgba(255,255,255,0.5)',
+    textMuted: 'rgba(255,255,255,0.8)',
+    textSubtle: 'rgba(255,255,255,0.64)',
     label: '#A9D2FF',
     accent: '#8FD8FF',
 
@@ -44,11 +44,12 @@ export const colors = {
 
 export type Tone = 'success' | 'warning' | 'danger' | 'neutral';
 
-export const toneColors: Record<Tone, { fg: string; bg: string; solid: string }> = {
-    success: { fg: colors.success, bg: colors.successBg, solid: colors.successSolid },
-    warning: { fg: colors.warning, bg: colors.warningBg, solid: colors.warningSolid },
-    danger: { fg: colors.danger, bg: colors.dangerBg, solid: colors.dangerSolid },
-    neutral: { fg: colors.neutral, bg: colors.neutralBg, solid: colors.neutralSolid },
+// escuro: texto sobre fundo claro, com contraste para leitura
+export const toneColors: Record<Tone, { fg: string; bg: string; solid: string; escuro: string }> = {
+    success: { fg: colors.success, bg: colors.successBg, solid: colors.successSolid, escuro: '#1D7A3E' },
+    warning: { fg: colors.warning, bg: colors.warningBg, solid: colors.warningSolid, escuro: '#9A6300' },
+    danger: { fg: colors.danger, bg: colors.dangerBg, solid: colors.dangerSolid, escuro: '#B8352A' },
+    neutral: { fg: colors.neutral, bg: colors.neutralBg, solid: colors.neutralSolid, escuro: '#4A5F75' },
 };
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 32 } as const;
@@ -67,6 +68,8 @@ export const typography = {
 
 // números grandes não crescem além disso com fonte do sistema aumentada (evita quebrar o layout)
 export const MAX_FONT_SCALE_NUMEROS = 1.25;
+// o mesmo para o que fica sobre o mapa, em caixas de altura fixa (cabeçalho, seletor, carrossel)
+export const MAX_FONT_SCALE_FIXO = 1.3;
 
 export const CONTENT_MAX_WIDTH = 560;
 

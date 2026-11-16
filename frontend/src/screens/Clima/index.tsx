@@ -12,6 +12,7 @@ import CidadeSwitch from '../../components/CidadeSwitch';
 import { ZONAS_CLIMA } from '../../config/cidades';
 import { useClima, useRegiao } from '../../hooks/queries';
 import { useCidade, useZonaClima } from '../../hooks/useLugar';
+import { usePuxarParaAtualizar } from '../../hooks/usePuxarParaAtualizar';
 import { colors, MAX_FONT_SCALE_NUMEROS } from '../../theme';
 import { formatTemp, formatUpdated, parseTimestamp } from '../../utils/format';
 import { getCondicao } from '../../utils/weather';
@@ -20,12 +21,39 @@ import styles from './styles';
 export default function Clima() {
     const [cidade, setCidade] = useCidade();
     const [zona, setZona] = useZonaClima();
-    const { data, isPending, error, refetch, isRefetching } = useClima(zona);
+    const { data, isPending, error, refetch } = useClima(zona);
     const regiao = useRegiao();
+    const [puxando, puxar] = usePuxarParaAtualizar(() => Promise.all([refetch(), regiao.refetch()]));
 
-    if (isPending || (error && !data)) {
+    const seletores = (
+        <>
+            <CidadeSwitch cidade={cidade} onChange={setCidade} />
+            <View style={styles.zonas} accessibilityRole="radiogroup">
+                {ZONAS_CLIMA.filter((z) => z.cidade === cidade).map((z) => {
+                    const ativa = z.id === zona;
+                    return (
+                        <Pressable
+                            key={z.id}
+                            onPress={() => setZona(z.id)}
+                            accessibilityRole="radio"
+                            accessibilityState={{ selected: ativa }}
+                            hitSlop={{ top: 8, bottom: 8, left: 6, right: 6 }}
+                            style={[styles.zona, ativa && styles.zonaAtiva]}
+                        >
+                            <Text style={[styles.zonaTexto, ativa && styles.zonaTextoAtivo]}>{z.rotulo}</Text>
+                        </Pressable>
+                    );
+                })}
+            </View>
+        </>
+    );
+
+    // carregando ou com erro, a troca de cidade e de área continua à mão:
+    // quem caiu numa área que falhou consegue voltar para a outra
+    if (!data) {
         return (
             <Screen scroll={false}>
+                <View style={[styles.hero, styles.heroSozinho]}>{seletores}</View>
                 <StateView loading={isPending} error={error ? getErrorMessage(error) : null} onRetry={() => refetch()} />
             </Screen>
         );
@@ -40,31 +68,9 @@ export default function Clima() {
     ].filter(Boolean);
 
     return (
-        <Screen
-            refreshing={isRefetching}
-            onRefresh={() => {
-                refetch();
-                regiao.refetch();
-            }}
-        >
+        <Screen refreshing={puxando} onRefresh={puxar}>
             <View style={styles.hero}>
-                <CidadeSwitch cidade={cidade} onChange={setCidade} />
-                <View style={styles.zonas} accessibilityRole="radiogroup">
-                    {ZONAS_CLIMA.filter((z) => z.cidade === cidade).map((z) => {
-                        const ativa = z.id === zona;
-                        return (
-                            <Pressable
-                                key={z.id}
-                                onPress={() => setZona(z.id)}
-                                accessibilityRole="radio"
-                                accessibilityState={{ selected: ativa }}
-                                style={[styles.zona, ativa && styles.zonaAtiva]}
-                            >
-                                <Text style={[styles.zonaTexto, ativa && styles.zonaTextoAtivo]}>{z.rotulo}</Text>
-                            </Pressable>
-                        );
-                    })}
-                </View>
+                {seletores}
                 <Text style={styles.temperature} maxFontSizeMultiplier={1.1}>
                     {formatTemp(leitura.temperature_2m)}
                 </Text>
@@ -89,7 +95,9 @@ export default function Clima() {
 
             <View style={styles.updated}>
                 <MaterialCommunityIcons name="update" size={14} color={colors.textMuted} />
-                <Text style={styles.updatedText}>Atualizado {formatUpdated(leitura.timestamp)} • Open-Meteo</Text>
+                <Text style={styles.updatedText}>
+                    {leitura.timestamp ? `Atualizado ${formatUpdated(leitura.timestamp)}` : 'Sem dados recentes'} • Open-Meteo
+                </Text>
             </View>
         </Screen>
     );

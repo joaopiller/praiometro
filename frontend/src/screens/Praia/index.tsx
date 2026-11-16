@@ -18,6 +18,7 @@ import TrechosCard from '../../components/TrechosCard';
 import WaveDivider from '../../components/WaveDivider';
 import { getBeachPhoto } from '../../constants/beaches';
 import { useAvaliacao, useHistorico, usePraia, useRelatos } from '../../hooks/queries';
+import { usePuxarParaAtualizar } from '../../hooks/usePuxarParaAtualizar';
 import type { PraiasScreenProps } from '../../navigation/types';
 import { colors } from '../../theme';
 import { descreverBoletim, formatNumber, formatTemp } from '../../utils/format';
@@ -28,7 +29,7 @@ import styles from './styles';
 const ICONE_BALNEABILIDADE = { success: 'check-circle', danger: 'close-circle', neutral: 'help-circle', warning: 'alert-circle' } as const;
 
 export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>) {
-    const { id, trecho } = route.params;
+    const { id, trecho, doMapa } = route.params;
     const consulta = usePraia(id);
     const avaliacao = useAvaliacao(id);
     const relatos = useRelatos(id);
@@ -38,6 +39,9 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
     const trechoAtual =
         pontos.find((p) => p.codigo === escolhido) ?? pontos.find((p) => p.codigo === consulta.data?.principal);
     const historico = useHistorico(trechoAtual?.codigo ?? '');
+    const [puxando, puxar] = usePuxarParaAtualizar(() =>
+        Promise.all([consulta.refetch(), avaliacao.refetch(), historico.refetch(), relatos.refetch()]),
+    );
     const [modalVisivel, setModalVisivel] = useState(false);
     const avisar = useAviso();
 
@@ -64,10 +68,17 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
     const onda = baia ? NIVEL_BAIA : nivelOnda(leitura.wave_height);
     const vento = nivelVento(leitura.wind_speed_10m);
 
+    // quem abriu a praia pelo mapa volta para o mapa, não para a lista
+    const voltar = () => {
+        if (!doMapa) return navigation.goBack();
+        if (navigation.getState().index > 0) navigation.popToTop();
+        navigation.navigate('Home');
+    };
+
     async function abrirMapa() {
         const coords = praia.centro;
         if (!coords) return;
-        const url = `https://www.google.com/maps/search/?api=1&query=${coords[0]},${coords[1]}`;
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${coords[0]},${coords[1]}`;
         try {
             await Linking.openURL(url);
         } catch {
@@ -77,13 +88,8 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
 
     return (
         <Screen
-            refreshing={consulta.isRefetching}
-            onRefresh={() => {
-                consulta.refetch();
-                avaliacao.refetch();
-                historico.refetch();
-                relatos.refetch();
-            }}
+            refreshing={puxando}
+            onRefresh={puxar}
             contentStyle={styles.content}
         >
             <ImageBackground source={foto?.imagem} style={styles.hero} resizeMode="cover" accessibilityIgnoresInvertColors>
@@ -94,7 +100,7 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                     style={styles.heroShade}
                 />
                 <Pressable
-                    onPress={() => navigation.goBack()}
+                    onPress={voltar}
                     style={styles.back}
                     accessibilityRole="button"
                     accessibilityLabel="Voltar"

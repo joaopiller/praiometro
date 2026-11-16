@@ -1,6 +1,6 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, SectionList, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, SectionList, Text, TextInput, View } from 'react-native';
 import { getErrorMessage } from '../../api/client';
 import BeachCard from '../../components/BeachCard';
 import DataNotice from '../../components/DataNotice';
@@ -13,6 +13,7 @@ import { CIDADES, ORDEM_CIDADES } from '../../config/cidades';
 import { usePraias } from '../../hooks/queries';
 import { useCidadeDaPessoa } from '../../hooks/useLugar';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
+import { usePuxarParaAtualizar } from '../../hooks/usePuxarParaAtualizar';
 import { formatDistancia, ordenarPraiasPorDistancia } from '../../utils/geo';
 import type { PraiasScreenProps } from '../../navigation/types';
 import { colors } from '../../theme';
@@ -30,7 +31,8 @@ const FILTROS: { id: Filtro; label: string; icone?: 'crosshairs-gps' }[] = [
 ];
 
 export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
-    const { data, isPending, error, refetch, isRefetching } = usePraias();
+    const { data, isPending, error, refetch } = usePraias();
+    const [puxando, puxar] = usePuxarParaAtualizar(refetch);
     const [busca, setBusca] = useState('');
     const [filtro, setFiltro] = useState<Filtro>('todas');
     const espacoAbas = useEspacoDasAbas();
@@ -82,8 +84,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                 contentContainerStyle={[styles.list, espacoAbas > 0 && { paddingBottom: espacoAbas + 32 }]}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="on-drag"
-                onRefresh={() => refetch()}
-                refreshing={isRefetching}
+                refreshControl={<RefreshControl refreshing={puxando} onRefresh={puxar} tintColor={colors.text} colors={[colors.brand]} />}
                 ListHeaderComponent={
                     <View style={styles.header}>
                         {error ? <DataNotice timestamp={data?.[0]?.ultima_leitura} refreshError /> : null}
@@ -91,7 +92,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                             <Ionicons name="search" size={20} color={colors.textMuted} />
                             <TextInput
                                 style={styles.input}
-                                placeholder="Buscar praia ou local..."
+                                placeholder="Buscar praia, bairro ou cidade..."
                                 placeholderTextColor={colors.textSubtle}
                                 value={busca}
                                 onChangeText={setBusca}
@@ -122,6 +123,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                                         onPress={() => escolherFiltro(f.id)}
                                         accessibilityRole="radio"
                                         accessibilityState={{ selected: ativo }}
+                                        hitSlop={{ top: 6, bottom: 6 }}
                                         style={[styles.chip, ativo && styles.chipActive]}
                                     >
                                         {f.icone &&

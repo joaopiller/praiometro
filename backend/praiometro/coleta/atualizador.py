@@ -62,7 +62,8 @@ def mesclar_estado(
     """Combina catálogo, estado anterior e dados novos.
 
     Se a leitura de um ponto falhar, mantém a anterior; se o ponto não vier no
-    boletim, mantém a balneabilidade anterior. As médias de avaliação são preservadas.
+    boletim, mantém a balneabilidade anterior. Uma coisa não depende da outra: boletim
+    novo entra mesmo com o clima fora do ar. As médias de avaliação são preservadas.
     """
     novo: dict[str, dict] = {}
     for codigo, info in catalogo.items():
@@ -74,23 +75,20 @@ def mesclar_estado(
 
         leitura_anterior = anterior.get("leitura_atual") or {}
         leitura = leituras.get(codigo)
-        if leitura is None:
-            ponto["leitura_atual"] = leitura_anterior
-            ponto["previsao"] = anterior.get("previsao", [])
+        bal = balneabilidade.get(info.get("codigo_inea", codigo))
+        if bal is None:
+            bal = leitura_anterior.get("balneabilidade")
+            data_bal = leitura_anterior.get("balneabilidade_data")
         else:
-            bal = balneabilidade.get(info.get("codigo_inea", codigo))
-            if bal is None:
-                bal = leitura_anterior.get("balneabilidade")
-                data_bal = leitura_anterior.get("balneabilidade_data")
-            else:
-                # cada cidade tem o seu boletim, com a sua data
-                data_bal = (
-                    data_boletim.get(info.get("cidade", "niteroi"))
-                    if isinstance(data_boletim, dict)
-                    else data_boletim
-                )
-            ponto["leitura_atual"] = {**leitura, "balneabilidade": bal, "balneabilidade_data": data_bal}
-            ponto["previsao"] = previsoes.get(codigo, [])
+            # cada cidade tem o seu boletim, com a sua data
+            data_bal = (
+                data_boletim.get(info.get("cidade", "niteroi"))
+                if isinstance(data_boletim, dict)
+                else data_boletim
+            )
+        clima = leitura_anterior if leitura is None else leitura
+        ponto["leitura_atual"] = {**clima, "balneabilidade": bal, "balneabilidade_data": data_bal}
+        ponto["previsao"] = anterior.get("previsao", []) if leitura is None else previsoes.get(codigo, [])
         novo[codigo] = ponto
     return novo
 
@@ -166,8 +164,8 @@ def atualizar_historico(settings: Settings, sessao: requests.Session | None = No
     for fonte in fontes(settings):
         for a in (ano - 1, ano):
             pdf = _pdf(settings, fonte, f"historico_{a}")
-            # o ano passado não muda mais: baixa só uma vez
-            if a == ano or not pdf.exists():
+            # o ano passado só recebe as coletas de dezembro, publicadas no começo do ano seguinte
+            if a == ano or not pdf.exists() or datetime.now(ZoneInfo(settings.timezone)).month <= 2:
                 historico.baixar_historico(sessao, fonte.pagina, a, pdf, arquivo=fonte.historico)
             if pdf.exists():
                 try:

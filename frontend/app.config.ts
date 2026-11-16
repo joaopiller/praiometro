@@ -20,6 +20,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? '';
     // HTTP sem TLS só em desenvolvimento, quando a API está na rede local
     const apiSemTls = apiUrl === '' || apiUrl.startsWith('http://');
+    // login e localização não podem sair do aparelho sem criptografia
+    if (process.env.EAS_BUILD_PROFILE === 'production' && !apiUrl.startsWith('https://')) {
+        throw new Error('EXPO_PUBLIC_API_URL precisa começar com https:// no build de produção.');
+    }
     // o Google no iOS volta para o app pelo ID do cliente invertido
     const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
     const comApple = process.env.EXPO_PUBLIC_LOGIN_APPLE !== 'false';
@@ -73,6 +77,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
                 {
                     locationWhenInUsePermission:
                         'O Praiômetro usa sua localização para abrir o app na sua cidade, mostrar a praia mais próxima e confirmar que você está na praia ao enviar um relato.',
+                    // o app só usa a localização com ele aberto, e não lê movimento
+                    locationAlwaysAndWhenInUsePermission: false,
+                    locationAlwaysPermission: false,
+                    motionUsagePermission: false,
+                    isIosBackgroundLocationEnabled: false,
+                    isAndroidBackgroundLocationEnabled: false,
                 },
             ],
             [

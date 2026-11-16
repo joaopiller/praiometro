@@ -3,7 +3,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pymongo.errors import PyMongoError
 
-from ...auth import TokenInvalidoError, VerificadorTokens
+from ...auth import TokenInvalidoError, VerificacaoIndisponivelError, VerificadorTokens
 from ...relatos import RelatoRecusadoError, RepositorioRelatos
 from ..deps import get_limitador, get_pontos, get_relatos, get_token, get_verificador, obter_praia
 from ..ratelimit import LimitadorTaxa
@@ -18,6 +18,10 @@ def _usuario(token: str, verificador: VerificadorTokens) -> str:
         return verificador(token)
     except TokenInvalidoError:
         raise HTTPException(status_code=401, detail="Login expirado ou inválido. Entre novamente.") from None
+    except VerificacaoIndisponivelError:
+        raise HTTPException(
+            status_code=503, detail="Não foi possível confirmar seu login agora. Tente de novo em instantes."
+        ) from None
 
 
 def _limitar(request: Request, limitador: LimitadorTaxa) -> None:

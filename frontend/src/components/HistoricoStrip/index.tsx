@@ -17,7 +17,7 @@ function HistoricoStrip({ historico, trecho }: { historico?: Historico; trecho?:
     return (
         <GlassCard
             style={styles.card}
-            accessibilityLabel={`Histórico${trecho ? ` de ${trecho}` : ''}: própria em ${pct}% das coletas dos últimos 12 meses`}
+            accessibilityLabel={`Histórico${trecho ? ` de ${trecho}` : ''}: própria para banho em ${pct}% das coletas dos últimos 12 meses`}
         >
             <View>
                 <CardLabel right={<Text style={styles.pct}>{pct}% própria</Text>}>Banho nas últimas coletas</CardLabel>

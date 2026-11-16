@@ -21,7 +21,7 @@ export default function TrechosCard({ pontos, selecionado, onSelecionar }: Props
                 Banho por trecho
             </CardLabel>
             <Text style={styles.ajuda}>
-                O INEA mede a qualidade da água em {pontos.length} pontos desta praia. Toque para ver o histórico de cada um.
+                O INEA mede a qualidade da água em {pontos.length} trechos desta praia. Toque para ver o histórico de cada um.
             </Text>
             <View accessibilityRole="radiogroup">
                 {pontos.map((p, i) => {

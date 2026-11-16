@@ -52,7 +52,7 @@ class CacheJson:
             if not forcar and self._dados and mtime == self._mtime:
                 return
             try:
-                self._dados = self.carregar() if mtime is not None else self.reserva()
+                self._dados = (self.carregar() if mtime is not None else None) or self.reserva()
                 self._mtime = mtime
                 self.versao += 1
             except Exception:

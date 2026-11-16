@@ -1,36 +1,31 @@
-import { Feather } from '@expo/vector-icons';
 import { Text, View } from 'react-native';
-import { toneColors, type Tone } from '../../theme';
+import { colors, MAX_FONT_SCALE_FIXO, toneColors, type Tone } from '../../theme';
 import styles from './styles';
-
-const ICONES: Record<Tone, keyof typeof Feather.glyphMap> = {
-    success: 'check',
-    warning: 'alert-triangle',
-    danger: 'alert-octagon',
-    neutral: 'help-circle',
-};
 
 interface Props {
     label: string;
     tone: Tone;
-    showIcon?: boolean;
     /** para usar sobre fundo claro */
     claro?: boolean;
-    /** texto como frase ("Própria para banho"), sem caixa alta: lê melhor quando é longo */
-    frase?: boolean;
+    /** dentro de uma caixa de altura fixa: uma linha só e fonte que não cresce demais */
+    fixo?: boolean;
 }
 
-export default function Badge({ label, tone, showIcon = true, claro, frase }: Props) {
+/**
+ * Situação com um ponto colorido na frente, como o "Aberto agora" dos apps de mapa.
+ * Sobre o azul o texto é branco: colorido, o vermelho ficava difícil de ler no sol.
+ */
+export default function Badge({ label, tone, claro, fixo }: Props) {
     const c = toneColors[tone];
-    const cor = claro ? c.solid : c.fg;
     return (
-        <View
-            style={[styles.badge, { backgroundColor: claro ? `${c.solid}1A` : c.bg, borderColor: cor }]}
-            accessibilityLabel={label}
-        >
-            {showIcon && <Feather name={ICONES[tone]} size={12} color={cor} />}
-            <Text style={[styles.text, frase && styles.frase, { color: cor }]} numberOfLines={1}>
-                {frase ? label : label.toUpperCase()}
+        <View style={styles.badge} accessibilityLabel={label}>
+            <View style={[styles.ponto, { backgroundColor: claro ? c.solid : c.fg }]} />
+            <Text
+                style={[styles.text, { color: claro ? c.escuro : colors.text }]}
+                numberOfLines={fixo ? 1 : 2}
+                maxFontSizeMultiplier={fixo ? MAX_FONT_SCALE_FIXO : undefined}
+            >
+                {label}
             </Text>
         </View>
     );

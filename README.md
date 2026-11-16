@@ -22,8 +22,8 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 - Clima por área da cidade (em Niterói, Centro e baía ou Região Oceânica; no Rio, Zona Sul ou Barra e Recreio), maré e nascer/pôr do sol
 - Avaliação das praias pelos usuários (limpeza, acessibilidade, infraestrutura, segurança e tranquilidade), com meia estrela
 - Relatos rápidos de quem está na praia (lotada, água limpa, água-viva, bandeira vermelha...), vários de uma vez, que expiram em 5 horas
-- Busca sem acento, com as praias separadas por cidade (a sua primeiro), e filtros de praias próprias para banho e mais próximas
-- Login com Google (e com Apple no iPhone) para avaliar e relatar
+- Busca sem acento por praia, bairro, cidade ou rua de referência, com as praias separadas por cidade (a sua primeiro), e filtros de praias próprias para banho e mais próximas
+- Login com Google (e com Apple no iPhone) para avaliar e relatar; o app lembra da conta, então não é preciso entrar a cada vez
 - Funciona offline com os últimos dados baixados
 
 ## Fontes de dados
@@ -113,7 +113,7 @@ ruff check . && ruff format --check .
 | GET | `/praias/{id}` | Uma praia, com leitura atual e previsão de 24h do ponto principal |
 | GET | `/praias/{id}/avaliacao` | Médias das avaliações da praia |
 | GET | `/praias/{id}/relatos` | Relatos ativos, agrupados por tipo |
-| POST | `/praias/{id}/relatos` | Envia um ou vários relatos (`{"tipos": [...], "latitude", "longitude"}`; exige login e estar a até 2 km de algum ponto da praia) |
+| POST | `/praias/{id}/relatos` | Envia um ou vários relatos (`{"tipos": [...], "latitude", "longitude"}`; exige login e estar a até 2 km da faixa da praia) |
 | POST | `/praias/{id}/relatos/{tipo}/denuncia` | Contesta um relato |
 | POST | `/votar?praia_id=...` | Envia/atualiza uma avaliação (header `Authorization: Bearer <id_token>`) |
 | GET | `/pontos` | Os 68 pontos de coleta com a balneabilidade atual |
@@ -133,10 +133,10 @@ Cada cidade tem o próprio boletim do INEA. A página do Rio publica vários (um
 Os relatos são opções fixas, sem texto livre, então não há conteúdo ofensivo para moderar. Contra relatos falsos:
 
 - cada relato expira em 5 horas (índice TTL no MongoDB);
-- é preciso estar logado e a até 2 km da praia, verificado também no servidor;
-- cada pessoa conta uma vez por tipo e praia a cada hora, com no máximo 12 relatos por dia;
+- é preciso estar logado e a até 2 km da praia (da linha que liga os pontos de coleta, para valer no meio das praias compridas), verificado também no servidor;
+- cada pessoa conta uma vez por tipo e praia a cada hora, com no máximo 12 relatos valendo ao mesmo tempo;
 - opções opostas (lotada e tranquila, água limpa e água turva) não podem ir juntas;
-- 3 contestações de pessoas diferentes escondem o relato, a menos que ele tenha mais confirmações do que contestações.
+- só dá para contestar um relato que está no ar; 3 contestações de pessoas diferentes escondem o relato, a menos que ele tenha mais confirmações do que contestações.
 
 ## Frontend
 

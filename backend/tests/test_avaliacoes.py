@@ -43,3 +43,9 @@ def test_snapshot_grava_medias_no_estado(repo, settings, estado):
     assert gravado["GR000"]["avaliacao_media"] == VOTOS
     assert gravado["GR000"]["total_avaliacoes"] == 1
     assert "avaliacao_media" not in gravado["BV001"]
+
+
+def test_snapshot_sem_estado_nao_cria_arquivo_vazio(repo, settings):
+    settings.estado_file.unlink(missing_ok=True)
+    assert gravar_snapshot_medias(repo, settings.estado_file) == 0
+    assert not settings.estado_file.exists()

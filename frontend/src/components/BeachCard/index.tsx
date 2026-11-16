@@ -33,13 +33,13 @@ export default function BeachCard({ praia, distancia, onPress }: Props) {
                 </View>
             )}
             <View style={styles.texts}>
-                <Text style={styles.name} numberOfLines={1}>
+                <Text style={styles.name} numberOfLines={2}>
                     {praia.nome}
                 </Text>
                 <Text style={styles.location} numberOfLines={1}>
                     {detalhe}
                 </Text>
-                <Badge label={nivel.rotulo} tone={nivel.tom} frase />
+                <Badge label={nivel.rotulo} tone={nivel.tom} />
             </View>
             <Feather name="chevron-right" size={22} color={colors.textSubtle} />
         </Pressable>

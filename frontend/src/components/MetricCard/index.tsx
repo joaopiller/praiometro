@@ -22,7 +22,7 @@ export default function MetricCard({ label, icon, value, unit, nota, nivel, foot
     return (
         <GlassCard
             style={styles.card}
-            accessibilityLabel={`${label}: ${nota ?? `${value} ${unit ?? ''}`}. ${nivel?.rotulo ?? ''}`}
+            accessibilityLabel={[`${label}: ${nota ?? `${value} ${unit ?? ''}`}`, nivel?.rotulo, footer].filter(Boolean).join('. ')}
         >
             <CardLabel right={icon}>{label}</CardLabel>
             {nivel && <Badge label={nivel.rotulo} tone={nivel.tom} />}

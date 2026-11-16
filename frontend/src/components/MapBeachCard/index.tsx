@@ -3,7 +3,7 @@ import { memo } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
 import type { PraiaResumo } from '../../api/types';
 import { getBeachPhoto } from '../../constants/beaches';
-import { colors } from '../../theme';
+import { colors, MAX_FONT_SCALE_FIXO } from '../../theme';
 import { nivelPraia } from '../../utils/risk';
 import { ondeFica } from '../../utils/trechos';
 import Badge from '../Badge';
@@ -37,13 +37,13 @@ function MapBeachCard({ praia, largura, selecionado, distancia, onAbrir }: Props
                 </View>
             )}
             <View style={styles.textos}>
-                <Text style={styles.nome} numberOfLines={1}>
+                <Text style={styles.nome} numberOfLines={1} maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}>
                     {praia.nome}
                 </Text>
-                <Text style={styles.local} numberOfLines={1}>
+                <Text style={styles.local} numberOfLines={1} maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}>
                     {detalhe}
                 </Text>
-                <Badge label={nivel.rotulo} tone={nivel.tom} claro frase />
+                <Badge label={nivel.rotulo} tone={nivel.tom} claro fixo />
             </View>
             <View style={styles.seta}>
                 <Feather name="chevron-right" size={20} color={colors.brand} />

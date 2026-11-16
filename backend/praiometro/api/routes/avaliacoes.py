@@ -5,7 +5,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pymongo.errors import PyMongoError
 
-from ...auth import TokenInvalidoError, VerificadorTokens
+from ...auth import TokenInvalidoError, VerificacaoIndisponivelError, VerificadorTokens
 from ...avaliacoes import RepositorioVotos
 from ...config import Settings
 from ..deps import get_limitador, get_pontos, get_repo, get_settings, get_token, get_verificador, obter_praia
@@ -87,6 +87,10 @@ def votar(
         user_id = verificador(token)
     except TokenInvalidoError:
         raise HTTPException(status_code=401, detail="Login expirado ou inválido. Entre novamente.") from None
+    except VerificacaoIndisponivelError:
+        raise HTTPException(
+            status_code=503, detail="Não foi possível confirmar seu login agora. Tente de novo em instantes."
+        ) from None
 
     try:
         resultado = repo.registrar(

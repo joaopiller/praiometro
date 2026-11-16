@@ -15,6 +15,10 @@ class LimitadorTaxa:
     def permitir(self, chave: str) -> bool:
         agora = time.monotonic()
         with self._lock:
+            if len(self._eventos) > 5000:
+                # quem não aparece há mais de uma janela não precisa ficar na memória
+                for antiga in [c for c, f in self._eventos.items() if agora - f[-1] > self.janela]:
+                    del self._eventos[antiga]
             fila = self._eventos[chave]
             while fila and agora - fila[0] > self.janela:
                 fila.popleft()

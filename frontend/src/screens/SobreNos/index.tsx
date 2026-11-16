@@ -1,6 +1,7 @@
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { Linking, Pressable, Text, View } from 'react-native';
+import { sair, useConta } from '../../auth/sessao';
 import { useAviso } from '../../components/Aviso';
 import GlassCard, { CardLabel } from '../../components/GlassCard';
 import Screen from '../../components/Screen';
@@ -22,6 +23,37 @@ const FONTES = [
 ];
 
 const EQUIPE = 'Rafael Lucio, João Vicente Piller, Lucas Silveira e Pâmella de Azevedo';
+
+const NOME_DA_CONTA = { google: 'Google', apple: 'Apple' };
+
+/** Aparece só para quem já entrou: o app lembra da conta, então precisa dar como sair. */
+function Conta() {
+    const conta = useConta();
+    const avisar = useAviso();
+    if (!conta) return null;
+    const desconectar = async () => {
+        await sair();
+        avisar('Você saiu da sua conta.', 'sucesso');
+    };
+    return (
+        <GlassCard style={styles.card}>
+            <CardLabel icon={<MaterialCommunityIcons name="account-circle-outline" size={18} color={colors.label} />}>
+                Sua conta
+            </CardLabel>
+            <Text style={styles.texto}>
+                Você entrou com a conta {NOME_DA_CONTA[conta]}. O app lembra dela para você avaliar e relatar sem entrar de
+                novo.
+            </Text>
+            <Pressable
+                onPress={desconectar}
+                accessibilityRole="button"
+                style={({ pressed }) => [styles.sair, pressed && styles.pressed]}
+            >
+                <Text style={styles.sairTexto}>Sair da conta</Text>
+            </Pressable>
+        </GlassCard>
+    );
+}
 
 function Contato({ icone, texto, url }: { icone: ComponentProps<typeof FontAwesome>['name']; texto: string; url: string }) {
     const avisar = useAviso();
@@ -82,6 +114,8 @@ export default function SobreNos() {
                     </View>
                 ))}
             </GlassCard>
+
+            <Conta />
 
             <View style={styles.contatos}>
                 <Contato icone="instagram" texto="@praiometronit" url={CONTATO.instagram} />
