@@ -8,7 +8,7 @@ from pymongo.errors import PyMongoError
 from ...auth import TokenInvalidoError, VerificadorTokens
 from ...avaliacoes import RepositorioVotos
 from ...config import Settings
-from ..deps import get_limitador, get_pontos, get_repo, get_settings, get_token, get_verificador, obter_ponto
+from ..deps import get_limitador, get_pontos, get_repo, get_settings, get_token, get_verificador, obter_praia
 from ..ratelimit import LimitadorTaxa
 from ..schemas import Avaliacao, RespostaVoto, VotoIn
 
@@ -22,14 +22,19 @@ def _cache_avaliacoes(request: Request) -> dict:
     return request.app.state.cache_avaliacoes
 
 
-@router.get("/pontos/{codigo}/avaliacao", response_model=Avaliacao, summary="Médias de avaliação da praia")
+@router.get("/praias/{praia_id}/avaliacao", response_model=Avaliacao, summary="Médias de avaliação da praia")
+@router.get(
+    "/pontos/{praia_id}/avaliacao", response_model=Avaliacao, deprecated=True, include_in_schema=False
+)
 def obter_avaliacao(
-    codigo: str,
+    praia_id: str,
     request: Request,
     pontos: dict = Depends(get_pontos),
     repo: RepositorioVotos = Depends(get_repo),
 ):
-    ponto = obter_ponto(pontos, codigo)
+    praia = obter_praia(pontos, praia_id)
+    codigo = praia["id"]
+    ponto = pontos[praia["principal"]]
     cache = _cache_avaliacoes(request)
     em_cache = cache.get(codigo)
     if em_cache and time.monotonic() - em_cache[0] < _TTL:
@@ -65,7 +70,7 @@ def obter_avaliacao(
 def votar(
     votos: VotoIn,
     request: Request,
-    praia_id: str = Query(..., description="Código da praia"),
+    praia_id: str = Query(..., description="Id da praia (IC) ou código de um ponto dela"),
     token: str = Depends(get_token),
     pontos: dict = Depends(get_pontos),
     repo: RepositorioVotos = Depends(get_repo),
@@ -77,7 +82,7 @@ def votar(
     if not limitador.permitir(ip):
         raise HTTPException(status_code=429, detail="Muitas tentativas. Aguarde um minuto.")
 
-    obter_ponto(pontos, praia_id)
+    praia_id = obter_praia(pontos, praia_id)["id"]
     try:
         user_id = verificador(token)
     except TokenInvalidoError:

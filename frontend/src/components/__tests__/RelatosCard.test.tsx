@@ -53,30 +53,63 @@ describe('RelatosCard', () => {
 
     it('envia um relato com a localização do usuário', async () => {
         mockFetch.mockResolvedValue({ disponivel: true, relatos: [] });
-        renderWithClient(<RelatosCard codigo="IC001" />);
+        renderWithClient(<RelatosCard codigo="IC" />);
         fireEvent.press(await screen.findByText('Como está a praia agora?'));
-        await act(async () => fireEvent.press(screen.getByText('Água-viva')));
+        // nada marcado: não dá para enviar
+        expect(screen.getByRole('button', { name: 'Enviar relato' })).toBeDisabled();
+        fireEvent.press(screen.getByText('Água-viva'));
+        await act(async () => fireEvent.press(screen.getByText('Enviar relato')));
         await waitFor(() =>
-            expect(mockEnviar).toHaveBeenCalledWith('IC001', 'agua_viva', { latitude: -22.905, longitude: -43.11 }, 'tok'),
+            expect(mockEnviar).toHaveBeenCalledWith('IC', ['agua_viva'], { latitude: -22.905, longitude: -43.11 }, 'tok'),
         );
         expect(await screen.findByText(/Obrigado! Seu relato ajuda/)).toBeTruthy();
+    });
+
+    it('marca várias opções e envia tudo junto', async () => {
+        mockFetch.mockResolvedValue({ disponivel: true, relatos: [] });
+        renderWithClient(<RelatosCard codigo="IC" />);
+        fireEvent.press(await screen.findByText('Como está a praia agora?'));
+        fireEvent.press(screen.getByText('Lotada'));
+        fireEvent.press(screen.getByText('Água limpa'));
+        fireEvent.press(screen.getByText('Lixo na areia'));
+        // desmarcar também funciona
+        fireEvent.press(screen.getByText('Lixo na areia'));
+        await act(async () => fireEvent.press(screen.getByText('Enviar 2 relatos')));
+        await waitFor(() => expect(mockEnviar).toHaveBeenCalledWith('IC', ['lotada', 'agua_limpa'], expect.any(Object), 'tok'));
+        expect(await screen.findByText(/Seus relatos ajudam/)).toBeTruthy();
+    });
+
+    it('marcar uma opção desmarca a oposta', async () => {
+        mockFetch.mockResolvedValue({ disponivel: true, relatos: [] });
+        renderWithClient(<RelatosCard codigo="IC" />);
+        fireEvent.press(await screen.findByText('Como está a praia agora?'));
+        fireEvent.press(screen.getByText('Lotada'));
+        fireEvent.press(screen.getByText('Tranquila'));
+        fireEvent.press(screen.getByText('Água turva'));
+        fireEvent.press(screen.getByText('Água limpa'));
+        expect(screen.getByRole('checkbox', { name: /Lotada/ })).not.toBeChecked();
+        expect(screen.getByRole('checkbox', { name: /Água turva/ })).not.toBeChecked();
+        await act(async () => fireEvent.press(screen.getByText('Enviar 2 relatos')));
+        await waitFor(() => expect(mockEnviar).toHaveBeenCalledWith('IC', ['tranquila', 'agua_limpa'], expect.any(Object), 'tok'));
     });
 
     it('longe da praia mostra a mensagem do servidor', async () => {
         mockFetch.mockResolvedValue({ disponivel: true, relatos: [] });
         mockEnviar.mockRejectedValue(axiosError(403, 'Você precisa estar na praia para relatar.'));
-        renderWithClient(<RelatosCard codigo="IC001" />);
+        renderWithClient(<RelatosCard codigo="IC" />);
         fireEvent.press(await screen.findByText('Como está a praia agora?'));
-        await act(async () => fireEvent.press(screen.getByText('Lotada')));
+        fireEvent.press(screen.getByText('Lotada'));
+        await act(async () => fireEvent.press(screen.getByText('Enviar relato')));
         expect(await screen.findByText('Você precisa estar na praia para relatar.')).toBeTruthy();
     });
 
     it('sem permissão de localização não chega a pedir login', async () => {
         (Location.requestForegroundPermissionsAsync as jest.Mock).mockResolvedValueOnce({ status: 'denied', canAskAgain: true });
         mockFetch.mockResolvedValue({ disponivel: true, relatos: [] });
-        renderWithClient(<RelatosCard codigo="IC001" />);
+        renderWithClient(<RelatosCard codigo="IC" />);
         fireEvent.press(await screen.findByText('Como está a praia agora?'));
-        await act(async () => fireEvent.press(screen.getByText('Lotada')));
+        fireEvent.press(screen.getByText('Lotada'));
+        await act(async () => fireEvent.press(screen.getByText('Enviar relato')));
         expect(await screen.findByText(/Permita o acesso à localização/)).toBeTruthy();
         expect(mockToken).not.toHaveBeenCalled();
         expect(mockEnviar).not.toHaveBeenCalled();
@@ -96,7 +129,7 @@ describe('RelatosCard', () => {
 
         fireEvent.press(screen.getByText('Bandeira vermelha'));
         await act(async () => fireEvent.press(screen.getByText('Eu também vi')));
-        await waitFor(() => expect(mockEnviar).toHaveBeenCalledWith('GR000', 'bandeira_vermelha', expect.any(Object), 'tok'));
+        await waitFor(() => expect(mockEnviar).toHaveBeenCalledWith('GR000', ['bandeira_vermelha'], expect.any(Object), 'tok'));
         expect(await screen.findByText(/Sua confirmação foi registrada/)).toBeTruthy();
     });
 

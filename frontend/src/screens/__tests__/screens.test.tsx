@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import * as Location from 'expo-location';
-import { fetchAvaliacao, fetchHistorico, fetchPonto, fetchPontos, fetchRegiao, fetchRelatos } from '../../api/praiometro';
-import type { PontoDetalhe, PontoResumo } from '../../api/types';
+import { fetchAvaliacao, fetchHistorico, fetchPonto, fetchPraia, fetchPraias, fetchRegiao, fetchRelatos } from '../../api/praiometro';
+import type { PontoDaPraia, PontoDetalhe, PraiaDetalhe, PraiaResumo } from '../../api/types';
 import { axiosError, renderWithClient } from '../../test/render';
 import Clima from '../Clima';
 import Praia from '../Praia';
@@ -9,21 +9,12 @@ import Praias from '../Praias';
 
 jest.mock('../../api/praiometro');
 
-const mockPontos = fetchPontos as jest.Mock;
+const mockPraias = fetchPraias as jest.Mock;
+const mockPraia = fetchPraia as jest.Mock;
 const mockPonto = fetchPonto as jest.Mock;
 const mockAvaliacao = fetchAvaliacao as jest.Mock;
 const mockHistorico = fetchHistorico as jest.Mock;
 const mockRegiao = fetchRegiao as jest.Mock;
-
-const resumo = (codigo: string, nome: string, balneabilidade: boolean | null, local = ''): PontoResumo => ({
-    codigo,
-    nome: [nome],
-    specific_location: [local],
-    coordenadas: null,
-    coordenadas_terra: [-22.9, -43.1],
-    ultima_leitura: '2026-11-16T14:00',
-    balneabilidade,
-});
 
 const navigation = { navigate: jest.fn(), goBack: jest.fn() } as any;
 
@@ -34,52 +25,78 @@ beforeEach(() => {
     (fetchRelatos as jest.Mock).mockResolvedValue({ disponivel: true, relatos: [] });
 });
 
+const trecho = (codigo: string, balneabilidade: boolean | null, local = '', coords: [number, number] = [-22.9, -43.1]): PontoDaPraia => ({
+    codigo,
+    local,
+    coordenadas: null,
+    coordenadas_terra: coords,
+    balneabilidade,
+    balneabilidade_data: '2026-11-12',
+});
+
+const praia = (id: string, nome: string, pontos: PontoDaPraia[], centro: [number, number] = [-22.9, -43.1]): PraiaResumo => {
+    const valores = pontos.map((p) => p.balneabilidade).filter((v) => v !== null);
+    const proprios = valores.filter(Boolean).length;
+    return {
+        id,
+        ordem: 0,
+        nome,
+        principal: pontos[0].codigo,
+        centro,
+        mar: 'baia',
+        situacao: !valores.length ? 'sem_dados' : proprios === valores.length ? 'propria' : proprios ? 'parcial' : 'impropria',
+        pontos_proprios: proprios,
+        pontos_com_dados: valores.length,
+        balneabilidade_data: '2026-11-12',
+        ultima_leitura: '2026-11-16T14:00',
+        pontos,
+    };
+};
+
+const ICARAI = praia('IC', 'Praia de Icaraí', [
+    trecho('IC00', true, 'Praça Getúlio Vargas'),
+    trecho('IC001', false, 'Rua Mariz e Barros'),
+]);
+const GRAGOATA = praia('GR', 'Praia de Gragoatá', [trecho('GR000', true)]);
+const ADAO = praia('AD', 'Praia de Adão', [trecho('AD000', null)]);
+
 describe('Praias', () => {
     beforeEach(() => {
-        mockPontos.mockResolvedValue([
-            resumo('IC001', 'Praia de Icaraí', false, 'Rua Mariz e Barros'),
-            resumo('GR000', 'Praia de Gragoatá', true),
-            resumo('IC00', 'Praia de Icaraí', null, 'Praça Getúlio Vargas'),
-        ]);
+        mockPraias.mockResolvedValue([ICARAI, GRAGOATA, ADAO]);
     });
 
-    it('lista em ordem alfabética com status de balneabilidade', async () => {
+    it('lista uma praia por card, em ordem alfabética, com a situação', async () => {
         renderWithClient(<Praias navigation={navigation} route={{} as any} />);
-        expect(await screen.findByText('3 pontos de coleta')).toBeTruthy();
+        expect(await screen.findByText('3 praias')).toBeTruthy();
+        expect(screen.getByText('EM PARTE')).toBeTruthy();
         expect(screen.getByText('PRÓPRIA')).toBeTruthy();
-        expect(screen.getByText('IMPRÓPRIA')).toBeTruthy();
         expect(screen.getByText('SEM DADOS')).toBeTruthy();
-        const nomes = screen.getAllByText(/^Praia de/).map((n) => n.props.children);
-        expect(nomes).toEqual(['Praia de Gragoatá', 'Praia de Icaraí', 'Praia de Icaraí']);
+        expect(screen.getByText('Própria em 1 de 2 trechos')).toBeTruthy();
+        const nomes = screen.getAllByText(/^Praia d/).map((n) => n.props.children);
+        expect(nomes).toEqual(['Praia de Adão', 'Praia de Gragoatá', 'Praia de Icaraí']);
     });
 
-    it('ordena ignorando o prefixo "Praia de/das"', async () => {
-        mockPontos.mockResolvedValue([resumo('FC000', 'Praia das Flechas', true), resumo('AD000', 'Praia de Adão', true)]);
-        renderWithClient(<Praias navigation={navigation} route={{} as any} />);
-        await screen.findByText('2 pontos de coleta');
-        expect(screen.getAllByText(/^Praia d/).map((n) => n.props.children)).toEqual(['Praia de Adão', 'Praia das Flechas']);
-    });
-
-    it('busca sem acentos e por localização', async () => {
+    it('busca sem acentos, também pelo nome de um trecho', async () => {
         renderWithClient(<Praias navigation={navigation} route={{} as any} />);
         fireEvent.changeText(await screen.findByLabelText('Buscar praia'), 'getulio');
-        expect(screen.getByText('1 ponto de coleta')).toBeTruthy();
+        expect(screen.getByText('1 praia')).toBeTruthy();
+        expect(screen.getByText('Praia de Icaraí')).toBeTruthy();
         fireEvent.changeText(screen.getByLabelText('Buscar praia'), 'xyz');
         expect(screen.getByText('Nenhuma praia encontrada.')).toBeTruthy();
     });
 
-    it('filtra somente próprias e navega ao tocar', async () => {
+    it('"Próprias" inclui as que estão boas só em parte e navega ao tocar', async () => {
         renderWithClient(<Praias navigation={navigation} route={{} as any} />);
         fireEvent.press(await screen.findByText('Próprias'));
-        expect(screen.getByText('1 ponto de coleta')).toBeTruthy();
+        expect(screen.getByText('2 praias')).toBeTruthy();
         fireEvent.press(screen.getByText('Praia de Gragoatá'));
-        expect(navigation.navigate).toHaveBeenCalledWith('Praia', { id: 'GR000' });
+        expect(navigation.navigate).toHaveBeenCalledWith('Praia', { id: 'GR' });
     });
 
-    it('perto de mim ordena pela distância', async () => {
-        mockPontos.mockResolvedValue([
-            { ...resumo('IA000', 'Praia de Itacoatiara', true), coordenadas_terra: [-22.976, -43.031] },
-            { ...resumo('IC001', 'Praia de Icaraí', true), coordenadas_terra: [-22.906, -43.112] },
+    it('perto de mim ordena pela parte mais próxima da praia', async () => {
+        mockPraias.mockResolvedValue([
+            praia('IA', 'Praia de Itacoatiara', [trecho('IA000', true, '', [-22.976, -43.031])], [-22.976, -43.031]),
+            praia('IC', 'Praia de Icaraí', [trecho('IC00', true, '', [-22.906, -43.112])], [-22.906, -43.112]),
         ]);
         renderWithClient(<Praias navigation={navigation} route={{} as any} />);
         fireEvent.press(await screen.findByText('Perto de mim'));
@@ -96,36 +113,55 @@ describe('Praias', () => {
     });
 
     it('servidor fora do ar: mostra erro e tenta de novo', async () => {
-        mockPontos.mockRejectedValueOnce(axiosError()).mockResolvedValueOnce([resumo('GR000', 'Praia de Gragoatá', true)]);
+        mockPraias.mockRejectedValueOnce(axiosError()).mockResolvedValueOnce([GRAGOATA]);
         renderWithClient(<Praias navigation={navigation} route={{} as any} />);
         expect(await screen.findByText(/Sem conexão/)).toBeTruthy();
         fireEvent.press(screen.getByText('Tentar novamente'));
-        expect(await screen.findByText('1 ponto de coleta')).toBeTruthy();
+        expect(await screen.findByText('1 praia')).toBeTruthy();
     });
 });
 
-const detalhe = (leitura: PontoDetalhe['leitura_atual']): PontoDetalhe => ({
-    nome: ['Praia de Icaraí'],
-    specific_location: ['Praça Getúlio Vargas'],
-    coordenadas_terra_decimais: [-22.9, -43.1],
-    leitura_atual: leitura,
-    previsao: [],
-});
+const detalhe = (leitura: PraiaDetalhe['leitura_atual'], base: PraiaResumo = GRAGOATA): PraiaDetalhe => {
+    const b = leitura?.balneabilidade;
+    const pontos = base.pontos.length === 1 ? [{ ...base.pontos[0], balneabilidade: b ?? null }] : base.pontos;
+    return { ...praia(base.id, base.nome, pontos), leitura_atual: leitura, previsao: [] };
+};
 
 describe('Praia', () => {
-    const rota = { params: { id: 'IC00' } } as any;
+    const rota = { params: { id: 'GR' } } as any;
+
+    beforeEach(() => mockAvaliacao.mockResolvedValue({ praia_id: 'GR', avaliacao_media: null, total_avaliacoes: 0 }));
 
     it('balneabilidade desconhecida não aparece como imprópria', async () => {
-        mockPonto.mockResolvedValue(detalhe({ timestamp: '2026-11-16T14:00', balneabilidade: null, wave_height: 0.5 }));
-        mockAvaliacao.mockResolvedValue({ praia_id: 'IC00', avaliacao_media: null, total_avaliacoes: 0 });
+        mockPraia.mockResolvedValue(detalhe({ timestamp: '2026-11-16T14:00', balneabilidade: null, wave_height: 0.5 }));
         renderWithClient(<Praia route={rota} navigation={navigation} />);
         expect(await screen.findByText('Balneabilidade sem informação')).toBeTruthy();
         expect(screen.queryByText('Imprópria para banho')).toBeNull();
-        expect(screen.getByText('MODERADO')).toBeTruthy();
+        // praia de um trecho só não mostra a lista de trechos
+        expect(screen.queryByText('TRECHOS DA PRAIA')).toBeNull();
+    });
+
+    it('praia boa só em parte lista os trechos e troca o histórico ao tocar', async () => {
+        mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }, ICARAI));
+        renderWithClient(<Praia route={{ params: { id: 'IC' } } as any} navigation={navigation} />);
+        expect(await screen.findByText('Própria só em parte da praia')).toBeTruthy();
+        expect(screen.getByText(/Veja abaixo em quais trechos dá para nadar/)).toBeTruthy();
+        expect(screen.getByText('TRECHOS DA PRAIA')).toBeTruthy();
+        expect(screen.getByLabelText('Rua Mariz e Barros: Imprópria para banho')).toBeTruthy();
+        await waitFor(() => expect(mockHistorico).toHaveBeenCalledWith('IC00'));
+        fireEvent.press(screen.getByText('Rua Mariz e Barros'));
+        await waitFor(() => expect(mockHistorico).toHaveBeenCalledWith('IC001'));
+    });
+
+    it('vindo do mapa, abre já no trecho escolhido', async () => {
+        mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }, ICARAI));
+        renderWithClient(<Praia route={{ params: { id: 'IC', trecho: 'IC001' } } as any} navigation={navigation} />);
+        await waitFor(() => expect(mockHistorico).toHaveBeenCalledWith('IC001'));
+        expect(mockHistorico).not.toHaveBeenCalledWith('IC00');
     });
 
     it('alerta de chuva recente e dados ausentes não quebram a tela', async () => {
-        mockPonto.mockResolvedValue(detalhe({ choveu_8_horas: true, balneabilidade: true }));
+        mockPraia.mockResolvedValue(detalhe({ choveu_8_horas: true, balneabilidade: true }));
         mockAvaliacao.mockRejectedValue(axiosError(503, 'fora'));
         renderWithClient(<Praia route={rota} navigation={navigation} />);
         expect(await screen.findByText(/Choveu nas últimas horas/)).toBeTruthy();
@@ -134,18 +170,17 @@ describe('Praia', () => {
     });
 
     it('praia inexistente (404) mostra a mensagem do servidor', async () => {
-        mockPonto.mockRejectedValue(axiosError(404, 'Praia não encontrada'));
+        mockPraia.mockRejectedValue(axiosError(404, 'Praia não encontrada'));
         mockAvaliacao.mockRejectedValue(axiosError(404, 'Praia não encontrada'));
         renderWithClient(<Praia route={rota} navigation={navigation} />);
         expect(await screen.findByText('Praia não encontrada')).toBeTruthy();
     });
 
     it('praia da baía não mostra altura de onda do modelo', async () => {
-        mockPonto.mockResolvedValue({
+        mockPraia.mockResolvedValue({
             ...detalhe({ balneabilidade: true, balneabilidade_data: '2026-11-12', wave_height: 1.02, wave_period: 9.3 }),
             mar: 'baia',
         });
-        mockAvaliacao.mockResolvedValue({ praia_id: 'IC00', avaliacao_media: null });
         renderWithClient(<Praia route={rota} navigation={navigation} />);
         expect(await screen.findByText('Águas abrigadas')).toBeTruthy();
         expect(screen.getByText('MAR DE BAÍA')).toBeTruthy();
@@ -154,18 +189,16 @@ describe('Praia', () => {
     });
 
     it('praia oceânica mostra a altura de onda', async () => {
-        mockPonto.mockResolvedValue({ ...detalhe({ balneabilidade: true, wave_height: 1.2 }), mar: 'oceanico' });
-        mockAvaliacao.mockResolvedValue({ praia_id: 'IA000', avaliacao_media: null });
+        mockPraia.mockResolvedValue({ ...detalhe({ balneabilidade: true, wave_height: 1.2 }), mar: 'oceanico' });
         renderWithClient(<Praia route={rota} navigation={navigation} />);
         expect(await screen.findByText('1,2')).toBeTruthy();
         expect(screen.queryByText('Águas abrigadas')).toBeNull();
     });
 
     it('mostra temperatura da água e histórico', async () => {
-        mockPonto.mockResolvedValue({ ...detalhe({ balneabilidade: true, sea_surface_temperature: 24.9, uv_index: 7 }), mar: 'oceanico' });
-        mockAvaliacao.mockResolvedValue({ praia_id: 'IC00', avaliacao_media: null });
+        mockPraia.mockResolvedValue({ ...detalhe({ balneabilidade: true, sea_surface_temperature: 24.9, uv_index: 7 }), mar: 'oceanico' });
         mockHistorico.mockResolvedValue({
-            codigo: 'IC00',
+            codigo: 'GR000',
             registros: [
                 { data: '2026-11-05', propria: true },
                 { data: '2026-11-09', propria: false },
@@ -184,18 +217,25 @@ describe('Praia', () => {
     });
 
     it('botão voltar', async () => {
-        mockPonto.mockResolvedValue(detalhe({ balneabilidade: true }));
-        mockAvaliacao.mockResolvedValue({ praia_id: 'IC00', avaliacao_media: null });
+        mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }));
         renderWithClient(<Praia route={rota} navigation={navigation} />);
         fireEvent.press(await screen.findByLabelText('Voltar'));
         expect(navigation.goBack).toHaveBeenCalled();
     });
 });
 
+const detalhePonto = (leitura: PontoDetalhe['leitura_atual']): PontoDetalhe => ({
+    nome: ['Praia de Icaraí'],
+    specific_location: ['Praça Getúlio Vargas'],
+    coordenadas_terra_decimais: [-22.9, -43.1],
+    leitura_atual: leitura,
+    previsao: [],
+});
+
 describe('Clima', () => {
     it('renderiza temperatura, condição e UV', async () => {
         mockPonto.mockResolvedValue(
-            detalhe({ timestamp: '2026-11-16T14:00', temperature_2m: 30.6, apparent_temperature: 33, relative_humidity_2m: 51, uv_index: 1.15, weather_code: 3 }),
+            detalhePonto({ timestamp: '2026-11-16T14:00', temperature_2m: 30.6, apparent_temperature: 33, relative_humidity_2m: 51, uv_index: 1.15, weather_code: 3 }),
         );
         renderWithClient(<Clima />);
         expect(await screen.findByText('31°')).toBeTruthy();
@@ -206,7 +246,7 @@ describe('Clima', () => {
 
     it('mostra sol e maré', async () => {
         jest.useFakeTimers({ now: new Date(Date.UTC(2026, 10, 16, 18, 30)), doNotFake: ['setTimeout', 'setInterval', 'setImmediate', 'nextTick', 'queueMicrotask'] });
-        mockPonto.mockResolvedValue(detalhe({ temperature_2m: 25, weather_code: 0 }));
+        mockPonto.mockResolvedValue(detalhePonto({ temperature_2m: 25, weather_code: 0 }));
         mockRegiao.mockResolvedValue({
             mare: { serie: [], extremos: [{ hora: '2026-11-16T17:40', nivel: 0.17, tipo: 'alta' }] },
             sol: [{ data: '2026-11-16', nascer: '2026-11-16T05:00', por: '2026-11-16T18:14' }],
@@ -220,7 +260,7 @@ describe('Clima', () => {
 
     it('troca entre centro e Região Oceânica', async () => {
         mockPonto.mockImplementation(async (codigo: string) =>
-            detalhe({ timestamp: '2026-11-16T14:00', temperature_2m: codigo === 'PR001' ? 27 : 29, weather_code: 0 }),
+            detalhePonto({ timestamp: '2026-11-16T14:00', temperature_2m: codigo === 'PR001' ? 27 : 29, weather_code: 0 }),
         );
         renderWithClient(<Clima />);
         expect(await screen.findByText('29°')).toBeTruthy();

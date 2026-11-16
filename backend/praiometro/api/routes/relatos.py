@@ -5,12 +5,12 @@ from pymongo.errors import PyMongoError
 
 from ...auth import TokenInvalidoError, VerificadorTokens
 from ...relatos import RelatoRecusadoError, RepositorioRelatos
-from ..deps import get_limitador, get_pontos, get_relatos, get_token, get_verificador, obter_ponto
+from ..deps import get_limitador, get_pontos, get_relatos, get_token, get_verificador, obter_praia
 from ..ratelimit import LimitadorTaxa
 from ..schemas import ListaRelatos, NovoRelato
 
 log = logging.getLogger(__name__)
-router = APIRouter(prefix="/pontos/{codigo}/relatos", tags=["relatos"])
+router = APIRouter(tags=["relatos"])
 
 
 def _usuario(token: str, verificador: VerificadorTokens) -> str:
@@ -26,19 +26,23 @@ def _limitar(request: Request, limitador: LimitadorTaxa) -> None:
 
 
 # def síncrono: pymongo bloqueia, então roda no threadpool
-@router.get("", response_model=ListaRelatos, summary="Relatos ativos dos banhistas")
+@router.get("/praias/{codigo}/relatos", response_model=ListaRelatos, summary="Relatos ativos dos banhistas")
+@router.get("/pontos/{codigo}/relatos", response_model=ListaRelatos, deprecated=True, include_in_schema=False)
 def listar_relatos(
     codigo: str, pontos: dict = Depends(get_pontos), relatos: RepositorioRelatos = Depends(get_relatos)
 ):
-    obter_ponto(pontos, codigo)
+    praia_id = obter_praia(pontos, codigo)["id"]
     try:
-        return ListaRelatos(relatos=relatos.listar(codigo), disponivel=True)
+        return ListaRelatos(relatos=relatos.listar(praia_id), disponivel=True)
     except PyMongoError as e:
         log.warning("Relatos indisponíveis: %s", e)
         return ListaRelatos(relatos=[], disponivel=False)
 
 
-@router.post("", status_code=204, summary="Envia um relato (ou confirma um existente)")
+@router.post(
+    "/praias/{codigo}/relatos", status_code=204, summary="Envia um relato (ou confirma um existente)"
+)
+@router.post("/pontos/{codigo}/relatos", status_code=204, deprecated=True, include_in_schema=False)
 def enviar_relato(
     codigo: str,
     relato: NovoRelato,
@@ -50,19 +54,19 @@ def enviar_relato(
     limitador: LimitadorTaxa = Depends(get_limitador),
 ):
     _limitar(request, limitador)
-    ponto = obter_ponto(pontos, codigo)
-    coordenadas = ponto.get("coordenadas_terra_decimais") or ponto.get("coordenadas_decimais")
-    if not coordenadas:
+    praia = obter_praia(pontos, codigo)
+    # vale estar perto de qualquer ponto de coleta da praia
+    locais = [
+        (c[0], c[1])
+        for p in praia["pontos"]
+        if (c := pontos[p].get("coordenadas_terra_decimais") or pontos[p].get("coordenadas_decimais"))
+    ]
+    if not locais:
         raise HTTPException(status_code=400, detail="Praia sem coordenadas cadastradas")
     user_id = _usuario(token, verificador)
     try:
-        relatos.registrar(
-            codigo,
-            user_id,
-            relato.tipo,
-            (relato.latitude, relato.longitude),
-            (coordenadas[0], coordenadas[1]),
-        )
+        tipos = relato.tipos or ([relato.tipo] if relato.tipo else [])
+        relatos.registrar(praia["id"], user_id, tipos, (relato.latitude, relato.longitude), locais)
     except RelatoRecusadoError as e:
         raise HTTPException(status_code=e.status, detail=str(e)) from None
     except PyMongoError:
@@ -70,7 +74,12 @@ def enviar_relato(
         raise HTTPException(status_code=503, detail="Não foi possível enviar o relato agora.") from None
 
 
-@router.post("/{tipo}/denuncia", status_code=204, summary="Denuncia um relato como falso")
+@router.post(
+    "/praias/{codigo}/relatos/{tipo}/denuncia", status_code=204, summary="Denuncia um relato como falso"
+)
+@router.post(
+    "/pontos/{codigo}/relatos/{tipo}/denuncia", status_code=204, deprecated=True, include_in_schema=False
+)
 def denunciar_relato(
     codigo: str,
     tipo: str,
@@ -82,10 +91,10 @@ def denunciar_relato(
     limitador: LimitadorTaxa = Depends(get_limitador),
 ):
     _limitar(request, limitador)
-    obter_ponto(pontos, codigo)
+    praia_id = obter_praia(pontos, codigo)["id"]
     user_id = _usuario(token, verificador)
     try:
-        relatos.denunciar(codigo, user_id, tipo)
+        relatos.denunciar(praia_id, user_id, tipo)
     except RelatoRecusadoError as e:
         raise HTTPException(status_code=e.status, detail=str(e)) from None
     except PyMongoError:

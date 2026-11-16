@@ -6,7 +6,8 @@ import {
     fetchAvaliacao,
     fetchHistorico,
     fetchPonto,
-    fetchPontos,
+    fetchPraia,
+    fetchPraias,
     fetchRegiao,
     fetchRelatos,
 } from '../api/praiometro';
@@ -15,16 +16,21 @@ import type { Coordenada } from '../utils/geo';
 import { ZONAS_CLIMA, type ZonaClima } from '../config/env';
 
 export const queryKeys = {
-    pontos: ['pontos'] as const,
+    praias: ['praias'] as const,
+    praia: (id: string) => ['praias', id] as const,
     ponto: (codigo: string) => ['pontos', codigo] as const,
-    avaliacao: (codigo: string) => ['pontos', codigo, 'avaliacao'] as const,
+    avaliacao: (praiaId: string) => ['praias', praiaId, 'avaliacao'] as const,
     historico: (codigo: string) => ['pontos', codigo, 'historico'] as const,
     regiao: ['regiao'] as const,
-    relatos: (codigo: string) => ['pontos', codigo, 'relatos'] as const,
+    relatos: (praiaId: string) => ['praias', praiaId, 'relatos'] as const,
 };
 
-export function usePontos() {
-    return useQuery({ queryKey: queryKeys.pontos, queryFn: fetchPontos });
+export function usePraias() {
+    return useQuery({ queryKey: queryKeys.praias, queryFn: fetchPraias });
+}
+
+export function usePraia(id: string) {
+    return useQuery({ queryKey: queryKeys.praia(id), queryFn: () => fetchPraia(id) });
 }
 
 export function usePonto(codigo: string) {
@@ -50,7 +56,12 @@ export function useEnviarVoto(codigo: string) {
 }
 
 export function useHistorico(codigo: string) {
-    return useQuery({ queryKey: queryKeys.historico(codigo), queryFn: () => fetchHistorico(codigo), staleTime: 6 * 60 * 60 * 1000 });
+    return useQuery({
+        queryKey: queryKeys.historico(codigo),
+        queryFn: () => fetchHistorico(codigo),
+        staleTime: 6 * 60 * 60 * 1000,
+        enabled: !!codigo,
+    });
 }
 
 export function useRegiao() {
@@ -64,8 +75,8 @@ export function useRelatos(codigo: string) {
 export function useEnviarRelato(codigo: string) {
     const queryClient = useQueryClient();
     return useMutation({
-        mutationFn: ({ tipo, local, idToken }: { tipo: TipoRelato; local: Coordenada; idToken: string }) =>
-            enviarRelato(codigo, tipo, local, idToken),
+        mutationFn: ({ tipos, local, idToken }: { tipos: TipoRelato[]; local: Coordenada; idToken: string }) =>
+            enviarRelato(codigo, tipos, local, idToken),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.relatos(codigo) }),
     });
 }

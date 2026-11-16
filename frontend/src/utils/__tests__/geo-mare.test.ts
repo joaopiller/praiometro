@@ -1,16 +1,6 @@
-import type { PontoResumo } from '../../api/types';
-import { distanciaKm, formatDistancia, ordenarPorDistancia } from '../geo';
+import { praiaDeTeste, trecho } from '../../test/praias';
+import { centroDaPraia, distanciaKm, formatDistancia, ordenarPraiasPorDistancia } from '../geo';
 import { estadoMare, solDeHoje } from '../mare';
-
-const ponto = (codigo: string, lat: number, lon: number): PontoResumo => ({
-    codigo,
-    nome: [codigo],
-    specific_location: [''],
-    coordenadas: null,
-    coordenadas_terra: [lat, lon],
-    ultima_leitura: null,
-    balneabilidade: null,
-});
 
 describe('geo', () => {
     it('calcula distância (Icaraí → Itacoatiara ≈ 10 km)', () => {
@@ -26,10 +16,20 @@ describe('geo', () => {
         expect(formatDistancia(42.6)).toBe('43 km');
     });
 
-    it('ordena pela distância e ignora pontos sem coordenada', () => {
-        const pontos = [ponto('LONGE', -22.976, -43.031), ponto('PERTO', -22.906, -43.118), { ...ponto('X', 0, 0), coordenadas_terra: null }];
-        const r = ordenarPorDistancia(pontos, { latitude: -22.905, longitude: -43.117 });
-        expect(r.map((x) => x.ponto.codigo)).toEqual(['PERTO', 'LONGE']);
+    it('ordena as praias pela parte mais próxima e ignora as sem coordenada', () => {
+        const praias = [
+            praiaDeTeste('IA', 'Itacoatiara', [trecho('IA000', '', [-22.976, -43.031])]),
+            // o meio da praia está longe, mas um dos trechos fica perto
+            praiaDeTeste('IC', 'Icaraí', [trecho('IC00', '', [-22.95, -43.05]), trecho('IC001', '', [-22.906, -43.118])], [-22.95, -43.05]),
+            praiaDeTeste('XX', 'Sem lugar', [trecho('XX000')]),
+        ];
+        const r = ordenarPraiasPorDistancia(praias, { latitude: -22.905, longitude: -43.117 });
+        expect(r.map((x) => x.praia.id)).toEqual(['IC', 'IA']);
+    });
+
+    it('o pin fica no meio da areia; sem ele, no ponto principal', () => {
+        expect(centroDaPraia(praiaDeTeste('IC', 'Icaraí', [trecho('IC00', '', [1, 2])], [3, 4]))).toEqual({ latitude: 3, longitude: 4 });
+        expect(centroDaPraia(praiaDeTeste('IC', 'Icaraí', [trecho('IC00', '', [1, 2])]))).toEqual({ latitude: 1, longitude: 2 });
     });
 });
 

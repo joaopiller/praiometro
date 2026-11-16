@@ -17,12 +17,12 @@ export function useAcoesRelato(codigo: string) {
     const denunciar = useDenunciarRelato(codigo);
     const { pedirLogin } = useLogin();
 
-    async function relatar(tipo: TipoRelato): Promise<Resultado> {
+    async function relatar(tipos: TipoRelato[]): Promise<Resultado> {
         try {
             const local = await obterLocalizacao();
             const idToken = await pedirLogin({ sobreModal: true });
             if (!idToken) return { ok: false };
-            await enviar.mutateAsync({ tipo, local, idToken });
+            await enviar.mutateAsync({ tipos, local, idToken });
             return { ok: true };
         } catch (error) {
             return { ok: false, erro: mensagemDe(error) };

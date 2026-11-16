@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import type { Relato, TipoRelato } from '../../api/types';
 import { LoginSobreModal } from '../../auth/LoginProvider';
-import { infoRelato, TIPOS_RELATO } from '../../constants/relatos';
+import { infoRelato, OPOSTOS, TIPOS_RELATO } from '../../constants/relatos';
 import { useRelatos } from '../../hooks/queries';
 import { useAcoesRelato, type Resultado } from '../../hooks/useAcoesRelato';
 import { colors, toneColors } from '../../theme';
@@ -41,6 +41,7 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
     const { data } = useRelatos(codigo);
     const { relatar, contestar, enviando } = useAcoesRelato(codigo);
     const [escolhendo, setEscolhendo] = useState(false);
+    const [marcados, setMarcados] = useState<TipoRelato[]>([]);
     const [selecionado, setSelecionado] = useState<Relato | null>(null);
     const avisar = useAviso();
 
@@ -56,11 +57,28 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
         }
     };
 
-    const escolher = async (tipo: TipoRelato) =>
-        concluir(await relatar(tipo), 'Obrigado! Seu relato ajuda quem está indo para a praia.', () => setEscolhendo(false));
+    const abrirEscolha = () => {
+        setMarcados([]);
+        setEscolhendo(true);
+    };
+
+    // marcar "lotada" desmarca "tranquila" (e água limpa/turva)
+    const alternar = (tipo: TipoRelato) =>
+        setMarcados((atuais) =>
+            atuais.includes(tipo) ? atuais.filter((t) => t !== tipo) : [...atuais.filter((t) => t !== OPOSTOS[tipo]), tipo],
+        );
+
+    const enviarMarcados = async () =>
+        concluir(
+            await relatar(marcados),
+            marcados.length > 1
+                ? 'Obrigado! Seus relatos ajudam quem está indo para a praia.'
+                : 'Obrigado! Seu relato ajuda quem está indo para a praia.',
+            () => setEscolhendo(false),
+        );
 
     const confirmar = async (relato: Relato) =>
-        concluir(await relatar(relato.tipo), 'Valeu! Sua confirmação foi registrada.', () => setSelecionado(null));
+        concluir(await relatar([relato.tipo]), 'Valeu! Sua confirmação foi registrada.', () => setSelecionado(null));
 
     const contestarRelato = async (relato: Relato) =>
         concluir(await contestar(relato.tipo), 'Obrigado! Vamos considerar sua contestação.', () => setSelecionado(null));
@@ -87,7 +105,7 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
             )}
 
             <Pressable
-                onPress={() => setEscolhendo(true)}
+                onPress={abrirEscolha}
                 accessibilityRole="button"
                 style={({ pressed }) => [styles.botao, pressed && styles.pressed]}
             >
@@ -104,22 +122,57 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
                 <Text style={styles.titulo} accessibilityRole="header">
                     Como está a praia?
                 </Text>
-                <Text style={styles.subtitulo}>Seu relato fica visível por 5 horas.</Text>
+                <Text style={styles.subtitulo}>Marque tudo o que você está vendo agora.</Text>
                 <View style={styles.grade}>
-                    {TIPOS_RELATO.map((t) => (
-                        <Pressable
-                            key={t.tipo}
-                            disabled={enviando}
-                            onPress={() => escolher(t.tipo)}
-                            accessibilityRole="button"
-                            style={({ pressed }) => [styles.opcao, pressed && styles.opcaoPressionada]}
-                        >
-                            <MaterialCommunityIcons name={t.icone} size={26} color={toneColors[t.tom].solid} />
-                            <Text style={styles.opcaoTexto}>{t.rotulo}</Text>
-                        </Pressable>
-                    ))}
+                    {TIPOS_RELATO.map((t) => {
+                        const marcado = marcados.includes(t.tipo);
+                        const tom = toneColors[t.tom];
+                        return (
+                            <Pressable
+                                key={t.tipo}
+                                disabled={enviando}
+                                onPress={() => alternar(t.tipo)}
+                                accessibilityRole="checkbox"
+                                accessibilityState={{ checked: marcado }}
+                                style={({ pressed }) => [
+                                    styles.opcao,
+                                    marcado && { backgroundColor: tom.bg, borderColor: tom.solid },
+                                    pressed && styles.opcaoPressionada,
+                                ]}
+                            >
+                                <MaterialCommunityIcons name={t.icone} size={24} color={tom.solid} />
+                                <Text style={styles.opcaoTexto} numberOfLines={2}>
+                                    {t.rotulo}
+                                </Text>
+                                {marcado ? (
+                                    <View style={[styles.marca, { backgroundColor: tom.solid }]}>
+                                        <Feather name="check" size={12} color="#fff" />
+                                    </View>
+                                ) : null}
+                            </Pressable>
+                        );
+                    })}
                 </View>
-                {enviando && <ActivityIndicator color={colors.brand} style={styles.carregando} />}
+                <Pressable
+                    disabled={!marcados.length || enviando}
+                    onPress={enviarMarcados}
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !marcados.length || enviando, busy: enviando }}
+                    style={({ pressed }) => [
+                        styles.acaoPrincipal,
+                        styles.enviar,
+                        (!marcados.length || enviando) && styles.desativado,
+                        pressed && styles.pressed,
+                    ]}
+                >
+                    {enviando ? (
+                        <ActivityIndicator color="#fff" />
+                    ) : (
+                        <Text style={styles.acaoPrincipalTexto}>
+                            {marcados.length > 1 ? `Enviar ${marcados.length} relatos` : 'Enviar relato'}
+                        </Text>
+                    )}
+                </Pressable>
             </BottomSheet>
 
             <BottomSheet

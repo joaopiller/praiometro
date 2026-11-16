@@ -8,6 +8,7 @@ from typing import Any
 from pymongo.collection import Collection
 from pymongo.errors import DuplicateKeyError
 
+from .praias import id_da_praia
 from .storage import atualizar_json
 
 log = logging.getLogger(__name__)
@@ -54,6 +55,18 @@ class RepositorioVotos:
 
     def garantir_indices(self) -> None:
         self.colecao.create_index([("praia_id", 1), ("user_id", 1)], unique=True)
+
+    def migrar_para_praias(self) -> int:
+        """Votos antigos eram por ponto de coleta; passam para a praia.
+
+        Quem avaliou dois pontos da mesma praia fica com a avaliação mais recente.
+        """
+        from .relatos import _juntar_por_praia
+
+        movidos = _juntar_por_praia(self.colecao, ("user_id",), "timestamp")
+        if movidos:
+            log.info("%d avaliações passaram de ponto para praia", movidos)
+        return movidos
 
     def ping(self) -> bool:
         try:
@@ -111,7 +124,7 @@ def gravar_snapshot_medias(repo: RepositorioVotos, estado_file) -> int:
 
     def alterar(estado: dict) -> dict:
         for codigo, ponto in estado.items():
-            r = resumos.get(codigo)
+            r = resumos.get(id_da_praia(codigo))
             if r:
                 ponto["avaliacao_media"] = r.estrelas
                 ponto["total_avaliacoes"] = r.total

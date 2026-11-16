@@ -34,6 +34,41 @@ class ListaPontos(BaseModel):
     pontos: list[PontoResumo]
 
 
+class PontoDaPraia(BaseModel):
+    codigo: str
+    local: str = Field("", description="Referência do ponto dentro da praia (vazio no ponto principal)")
+    coordenadas: list[float] | None = None
+    coordenadas_terra: list[float] | None = None
+    balneabilidade: bool | None = None
+    balneabilidade_data: str | None = None
+
+
+class PraiaResumo(BaseModel):
+    id: str = Field(description="Prefixo dos códigos dos pontos (IC para Icaraí)")
+    ordem: int = Field(description="Posição ao longo do litoral, de Gragoatá a Itacoatiara")
+    nome: str
+    principal: str = Field(description="Ponto de onde vêm clima e mar")
+    centro: list[float] | None = Field(
+        None, description="[lat, lon] do pin no mapa, no meio da faixa de areia"
+    )
+    mar: str | None = None
+    situacao: Literal["propria", "impropria", "parcial", "sem_dados"]
+    pontos_proprios: int
+    pontos_com_dados: int
+    balneabilidade_data: str | None = Field(None, description="Boletim mais recente entre os pontos")
+    ultima_leitura: str | None = None
+    pontos: list[PontoDaPraia]
+
+
+class ListaPraias(BaseModel):
+    praias: list[PraiaResumo]
+
+
+class PraiaDetalhe(PraiaResumo):
+    leitura_atual: dict | None = Field(None, description="Leitura do ponto principal")
+    previsao: list[dict] = []
+
+
 class DadosPonto(BaseModel):
     codigo: str
     timestamp: str | None
@@ -106,7 +141,8 @@ class Regiao(BaseModel):
 class NovoRelato(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    tipo: str
+    tipo: str | None = Field(None, description="Um relato só (versões antigas do app)")
+    tipos: list[str] = Field([], max_length=8, description="Vários relatos enviados juntos")
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
 

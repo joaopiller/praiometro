@@ -7,7 +7,7 @@ import styles from './styles';
 
 const ULTIMAS = 24;
 
-function HistoricoStrip({ historico }: { historico?: Historico }) {
+function HistoricoStrip({ historico, trecho }: { historico?: Historico; trecho?: string }) {
     if (!historico?.total) return null;
     const ultimas = historico.registros.slice(-ULTIMAS);
     const pct = Math.round(historico.percentual_proprio ?? 0);
@@ -17,9 +17,12 @@ function HistoricoStrip({ historico }: { historico?: Historico }) {
     return (
         <GlassCard
             style={styles.card}
-            accessibilityLabel={`Histórico: própria em ${pct}% das coletas dos últimos 12 meses`}
+            accessibilityLabel={`Histórico${trecho ? ` de ${trecho}` : ''}: própria em ${pct}% das coletas dos últimos 12 meses`}
         >
-            <CardLabel right={<Text style={styles.pct}>{pct}% própria</Text>}>Últimas coletas</CardLabel>
+            <View>
+                <CardLabel right={<Text style={styles.pct}>{pct}% própria</Text>}>Últimas coletas</CardLabel>
+                {trecho ? <Text style={styles.trecho}>{trecho}</Text> : null}
+            </View>
             <View style={styles.barras}>
                 {ultimas.map((r) => (
                     <View key={r.data} style={[styles.barra, r.propria ? styles.propria : styles.impropria]} />

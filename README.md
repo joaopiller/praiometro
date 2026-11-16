@@ -11,14 +11,15 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 
 ## Funcionalidades
 
-- Mapa com os 29 pontos de coleta do INEA em Niterói, com pins pela balneabilidade e carrossel que percorre o litoral de Gragoatá a Itacoatiara
-- Situação de cada praia: própria/imprópria para banho, data do boletim e histórico das últimas coletas
+- Mapa com as 14 praias de Niterói, um pin por praia no meio da faixa de areia, colorido pela situação, e carrossel que percorre o litoral de Gragoatá a Itacoatiara
+- Situação de cada praia: própria, imprópria ou própria só em parte, quando os trechos medidos pelo INEA (29 pontos de coleta) discordam
+- Trechos de cada praia com a situação de cada um e o histórico das últimas coletas
 - Aviso quando choveu recentemente
 - Praia mais próxima de você (no mapa e na lista)
 - Ondas (nas praias oceânicas), vento, temperatura da água, índice UV e previsão para as próximas 24 horas
 - Clima por área da cidade (Centro e baía ou Região Oceânica), maré e nascer/pôr do sol
 - Avaliação das praias pelos usuários (limpeza, acessibilidade, infraestrutura, segurança e tranquilidade), com meia estrela
-- Relatos rápidos de quem está na praia (lotada, água-viva, mar agitado, bandeira vermelha...), que expiram em 5 horas
+- Relatos rápidos de quem está na praia (lotada, água limpa, água-viva, bandeira vermelha...), vários de uma vez, que expiram em 5 horas
 - Busca sem acento e filtros de praias próprias e mais próximas
 - Login com Google (e com Apple no iPhone) para avaliar e relatar
 - Funciona offline com os últimos dados baixados
@@ -105,16 +106,22 @@ ruff check . && ruff format --check .
 | Método | Rota | Descrição |
 | --- | --- | --- |
 | GET | `/health` | Status da API e do MongoDB |
-| GET | `/pontos` | Lista de pontos com a balneabilidade atual |
-| GET | `/pontos/{codigo}` | Leitura atual e previsão de 24h |
+| GET | `/praias` | As 14 praias, com a situação geral, o pin no mapa e cada ponto de coleta |
+| GET | `/praias/{id}` | Uma praia, com leitura atual e previsão de 24h do ponto principal |
+| GET | `/praias/{id}/avaliacao` | Médias das avaliações da praia |
+| GET | `/praias/{id}/relatos` | Relatos ativos, agrupados por tipo |
+| POST | `/praias/{id}/relatos` | Envia um ou vários relatos (`{"tipos": [...], "latitude", "longitude"}`; exige login e estar a até 2 km de algum ponto da praia) |
+| POST | `/praias/{id}/relatos/{tipo}/denuncia` | Contesta um relato |
+| POST | `/votar?praia_id=...` | Envia/atualiza uma avaliação (header `Authorization: Bearer <id_token>`) |
+| GET | `/pontos` | Os 29 pontos de coleta com a balneabilidade atual |
+| GET | `/pontos/{codigo}` | Leitura atual e previsão de 24h de um ponto |
 | GET | `/pontos/{codigo}/dados?tipo=meteo\|marine\|ambos` | Apenas os indicadores |
-| GET | `/pontos/{codigo}/avaliacao` | Médias das avaliações |
-| GET | `/pontos/{codigo}/historico?dias=365` | Histórico de balneabilidade |
+| GET | `/pontos/{codigo}/historico?dias=365` | Histórico de balneabilidade de um ponto |
 | GET | `/regiao` | Maré e nascer/pôr do sol |
-| GET | `/pontos/{codigo}/relatos` | Relatos ativos, agrupados por tipo |
-| POST | `/pontos/{codigo}/relatos` | Envia ou confirma um relato (exige login e estar a até 2 km da praia) |
-| POST | `/pontos/{codigo}/relatos/{tipo}/denuncia` | Contesta um relato |
-| POST | `/votar?praia_id=...` | Envia/atualiza uma avaliação (header `Authorization: Bearer <id_token do Google>`) |
+
+O id da praia são as duas letras do começo do código dos pontos (`IC` para Icaraí, cujos pontos são `IC00`, `IC001`...). As avaliações e os relatos são da praia; as rotas antigas por ponto (`/pontos/{codigo}/avaliacao` e `/pontos/{codigo}/relatos`) continuam respondendo pela praia do ponto.
+
+O pin de cada praia fica em `praiometro/dados/centro_das_praias.json`, gerado por `scripts/centro_das_praias.py` a partir dos contornos de areia do OpenStreetMap: o ponto bem dentro da areia mais perto do meio da praia.
 
 ### Moderação dos relatos
 
@@ -122,7 +129,8 @@ Os relatos são opções fixas, sem texto livre, então não há conteúdo ofens
 
 - cada relato expira em 5 horas (índice TTL no MongoDB);
 - é preciso estar logado e a até 2 km da praia, verificado também no servidor;
-- cada pessoa conta uma vez por tipo e praia a cada hora, com no máximo 5 relatos por dia;
+- cada pessoa conta uma vez por tipo e praia a cada hora, com no máximo 12 relatos por dia;
+- opções opostas (lotada e tranquila, água limpa e água turva) não podem ir juntas;
 - 3 contestações de pessoas diferentes escondem o relato, a menos que ele tenha mais confirmações do que contestações.
 
 ## Frontend
@@ -168,7 +176,7 @@ Scripts em `frontend/scripts/` (requerem Python com Pillow: `pip install pillow`
 
 - `python scripts/comprimir-imagens.py`: reduz as fotos de `assets/images/praias` para 1280 px de largura. Rode sempre que adicionar uma foto nova; ele não mexe no que já está otimizado.
 - `python scripts/gerar-icones.py`: gera o ícone do app e o ícone adaptativo do Android a partir de `assets/images/logo-header.png`.
-- `python scripts/gerar-pins.py`: gera os pins do mapa.
+- `python scripts/gerar-pins.py`: gera os pins do mapa (própria, imprópria, só em parte e sem dados, cada um com a versão selecionada).
 
 ### Testes e qualidade
 

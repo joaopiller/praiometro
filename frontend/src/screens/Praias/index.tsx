@@ -8,12 +8,12 @@ import Screen from '../../components/Screen';
 import StateView from '../../components/StateView';
 import Vidro from '../../components/Vidro';
 import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
-import { usePontos } from '../../hooks/queries';
+import { usePraias } from '../../hooks/queries';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
-import { formatDistancia, ordenarPorDistancia } from '../../utils/geo';
+import { formatDistancia, ordenarPraiasPorDistancia } from '../../utils/geo';
 import type { PraiasScreenProps } from '../../navigation/types';
 import { colors } from '../../theme';
-import { matchesBeach, nomePrincipal, nomeSemPrefixo } from '../../utils/search';
+import { buscaPraia, nomeSemPrefixo } from '../../utils/search';
 import styles from './styles';
 
 type Filtro = 'todas' | 'proprias' | 'perto';
@@ -24,7 +24,7 @@ const FILTROS: { id: Filtro; label: string; icone?: 'crosshairs-gps' }[] = [
 ];
 
 export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
-    const { data, isPending, error, refetch, isRefetching } = usePontos();
+    const { data, isPending, error, refetch, isRefetching } = usePraias();
     const [busca, setBusca] = useState('');
     const [filtro, setFiltro] = useState<Filtro>('todas');
     const espacoAbas = useEspacoDasAbas();
@@ -32,15 +32,16 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
     const { coordenada, carregando: localizando, erro: erroLocal, localizar } = useLocalizacao();
 
     const praias = useMemo(() => {
+        // "Próprias" inclui as que estão boas só em parte: o card avisa quantos trechos
         const filtradas = (data ?? []).filter(
-            (p) => matchesBeach(p, busca) && (filtro !== 'proprias' || p.balneabilidade === true),
+            (p) => buscaPraia(p, busca) && (filtro !== 'proprias' || p.situacao === 'propria' || p.situacao === 'parcial'),
         );
         if (filtro === 'perto' && coordenada) {
-            return ordenarPorDistancia(filtradas, coordenada).map(({ ponto, km }) => ({ ponto, distancia: formatDistancia(km) }));
+            return ordenarPraiasPorDistancia(filtradas, coordenada).map(({ praia, km }) => ({ praia, distancia: formatDistancia(km) }));
         }
         return filtradas
-            .sort((a, b) => nomeSemPrefixo(nomePrincipal(a)).localeCompare(nomeSemPrefixo(nomePrincipal(b)), 'pt-BR'))
-            .map((ponto) => ({ ponto, distancia: undefined as string | undefined }));
+            .sort((a, b) => nomeSemPrefixo(a.nome).localeCompare(nomeSemPrefixo(b.nome), 'pt-BR'))
+            .map((praia) => ({ praia, distancia: undefined as string | undefined }));
     }, [data, busca, filtro, coordenada]);
 
     const escolherFiltro = (f: Filtro) => {
@@ -60,7 +61,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
         <Screen scroll={false}>
             <FlatList
                 data={praias}
-                keyExtractor={(p) => p.ponto.codigo}
+                keyExtractor={(p) => p.praia.id}
                 contentContainerStyle={[styles.list, espacoAbas > 0 && { paddingBottom: espacoAbas + 32 }]}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="on-drag"
@@ -116,16 +117,16 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                         </View>
                         {filtro === 'perto' && erroLocal ? <Text style={styles.aviso}>{erroLocal}</Text> : null}
                         <Text style={styles.count}>
-                            {praias.length} {praias.length === 1 ? 'ponto' : 'pontos'} de coleta
+                            {praias.length} {praias.length === 1 ? 'praia' : 'praias'}
                         </Text>
                     </View>
                 }
                 ItemSeparatorComponent={() => <View style={styles.separator} />}
                 renderItem={({ item }) => (
                     <BeachCard
-                        ponto={item.ponto}
+                        praia={item.praia}
                         distancia={item.distancia}
-                        onPress={() => navigation.navigate('Praia', { id: item.ponto.codigo })}
+                        onPress={() => navigation.navigate('Praia', { id: item.praia.id })}
                     />
                 )}
                 ListEmptyComponent={<Text style={styles.empty}>Nenhuma praia encontrada.</Text>}

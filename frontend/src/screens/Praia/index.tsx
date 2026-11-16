@@ -14,50 +14,58 @@ import RelatosCard from '../../components/RelatosCard';
 import Screen from '../../components/Screen';
 import StateView from '../../components/StateView';
 import StatusBanner from '../../components/StatusBanner';
+import TrechosCard from '../../components/TrechosCard';
 import WaveDivider from '../../components/WaveDivider';
 import { getBeachPhoto } from '../../constants/beaches';
-import { useAvaliacao, useHistorico, usePonto, useRelatos } from '../../hooks/queries';
+import { useAvaliacao, useHistorico, usePraia, useRelatos } from '../../hooks/queries';
 import type { PraiasScreenProps } from '../../navigation/types';
 import { colors } from '../../theme';
 import { descreverBoletim, formatNumber, formatTemp } from '../../utils/format';
-import { direcaoVento, NIVEL_BAIA, nivelBalneabilidade, nivelOnda, nivelVento } from '../../utils/risk';
+import { direcaoVento, NIVEL_BAIA, nivelOnda, nivelPraia, nivelVento } from '../../utils/risk';
+import { nomeDoTrecho } from '../../utils/search';
 import styles from './styles';
 
 const ICONE_BALNEABILIDADE = { success: 'check-circle', danger: 'close-circle', neutral: 'help-circle', warning: 'alert-circle' } as const;
 
 export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>) {
-    const { id } = route.params;
-    const ponto = usePonto(id);
+    const { id, trecho } = route.params;
+    const consulta = usePraia(id);
     const avaliacao = useAvaliacao(id);
-    const historico = useHistorico(id);
     const relatos = useRelatos(id);
+    const [escolhido, setEscolhido] = useState(trecho);
+    // histórico do trecho tocado (ou do que veio do mapa); sem escolha, o ponto principal
+    const pontos = consulta.data?.pontos ?? [];
+    const trechoAtual =
+        pontos.find((p) => p.codigo === escolhido) ?? pontos.find((p) => p.codigo === consulta.data?.principal);
+    const historico = useHistorico(trechoAtual?.codigo ?? '');
     const [modalVisivel, setModalVisivel] = useState(false);
     const avisar = useAviso();
 
-    if (ponto.isPending || (ponto.error && !ponto.data)) {
+    if (consulta.isPending || (consulta.error && !consulta.data)) {
         return (
             <Screen scroll={false}>
                 <StateView
-                    loading={ponto.isPending}
-                    error={ponto.error ? getErrorMessage(ponto.error) : null}
-                    onRetry={() => ponto.refetch()}
+                    loading={consulta.isPending}
+                    error={consulta.error ? getErrorMessage(consulta.error) : null}
+                    onRetry={() => consulta.refetch()}
                 />
             </Screen>
         );
     }
 
-    const praia = ponto.data;
+    const praia = consulta.data;
     const leitura = praia.leitura_atual ?? {};
-    const nome = praia.nome?.[0] ?? 'Praia';
-    const local = praia.specific_location?.find((l) => l.trim());
+    const nome = praia.nome;
     const foto = getBeachPhoto(id);
-    const balneabilidade = nivelBalneabilidade(leitura.balneabilidade);
+    const balneabilidade = nivelPraia(praia.situacao);
+    const variosTrechos = praia.pontos.length > 1;
+    const boletim = descreverBoletim(praia.balneabilidade_data);
     const baia = praia.mar === 'baia';
     const onda = baia ? NIVEL_BAIA : nivelOnda(leitura.wave_height);
     const vento = nivelVento(leitura.wind_speed_10m);
 
     async function abrirMapa() {
-        const coords = praia.coordenadas_terra_decimais;
+        const coords = praia.centro;
         if (!coords) return;
         const url = `https://www.google.com/maps/search/?api=1&query=${coords[0]},${coords[1]}`;
         try {
@@ -69,9 +77,9 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
 
     return (
         <Screen
-            refreshing={ponto.isRefetching}
+            refreshing={consulta.isRefetching}
             onRefresh={() => {
-                ponto.refetch();
+                consulta.refetch();
                 avaliacao.refetch();
                 historico.refetch();
                 relatos.refetch();
@@ -98,7 +106,6 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                     <Text style={styles.title} accessibilityRole="header">
                         {nome}
                     </Text>
-                    {local ? <Text style={styles.subtitle}>{local}</Text> : null}
                 </View>
                 <View style={styles.wave}>
                     <WaveDivider color={colors.bgTop} />
@@ -106,16 +113,23 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
             </ImageBackground>
 
             <View style={styles.body}>
-                <DataNotice timestamp={leitura.timestamp} refreshError={!!ponto.error} />
+                <DataNotice timestamp={leitura.timestamp} refreshError={!!consulta.error} />
 
                 <StatusBanner
                     tone={balneabilidade.tom}
                     icon={ICONE_BALNEABILIDADE[balneabilidade.tom]}
                     title={balneabilidade.mensagem ?? ''}
-                    subtitle={descreverBoletim(leitura.balneabilidade_data)}
+                    subtitle={praia.situacao === 'parcial' ? `Veja abaixo em quais trechos dá para nadar. ${boletim}` : boletim}
                 />
 
-                <HistoricoStrip historico={historico.data} />
+                {variosTrechos && trechoAtual ? (
+                    <TrechosCard pontos={praia.pontos} selecionado={trechoAtual.codigo} onSelecionar={setEscolhido} />
+                ) : null}
+
+                <HistoricoStrip
+                    historico={historico.data}
+                    trecho={variosTrechos && trechoAtual ? nomeDoTrecho(trechoAtual) : undefined}
+                />
 
                 <RelatosCard codigo={id} />
 

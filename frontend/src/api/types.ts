@@ -32,18 +32,41 @@ export interface PrevisaoHora {
     wave_height: number | null;
 }
 
-export interface PontoResumo {
+/** Situação da praia somando os pontos de coleta dela */
+export type SituacaoPraia = 'propria' | 'impropria' | 'parcial' | 'sem_dados';
+
+/** Ponto de coleta do INEA dentro da praia (no app, um "trecho") */
+export interface PontoDaPraia {
     codigo: string;
-    /** posição ao longo do litoral (de Gragoatá a Itacoatiara) */
-    ordem?: number;
-    nome: string[];
-    specific_location: string[];
+    /** referência do ponto (vazia no ponto principal) */
+    local: string;
     coordenadas: [number, number] | null;
     coordenadas_terra: [number, number] | null;
-    ultima_leitura: string | null;
     balneabilidade: boolean | null;
     balneabilidade_data?: string | null;
+}
+
+export interface PraiaResumo {
+    /** prefixo dos códigos dos pontos (IC para Icaraí) */
+    id: string;
+    ordem: number;
+    nome: string;
+    /** ponto de onde vêm clima e mar */
+    principal: string;
+    /** [lat, lon] do pin, no meio da faixa de areia */
+    centro: [number, number] | null;
     mar?: TipoMar | null;
+    situacao: SituacaoPraia;
+    pontos_proprios: number;
+    pontos_com_dados: number;
+    balneabilidade_data?: string | null;
+    ultima_leitura?: string | null;
+    pontos: PontoDaPraia[];
+}
+
+export interface PraiaDetalhe extends PraiaResumo {
+    leitura_atual?: Leitura | null;
+    previsao?: PrevisaoHora[];
 }
 
 export interface PontoDetalhe {
@@ -111,7 +134,8 @@ export type TipoRelato =
     | 'lixo'
     | 'mar_agitado'
     | 'bandeira_vermelha'
-    | 'agua_turva';
+    | 'agua_turva'
+    | 'agua_limpa';
 
 export interface Relato {
     tipo: TipoRelato;

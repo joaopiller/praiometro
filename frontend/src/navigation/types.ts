@@ -4,7 +4,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 export type PraiasStackParamList = {
     Praias: undefined;
-    Praia: { id: string };
+    /** id da praia (IC); `trecho` destaca um ponto de coleta, como quando se vem do mapa */
+    Praia: { id: string; trecho?: string };
 };
 
 export type TabParamList = {

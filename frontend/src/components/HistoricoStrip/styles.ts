@@ -3,6 +3,7 @@ import { colors, spacing } from '../../theme';
 
 export default StyleSheet.create({
     card: { gap: spacing.md },
+    trecho: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
     pct: { color: colors.text, fontSize: 14, fontWeight: '700' },
     barras: { flexDirection: 'row', gap: 3, height: 22 },
     barra: { flex: 1, borderRadius: 3 },

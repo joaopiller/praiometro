@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { ActivityIndicator, FlatList, Pressable, Text, useWindowDimensions, View, type ListViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../api/client';
-import type { PontoResumo } from '../../api/types';
+import type { PraiaResumo } from '../../api/types';
 import { useAviso } from '../../components/Aviso';
 import HomeHeader from '../../components/HomeHeader';
 import MapBeachCard from '../../components/MapBeachCard';
@@ -15,38 +15,38 @@ import Screen from '../../components/Screen';
 import StateView from '../../components/StateView';
 import Vidro from '../../components/Vidro';
 import { MAPA_INICIAL } from '../../constants/beaches';
-import { usePontos } from '../../hooks/queries';
+import { usePraias } from '../../hooks/queries';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
 import type { TabScreenProps } from '../../navigation/types';
 import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
-import { colors } from '../../theme';
-import { coordenadaDoPonto, distanciaKm, formatDistancia, ordenarPorDistancia } from '../../utils/geo';
-import { localEspecifico, nomePrincipal } from '../../utils/search';
+import { colors, toneColors } from '../../theme';
+import { centroDaPraia, distanciaAtePraia, formatDistancia, ordenarPraiasPorDistancia } from '../../utils/geo';
+import { nomeCurto } from '../../utils/search';
 import styles, { CARD_GAP, CARROSSEL_ALTURA } from './styles';
 
 const PINS = {
     propria: require('../../../assets/images/pins/pin-propria.png'),
     impropria: require('../../../assets/images/pins/pin-impropria.png'),
+    parcial: require('../../../assets/images/pins/pin-parcial.png'),
     'sem-dados': require('../../../assets/images/pins/pin-sem-dados.png'),
     'propria-sel': require('../../../assets/images/pins/pin-propria-sel.png'),
     'impropria-sel': require('../../../assets/images/pins/pin-impropria-sel.png'),
+    'parcial-sel': require('../../../assets/images/pins/pin-parcial-sel.png'),
     'sem-dados-sel': require('../../../assets/images/pins/pin-sem-dados-sel.png'),
 };
 
-const status = (p: PontoResumo) => (p.balneabilidade === true ? 'propria' : p.balneabilidade === false ? 'impropria' : 'sem-dados');
-
-// [lat, lon] da API → [lon, lat] do GeoJSON
-const posicao = (p: PontoResumo): [number, number] => [p.coordenadas_terra![1], p.coordenadas_terra![0]];
+const PIN_DA_SITUACAO = { propria: 'propria', impropria: 'impropria', parcial: 'parcial', sem_dados: 'sem-dados' } as const;
+const COR_DO_TRECHO = (b: boolean | null) => toneColors[b === true ? 'success' : b === false ? 'danger' : 'neutral'].solid;
 
 const VISIBILIDADE = { itemVisiblePercentThreshold: 70 };
 
 export default function Home({ navigation }: TabScreenProps<'Home'>) {
-    const { data, isPending, error, refetch } = usePontos();
+    const { data, isPending, error, refetch } = usePraias();
     const insets = useSafeAreaInsets();
     const focado = useIsFocused();
     const { width } = useWindowDimensions();
     const camera = useRef<CameraRef>(null);
-    const lista = useRef<FlatList<PontoResumo>>(null);
+    const lista = useRef<FlatList<PraiaResumo>>(null);
     const [selecionado, setSelecionado] = useState<string | null>(null);
     const [mapaFalhou, setMapaFalhou] = useState(false);
     const base = useEspacoDasAbas();
@@ -57,37 +57,74 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
 
     // na ordem do litoral: cada card do carrossel é vizinho do anterior
     const praias = useMemo(
-        () => (data ?? []).filter((p) => p.coordenadas_terra?.length === 2).sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0)),
+        () => (data ?? []).filter((p) => centroDaPraia(p)).sort((a, b) => a.ordem - b.ordem),
         [data],
     );
 
-    const geojson = useMemo<GeoJSON.FeatureCollection>(
+    // um pin por praia, no meio da areia
+    const pins = useMemo<GeoJSON.FeatureCollection>(
         () => ({
             type: 'FeatureCollection',
-            features: praias.map((p) => ({
-                type: 'Feature',
-                id: p.codigo,
-                geometry: { type: 'Point', coordinates: posicao(p) },
-                properties: { codigo: p.codigo, nome: nomePrincipal(p).replace(/^Praia (d[aeo]s?|de) /, ''), status: status(p) },
-            })),
+            features: praias.map((p) => {
+                const c = centroDaPraia(p)!;
+                return {
+                    type: 'Feature',
+                    id: p.id,
+                    geometry: { type: 'Point', coordinates: [c.longitude, c.latitude] },
+                    properties: { id: p.id, nome: nomeCurto(p.nome), status: PIN_DA_SITUACAO[p.situacao] },
+                };
+            }),
         }),
         [praias],
     );
 
+    // os trechos medidos aparecem, pequenos, só na praia escolhida
+    const trechos = useMemo<GeoJSON.FeatureCollection>(() => {
+        const praia = praias.find((p) => p.id === selecionado);
+        return {
+            type: 'FeatureCollection',
+            features: (praia && praia.pontos.length > 1 ? praia.pontos : []).flatMap((t) => {
+                const c = t.coordenadas_terra ?? t.coordenadas;
+                return c
+                    ? [
+                          {
+                              type: 'Feature' as const,
+                              id: t.codigo,
+                              geometry: { type: 'Point' as const, coordinates: [c[1], c[0]] },
+                              properties: { cor: COR_DO_TRECHO(t.balneabilidade) },
+                          },
+                      ]
+                    : [];
+            }),
+        };
+    }, [praias, selecionado]);
+
     const focar = useCallback(
-        (codigo: string, rolarLista: boolean) => {
-            const indice = praias.findIndex((p) => p.codigo === codigo);
+        (id: string, rolarLista: boolean) => {
+            const indice = praias.findIndex((p) => p.id === id);
             if (indice < 0) return;
-            setSelecionado(codigo);
-            camera.current?.flyTo({
-                center: posicao(praias[indice]),
-                zoom: 13.5,
-                duration: 700,
-                padding: { bottom: base + CARROSSEL_ALTURA, top: 0, left: 0, right: 0 },
-            });
+            const praia = praias[indice];
+            setSelecionado(id);
+            const padding = { bottom: base + CARROSSEL_ALTURA + 24, top: insets.top + 110, left: 40, right: 84 };
+            const lugares = [centroDaPraia(praia)!, ...praia.pontos.flatMap((t) => {
+                const c = t.coordenadas_terra ?? t.coordenadas;
+                return c ? [{ latitude: c[0], longitude: c[1] }] : [];
+            })];
+            if (lugares.length > 2) {
+                // praia com vários trechos: enquadra todos
+                const lons = lugares.map((l) => l.longitude);
+                const lats = lugares.map((l) => l.latitude);
+                camera.current?.fitBounds([Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)], {
+                    padding,
+                    duration: 700,
+                });
+            } else {
+                const c = lugares[0];
+                camera.current?.flyTo({ center: [c.longitude, c.latitude], zoom: 14.5, duration: 700, padding });
+            }
             if (rolarLista) lista.current?.scrollToOffset({ offset: indice * (cardLargura + CARD_GAP), animated: true });
         },
-        [praias, cardLargura, base],
+        [praias, cardLargura, base, insets.top],
     );
 
     const irParaMaisProxima = async () => {
@@ -96,28 +133,25 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             avisar(r.erro, 'erro');
             return;
         }
-        const [maisProxima] = ordenarPorDistancia(praias, r.coordenada);
-        if (maisProxima) focar(maisProxima.ponto.codigo, true);
+        const [maisProxima] = ordenarPraiasPorDistancia(praias, r.coordenada);
+        if (maisProxima) focar(maisProxima.praia.id, true);
     };
 
-
     const abrirPraia = useCallback(
-        (codigo: string) => navigation.navigate('PraiasTab', { screen: 'Praia', params: { id: codigo } }),
+        (id: string) => navigation.navigate('PraiasTab', { screen: 'Praia', params: { id } }),
         [navigation],
     );
 
     // cards memorizados: mudar a seleção só redesenha os dois cards afetados
     const renderCard = useCallback(
-        ({ item }: { item: PontoResumo }) => {
-            const c = origem && coordenadaDoPonto(item);
+        ({ item }: { item: PraiaResumo }) => {
+            const km = origem ? distanciaAtePraia(item, origem) : null;
             return (
                 <MapBeachCard
-                    ponto={item}
-                    nome={nomePrincipal(item)}
-                    local={localEspecifico(item)}
+                    praia={item}
                     largura={cardLargura}
-                    selecionado={item.codigo === selecionado}
-                    distancia={c ? formatDistancia(distanciaKm(origem, c)) : undefined}
+                    selecionado={item.id === selecionado}
+                    distancia={km !== null ? formatDistancia(km) : undefined}
                     onAbrir={abrirPraia}
                 />
             );
@@ -137,8 +171,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     }, [focar]);
     // a FlatList não aceita trocar onViewableItemsChanged depois de montada
     const [aoMudarCard] = useState(() => ({ viewableItems }: { viewableItems: ListViewToken[] }) => {
-        const atual: PontoResumo | undefined = viewableItems.find((v) => v.isViewable)?.item;
-        if (atual && arrastando.current) focarRef.current(atual.codigo, false);
+        const atual: PraiaResumo | undefined = viewableItems.find((v) => v.isViewable)?.item;
+        if (atual && arrastando.current) focarRef.current(atual.id, false);
     });
 
     if (isPending || (error && !data)) {
@@ -169,62 +203,70 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 />
                 <Images images={PINS} />
                 {origem && <UserLocation animated />}
+                <GeoJSONSource id="trechos" data={trechos}>
+                    <Layer
+                        type="circle"
+                        id="trechos-ponto"
+                        paint={{
+                            'circle-radius': 7,
+                            'circle-color': ['get', 'cor'],
+                            'circle-stroke-color': '#ffffff',
+                            'circle-stroke-width': 2.5,
+                        }}
+                    />
+                </GeoJSONSource>
                 <GeoJSONSource
                     id="praias"
-                    data={geojson}
+                    data={pins}
                     onPress={(e) => {
-                        const codigo = e.nativeEvent.features[0]?.properties?.codigo;
-                        if (codigo) focar(codigo, true);
+                        const id = e.nativeEvent.features[0]?.properties?.id;
+                        if (id) focar(id, true);
                     }}
                     hitbox={{ top: 18, right: 18, bottom: 18, left: 18 }}
                 >
                     <Layer
                         type="symbol"
                         id="praias-pin"
-                        filter={['!=', ['get', 'codigo'], selecionado ?? '']}
-                        style={{
-                            iconImage: ['get', 'status'],
-                            iconAnchor: 'bottom',
-                            iconAllowOverlap: true,
-                            iconSize: ['interpolate', ['linear'], ['zoom'], 10, 0.3, 13, 0.36, 16, 0.44],
+                        filter={['!=', ['get', 'id'], selecionado ?? '']}
+                        layout={{
+                            'icon-image': ['get', 'status'],
+                            'icon-anchor': 'bottom',
+                            'icon-allow-overlap': true,
+                            'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.32, 13, 0.38, 16, 0.46],
                         }}
                     />
                     <Layer
                         type="symbol"
                         id="praias-nome"
-                        minzoom={12.5}
-                        filter={['!=', ['get', 'codigo'], selecionado ?? '']}
-                        style={{
-                            textField: ['get', 'nome'],
-                            textFont: ['Noto Sans Bold'],
-                            textSize: 12,
-                            textAnchor: 'top',
-                            textOffset: [0, 0.3],
-                            textColor: colors.bgBottom,
-                            textHaloColor: '#ffffff',
-                            textHaloWidth: 1.6,
-                            textOptional: true,
+                        minzoom={11.8}
+                        filter={['!=', ['get', 'id'], selecionado ?? '']}
+                        layout={{
+                            'text-field': ['get', 'nome'],
+                            'text-font': ['Noto Sans Bold'],
+                            'text-size': 12,
+                            'text-anchor': 'top',
+                            'text-offset': [0, 0.3],
+                            'text-optional': true,
                         }}
+                        paint={{ 'text-color': colors.bgBottom, 'text-halo-color': '#ffffff', 'text-halo-width': 1.6 }}
                     />
                     <Layer
                         type="symbol"
                         id="praias-pin-selecionado"
-                        filter={['==', ['get', 'codigo'], selecionado ?? '']}
-                        style={{
-                            iconImage: ['concat', ['get', 'status'], '-sel'],
-                            iconAnchor: 'bottom',
-                            iconAllowOverlap: true,
-                            iconSize: 0.52,
-                            textField: ['get', 'nome'],
-                            textFont: ['Noto Sans Bold'],
-                            textSize: 14,
-                            textAnchor: 'top',
-                            textOffset: [0, 0.2],
-                            textAllowOverlap: true,
-                            textColor: colors.brand,
-                            textHaloColor: '#ffffff',
-                            textHaloWidth: 2,
+                        filter={['==', ['get', 'id'], selecionado ?? '']}
+                        layout={{
+                            'icon-image': ['concat', ['get', 'status'], '-sel'],
+                            'icon-anchor': 'bottom',
+                            'icon-allow-overlap': true,
+                            'icon-size': 0.52,
+                            'text-field': ['get', 'nome'],
+                            'text-font': ['Noto Sans Bold'],
+                            'text-size': 14,
+                            'text-anchor': 'top',
+                            'text-offset': [0, 0.2],
+                            'text-allow-overlap': true,
                         }}
+                        paint={{ 'text-color': colors.brand, 'text-halo-color': '#ffffff', 'text-halo-width': 2 }}
                     />
                 </GeoJSONSource>
             </Map>
@@ -268,7 +310,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 style={[styles.carrossel, { bottom: base + 8 }]}
                 data={praias}
                 horizontal
-                keyExtractor={(p) => p.codigo}
+                keyExtractor={(p) => p.id}
                 showsHorizontalScrollIndicator={false}
                 snapToInterval={cardLargura + CARD_GAP}
                 decelerationRate="fast"

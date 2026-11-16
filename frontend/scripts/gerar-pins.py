@@ -2,7 +2,7 @@
 
     python scripts/gerar-pins.py   (requer Pillow)
 
-Um pin por status de balneabilidade, mais a versão "selecionado" (com anel
+Um pin por situação da praia (própria, imprópria, só em parte, sem dados), mais a versão "selecionado" (com anel
 cor de areia). O ícone é o banhista: a cor responde se dá para nadar.
 """
 
@@ -15,7 +15,13 @@ RAIZ = Path(__file__).resolve().parent.parent
 FONTE = RAIZ / "node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome6_Solid.ttf"
 BANHISTA = chr(62916)  # fa-person-swimming
 
-CORES = {"propria": (47, 163, 90), "impropria": (217, 72, 59), "sem-dados": (93, 118, 144)}
+CORES = {
+    "propria": (47, 163, 90),
+    "impropria": (217, 72, 59),
+    # praia boa só em alguns trechos
+    "parcial": (226, 160, 38),
+    "sem-dados": (93, 118, 144),
+}
 AREIA = (245, 217, 168)
 ESCALA = 4  # desenha grande e reduz, para bordas suaves
 

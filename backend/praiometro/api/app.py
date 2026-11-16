@@ -15,7 +15,7 @@ from ..db import criar_colecao_votos
 from ..relatos import RepositorioRelatos
 from .cache import CacheJson, CachePontos
 from .ratelimit import LimitadorTaxa
-from .routes import avaliacoes, pontos, regiao, sistema
+from .routes import avaliacoes, pontos, praias, regiao, sistema
 from .routes import relatos as rotas_relatos
 
 log = logging.getLogger(__name__)
@@ -89,6 +89,7 @@ def create_app(
         )
 
     app.include_router(sistema.router)
+    app.include_router(praias.router)
     app.include_router(pontos.router)
     app.include_router(avaliacoes.router)
     app.include_router(regiao.router)

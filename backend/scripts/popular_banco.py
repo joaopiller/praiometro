@@ -11,6 +11,7 @@ from praiometro.avaliacoes import CRITERIOS
 from praiometro.catalogo import carregar_catalogo
 from praiometro.config import get_settings
 from praiometro.db import criar_colecao_votos
+from praiometro.praias import agrupar
 
 
 def main() -> None:
@@ -22,7 +23,7 @@ def main() -> None:
 
     settings = get_settings()
     colecao = criar_colecao_votos(settings)
-    praias = list(carregar_catalogo(settings.catalogo_file))
+    praias = list(agrupar(carregar_catalogo(settings.catalogo_file)))
 
     if args.limpar:
         colecao.delete_many({})

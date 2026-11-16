@@ -66,10 +66,10 @@ def test_dados_tipo_invalido(client):
 
 
 def test_avaliacao_sem_votos_retorna_200_com_null(client):
-    r = client.get("/pontos/GR000/avaliacao")
+    r = client.get("/praias/GR/avaliacao")
     assert r.status_code == 200
     assert r.json() == {
-        "praia_id": "GR000",
+        "praia_id": "GR",
         "avaliacao_media": None,
         "medias_exatas": None,
         "nota_geral": None,
@@ -148,7 +148,7 @@ def test_votos_invalidos_sao_rejeitados_sem_apagar_voto_anterior(client, colecao
         r = client.post("/votar", params={"praia_id": "GR000"}, json=votos, headers=AUTH)
         assert r.status_code == 422, votos
         assert isinstance(r.json()["detail"], str)
-    assert colecao.count_documents({"praia_id": "GR000"}) == 1
+    assert colecao.count_documents({"praia_id": "GR"}) == 1
 
 
 def test_rate_limit(client):
@@ -218,7 +218,7 @@ def test_usuario_pode_atualizar_avaliacao(client, colecao):
     r = client.post("/votar", params={"praia_id": "GR000"}, json=novos, headers=AUTH).json()
     assert r["votou"] is False
     assert r["atualizado"] is True
-    assert colecao.count_documents({"praia_id": "GR000"}) == 1
+    assert colecao.count_documents({"praia_id": "GR"}) == 1
     assert client.get("/pontos/GR000/avaliacao").json()["avaliacao_media"] == novos
 
 

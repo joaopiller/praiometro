@@ -14,6 +14,7 @@ from .avaliacoes import RepositorioVotos, gravar_snapshot_medias
 from .coleta.atualizador import atualizar_historico, atualizar_regiao, executar_coleta
 from .config import configurar_logging, get_settings
 from .db import criar_colecao_votos
+from .relatos import RepositorioRelatos
 
 log = logging.getLogger("praiometro.worker")
 
@@ -38,13 +39,17 @@ def main(argv: list[str] | None = None) -> None:
     settings = get_settings()
     configurar_logging(settings.log_level)
     repo = RepositorioVotos(criar_colecao_votos(settings))
+    relatos = RepositorioRelatos(repo.colecao.database)
 
     coleta = _seguro("coleta", lambda: executar_coleta(settings))
     medias = _seguro("médias", lambda: gravar_snapshot_medias(repo, settings.estado_file))
     regiao = _seguro("maré e sol", lambda: atualizar_regiao(settings))
     historico = _seguro("histórico", lambda: atualizar_historico(settings))
 
-    for tarefa in (coleta, regiao, historico, medias):
+    # votos e relatos antigos eram por ponto de coleta; aqui roda num processo só
+    praias = _seguro("migração para praias", lambda: [r.migrar_para_praias() for r in (repo, relatos)])
+
+    for tarefa in (praias, coleta, regiao, historico, medias):
         tarefa()
     if args.once:
         return

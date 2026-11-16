@@ -1,4 +1,4 @@
-import type { PontoResumo } from '../api/types';
+import type { PontoDaPraia, PraiaResumo } from '../api/types';
 
 export function normalize(texto: string): string {
     return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -9,16 +9,19 @@ export function nomeSemPrefixo(nome: string): string {
     return nome.replace(/^praia (d[aeo]s?|de)\s+/i, '');
 }
 
-export function nomePrincipal(ponto: Pick<PontoResumo, 'nome'>): string {
-    return ponto.nome?.[0] || 'Praia';
+/** Nome curto para o mapa: "Praia de Icaraí" → "Icaraí" */
+export function nomeCurto(nome: string): string {
+    return nomeSemPrefixo(nome) || nome;
 }
 
-export function localEspecifico(ponto: Pick<PontoResumo, 'specific_location'>): string {
-    return ponto.specific_location?.find((l) => l.trim()) ?? '';
+/** Como o trecho aparece para quem usa o app */
+export function nomeDoTrecho(ponto: Pick<PontoDaPraia, 'local'>): string {
+    return ponto.local || 'Trecho principal';
 }
 
-export function matchesBeach(ponto: PontoResumo, busca: string): boolean {
+/** Busca pelo nome da praia ou pela referência de qualquer trecho dela ("mariz e barros" acha Icaraí). */
+export function buscaPraia(praia: PraiaResumo, busca: string): boolean {
     const termo = normalize(busca);
     if (!termo) return true;
-    return [...(ponto.nome ?? []), ...(ponto.specific_location ?? [])].some((t) => normalize(t).includes(termo));
+    return [praia.nome, ...praia.pontos.map((p) => p.local)].some((t) => normalize(t).includes(termo));
 }

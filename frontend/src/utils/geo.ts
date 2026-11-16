@@ -1,4 +1,4 @@
-import type { PontoResumo } from '../api/types';
+import type { PraiaResumo } from '../api/types';
 
 export interface Coordenada {
     latitude: number;
@@ -21,17 +21,27 @@ export function formatDistancia(km: number): string {
     return `${Math.round(km)} km`;
 }
 
-export function coordenadaDoPonto(p: PontoResumo): Coordenada | null {
-    const c = p.coordenadas_terra ?? p.coordenadas;
-    return c?.length === 2 ? { latitude: c[0], longitude: c[1] } : null;
+const paraCoordenada = (c: [number, number] | null | undefined): Coordenada | null =>
+    c?.length === 2 ? { latitude: c[0], longitude: c[1] } : null;
+
+/** Onde fica o pin da praia (meio da areia) ou, sem ele, o ponto principal. */
+export function centroDaPraia(praia: PraiaResumo): Coordenada | null {
+    const principal = praia.pontos.find((p) => p.codigo === praia.principal);
+    return paraCoordenada(praia.centro) ?? paraCoordenada(principal?.coordenadas_terra ?? principal?.coordenadas);
 }
 
-/** Pontos com distância até `origem`, do mais perto para o mais longe. */
-export function ordenarPorDistancia(pontos: PontoResumo[], origem: Coordenada) {
-    return pontos
-        .flatMap((p) => {
-            const c = coordenadaDoPonto(p);
-            return c ? [{ ponto: p, km: distanciaKm(origem, c) }] : [];
+/** Distância até a parte mais próxima da praia (qualquer trecho ou o meio dela). */
+export function distanciaAtePraia(praia: PraiaResumo, origem: Coordenada): number | null {
+    const lugares = [centroDaPraia(praia), ...praia.pontos.map((p) => paraCoordenada(p.coordenadas_terra ?? p.coordenadas))];
+    const km = lugares.flatMap((c) => (c ? [distanciaKm(origem, c)] : []));
+    return km.length ? Math.min(...km) : null;
+}
+
+export function ordenarPraiasPorDistancia(praias: PraiaResumo[], origem: Coordenada) {
+    return praias
+        .flatMap((praia) => {
+            const km = distanciaAtePraia(praia, origem);
+            return km === null ? [] : [{ praia, km }];
         })
         .sort((a, b) => a.km - b.km);
 }

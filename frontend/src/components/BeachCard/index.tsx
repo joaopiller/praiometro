@@ -1,29 +1,28 @@
 import { Feather } from '@expo/vector-icons';
 import { Image, Pressable, Text, View } from 'react-native';
-import type { PontoResumo } from '../../api/types';
+import type { PraiaResumo } from '../../api/types';
 import { getBeachPhoto } from '../../constants/beaches';
 import { colors } from '../../theme';
-import { nivelBalneabilidade } from '../../utils/risk';
-import { localEspecifico, nomePrincipal } from '../../utils/search';
+import { nivelPraia } from '../../utils/risk';
+import { resumoDaPraia } from '../../utils/trechos';
 import Badge from '../Badge';
 import styles from './styles';
 
 interface Props {
-    ponto: PontoResumo;
+    praia: PraiaResumo;
     distancia?: string;
     onPress: () => void;
 }
 
-export default function BeachCard({ ponto, distancia, onPress }: Props) {
-    const nome = nomePrincipal(ponto);
-    const local = localEspecifico(ponto);
-    const nivel = nivelBalneabilidade(ponto.balneabilidade);
-    const foto = getBeachPhoto(ponto.codigo);
+export default function BeachCard({ praia, distancia, onPress }: Props) {
+    const nivel = nivelPraia(praia.situacao);
+    const foto = getBeachPhoto(praia.id);
+    const detalhe = [distancia, resumoDaPraia(praia)].filter(Boolean).join(' · ');
     return (
         <Pressable
             onPress={onPress}
             accessibilityRole="button"
-            accessibilityLabel={`${nome}${local ? `, ${local}` : ''}. ${nivel.mensagem}`}
+            accessibilityLabel={`${praia.nome}. ${nivel.mensagem}. ${detalhe}`}
             style={({ pressed }) => [styles.card, pressed && styles.pressed]}
         >
             {foto ? (
@@ -35,10 +34,10 @@ export default function BeachCard({ ponto, distancia, onPress }: Props) {
             )}
             <View style={styles.texts}>
                 <Text style={styles.name} numberOfLines={1}>
-                    {nome}
+                    {praia.nome}
                 </Text>
                 <Text style={styles.location} numberOfLines={1}>
-                    {[distancia, local || 'Ponto principal'].filter(Boolean).join(' · ')}
+                    {detalhe}
                 </Text>
                 <Badge label={nivel.rotulo} tone={nivel.tom} />
             </View>

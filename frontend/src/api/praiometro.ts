@@ -5,15 +5,21 @@ import type {
     ListaRelatos,
     Notas,
     PontoDetalhe,
-    PontoResumo,
+    PraiaDetalhe,
+    PraiaResumo,
     Regiao,
     RespostaVoto,
     TipoRelato,
 } from './types';
 
-export async function fetchPontos(): Promise<PontoResumo[]> {
-    const { data } = await api.get<{ pontos: PontoResumo[] }>('/pontos');
-    return data.pontos;
+export async function fetchPraias(): Promise<PraiaResumo[]> {
+    const { data } = await api.get<{ praias: PraiaResumo[] }>('/praias');
+    return data.praias;
+}
+
+export async function fetchPraia(id: string): Promise<PraiaDetalhe> {
+    const { data } = await api.get<PraiaDetalhe>(`/praias/${encodeURIComponent(id)}`);
+    return data;
 }
 
 export async function fetchPonto(codigo: string): Promise<PontoDetalhe> {
@@ -21,8 +27,8 @@ export async function fetchPonto(codigo: string): Promise<PontoDetalhe> {
     return data;
 }
 
-export async function fetchAvaliacao(codigo: string): Promise<Avaliacao> {
-    const { data } = await api.get<Avaliacao>(`/pontos/${encodeURIComponent(codigo)}/avaliacao`);
+export async function fetchAvaliacao(praiaId: string): Promise<Avaliacao> {
+    const { data } = await api.get<Avaliacao>(`/praias/${encodeURIComponent(praiaId)}/avaliacao`);
     return data;
 }
 
@@ -44,26 +50,26 @@ export async function fetchRegiao(): Promise<Regiao> {
     return data;
 }
 
-export async function fetchRelatos(codigo: string): Promise<ListaRelatos> {
-    const { data } = await api.get<ListaRelatos>(`/pontos/${encodeURIComponent(codigo)}/relatos`);
+export async function fetchRelatos(praiaId: string): Promise<ListaRelatos> {
+    const { data } = await api.get<ListaRelatos>(`/praias/${encodeURIComponent(praiaId)}/relatos`);
     return data;
 }
 
 export async function enviarRelato(
-    codigo: string,
-    tipo: TipoRelato,
+    praiaId: string,
+    tipos: TipoRelato[],
     local: { latitude: number; longitude: number },
     idToken: string,
 ): Promise<void> {
     await api.post(
-        `/pontos/${encodeURIComponent(codigo)}/relatos`,
-        { tipo, latitude: local.latitude, longitude: local.longitude },
+        `/praias/${encodeURIComponent(praiaId)}/relatos`,
+        { tipos, latitude: local.latitude, longitude: local.longitude },
         { headers: { Authorization: `Bearer ${idToken}` } },
     );
 }
 
-export async function denunciarRelato(codigo: string, tipo: TipoRelato, idToken: string): Promise<void> {
-    await api.post(`/pontos/${encodeURIComponent(codigo)}/relatos/${tipo}/denuncia`, null, {
+export async function denunciarRelato(praiaId: string, tipo: TipoRelato, idToken: string): Promise<void> {
+    await api.post(`/praias/${encodeURIComponent(praiaId)}/relatos/${tipo}/denuncia`, null, {
         headers: { Authorization: `Bearer ${idToken}` },
     });
 }

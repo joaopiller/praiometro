@@ -1,31 +1,31 @@
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { memo } from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
-import type { PontoResumo } from '../../api/types';
+import type { PraiaResumo } from '../../api/types';
 import { getBeachPhoto } from '../../constants/beaches';
 import { colors } from '../../theme';
-import { nivelBalneabilidade } from '../../utils/risk';
+import { nivelPraia } from '../../utils/risk';
+import { resumoDaPraia } from '../../utils/trechos';
 import Badge from '../Badge';
 import styles from './styles';
 
 interface Props {
-    ponto: PontoResumo;
-    nome: string;
-    local: string;
+    praia: PraiaResumo;
     largura: number;
     selecionado: boolean;
     distancia?: string;
-    onAbrir: (codigo: string) => void;
+    onAbrir: (id: string) => void;
 }
 
-function MapBeachCard({ ponto, nome, local, largura, selecionado, distancia, onAbrir }: Props) {
-    const nivel = nivelBalneabilidade(ponto.balneabilidade);
-    const foto = getBeachPhoto(ponto.codigo);
+function MapBeachCard({ praia, largura, selecionado, distancia, onAbrir }: Props) {
+    const nivel = nivelPraia(praia.situacao);
+    const foto = getBeachPhoto(praia.id);
+    const detalhe = [distancia, resumoDaPraia(praia)].filter(Boolean).join(' · ');
     return (
         <Pressable
-            onPress={() => onAbrir(ponto.codigo)}
+            onPress={() => onAbrir(praia.id)}
             accessibilityRole="button"
-            accessibilityLabel={`${nome}${local ? `, ${local}` : ''}. ${nivel.mensagem}. Abrir detalhes`}
+            accessibilityLabel={`${praia.nome}. ${nivel.mensagem}. ${detalhe}. Abrir detalhes`}
             accessibilityState={{ selected: selecionado }}
             style={({ pressed }) => [styles.card, { width: largura }, pressed && styles.pressed]}
         >
@@ -38,10 +38,10 @@ function MapBeachCard({ ponto, nome, local, largura, selecionado, distancia, onA
             )}
             <View style={styles.textos}>
                 <Text style={styles.nome} numberOfLines={1}>
-                    {nome}
+                    {praia.nome}
                 </Text>
                 <Text style={styles.local} numberOfLines={1}>
-                    {[distancia, local || 'Ponto principal'].filter(Boolean).join(' · ')}
+                    {detalhe}
                 </Text>
                 <Badge label={nivel.rotulo} tone={nivel.tom} claro />
             </View>

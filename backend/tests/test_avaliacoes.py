@@ -35,7 +35,7 @@ def test_timestamp_legado_sem_fuso(repo, colecao):
 
 
 def test_snapshot_grava_medias_no_estado(repo, settings, estado):
-    repo.registrar("GR000", "u1", VOTOS, TRINTA_DIAS)
+    repo.registrar("GR", "u1", VOTOS, TRINTA_DIAS)
     assert gravar_snapshot_medias(repo, settings.estado_file) == 1
     import json
 

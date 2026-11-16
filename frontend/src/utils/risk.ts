@@ -1,3 +1,4 @@
+import type { SituacaoPraia } from '../api/types';
 import type { Tone } from '../theme';
 
 export interface Nivel {
@@ -38,6 +39,18 @@ export function nivelBalneabilidade(balneabilidade?: boolean | null): Nivel {
     if (balneabilidade === true) return { rotulo: 'Própria', tom: 'success', mensagem: 'Própria para banho' };
     if (balneabilidade === false) return { rotulo: 'Imprópria', tom: 'danger', mensagem: 'Imprópria para banho' };
     return { rotulo: 'Sem dados', tom: 'neutral', mensagem: 'Balneabilidade sem informação' };
+}
+
+const NIVEL_PRAIA: Record<SituacaoPraia, Nivel> = {
+    propria: { rotulo: 'Própria', tom: 'success', mensagem: 'Própria para banho' },
+    impropria: { rotulo: 'Imprópria', tom: 'danger', mensagem: 'Imprópria para banho' },
+    parcial: { rotulo: 'Em parte', tom: 'warning', mensagem: 'Própria só em parte da praia' },
+    sem_dados: { rotulo: 'Sem dados', tom: 'neutral', mensagem: 'Balneabilidade sem informação' },
+};
+
+/** A praia toda: "Em parte" quando uns trechos estão próprios e outros não. */
+export function nivelPraia(situacao: SituacaoPraia): Nivel {
+    return NIVEL_PRAIA[situacao];
 }
 
 const PONTOS_CARDEAIS = [
