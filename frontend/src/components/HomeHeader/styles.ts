@@ -20,7 +20,7 @@ export default StyleSheet.create({
         elevation: 8,
     },
     barVidro: { borderWidth: 0, shadowOpacity: 0, elevation: 0 },
-    logo: { width: 96, height: 96 / LOGO_PROPORCAO },
+    logo: { width: 150, height: 150 / LOGO_PROPORCAO },
     clima: {
         flexDirection: 'row',
         alignItems: 'center',

@@ -3,8 +3,8 @@ import { colors, spacing } from '../../theme';
 
 export default StyleSheet.create({
     card: { gap: spacing.md },
-    trecho: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
-    pct: { color: colors.text, fontSize: 14, fontWeight: '700' },
+    resumo: { color: colors.textMuted, fontSize: 14, lineHeight: 20, marginTop: 2 },
+    pct: { color: colors.text, fontWeight: '700' },
     barras: { flexDirection: 'row', alignItems: 'flex-end', gap: 3, height: 24 },
     barra: { flex: 1, borderRadius: 3 },
     propria: { height: '100%', backgroundColor: colors.success },

@@ -20,8 +20,12 @@ function HistoricoStrip({ historico, trecho }: { historico?: Historico; trecho?:
             accessibilityLabel={`Histórico${trecho ? ` de ${trecho}` : ''}: própria para banho em ${pct}% das coletas dos últimos 12 meses`}
         >
             <View>
-                <CardLabel right={<Text style={styles.pct}>{pct}% própria</Text>}>Banho nas últimas coletas</CardLabel>
-                {trecho ? <Text style={styles.trecho}>{trecho}</Text> : null}
+                <CardLabel>Banho nas últimas coletas</CardLabel>
+                {/* o percentual vai embaixo do título: ao lado, os dois se encostavam em telas estreitas */}
+                <Text style={styles.resumo}>
+                    <Text style={styles.pct}>{pct}% própria</Text>
+                    {trecho ? ` · ${trecho}` : ''}
+                </Text>
             </View>
             <View style={styles.barras}>
                 {ultimas.map((r) => (

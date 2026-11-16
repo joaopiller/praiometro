@@ -32,7 +32,7 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 | --- | --- |
 | Balneabilidade e histórico | Boletins do INEA para [Niterói](https://www.inea.rj.gov.br/niteroi/) e para a [Zona Sul e Sudoeste do Rio](https://www.inea.rj.gov.br/rio-de-janeiro/) |
 | Clima, ondas, maré, temperatura da água e sol | [Open-Meteo](https://open-meteo.com/) |
-| Mapa | [OpenFreeMap](https://openfreemap.org/) + MapLibre (dados do OpenStreetMap) |
+| Mapa | [OpenFreeMap](https://openfreemap.org/) + MapLibre (dados do OpenStreetMap; os créditos ficam na tela Sobre do app) |
 | Fotos das praias do Rio | [Wikimedia Commons](https://commons.wikimedia.org/), em domínio público ou licenças Creative Commons; autor e licença de cada foto aparecem na página da praia |
 
 Limitações conhecidas:
@@ -180,8 +180,14 @@ A pasta `android/` é gerada a partir do `app.config.ts` (`npm run prebuild`), e
 Scripts em `frontend/scripts/` (requerem Python com Pillow: `pip install pillow`):
 
 - `python scripts/comprimir-imagens.py`: reduz as fotos de `assets/images/praias` (e subpastas) para 1280 px de largura. Rode sempre que adicionar uma foto nova; ele não mexe no que já está otimizado.
-- `python scripts/gerar-icones.py`: gera o ícone do app e o ícone adaptativo do Android a partir de `assets/images/logo-header.png`.
+- `python scripts/gerar-icones.py`: leva a logo de `docs/identidade-visual` para o app (logo dos cabeçalhos, logo da abertura, ícone do app e ícones adaptativo e monocromático do Android).
 - `python scripts/gerar-pins.py`: gera os pins do mapa (própria, imprópria, só em parte e sem dados, cada um com a versão selecionada).
+
+### Identidade visual
+
+A logo é um medidor apontando para o mar: o "ômetro" do nome. Em [docs/identidade-visual](docs/identidade-visual) ficam todas as versões, em SVG e PNG com fundo transparente (horizontal, vertical, compacta, só o ícone, ícone reforçado para tamanhos pequenos e só o nome; coloridas para fundo escuro e claro e em uma cor), o ícone do app e a [prancha](docs/identidade-visual/prancha.png) com cores e tipografia.
+
+Os arquivos são gerados por `docs/identidade-visual/gerador/gerar.py` (requer `fonttools`, `uharfbuzz`, `pillow` e o Google Chrome, usado para renderizar os PNG). O nome usa a fonte Poppins Bold, de licença aberta (OFL), convertida em contorno. Depois de mudar a logo, rode `python scripts/gerar-icones.py` em `frontend/` e `npm run prebuild` para os ícones nativos.
 
 ### Testes e qualidade
 

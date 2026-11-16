@@ -16,13 +16,9 @@ const LEGENDA = [
     { cor: toneColors.neutral.solid, titulo: 'Sem boletim recente', texto: 'a praia não entrou no último boletim' },
 ];
 
-const FONTES = [
-    { nome: 'INEA', detalhe: 'Balneabilidade' },
-    { nome: 'Open-Meteo', detalhe: 'Clima, mar, maré e sol' },
-    { nome: 'OpenStreetMap', detalhe: 'Mapa' },
-];
-
-const EQUIPE = 'Rafael Lucio, João Vicente Piller, Lucas Silveira e Pâmella de Azevedo';
+// a licença do mapa pede o crédito aos colaboradores, com link; como o botão de créditos
+// não fica mais sobre o mapa, ele aparece aqui
+const LICENCA_DO_MAPA = 'https://www.openstreetmap.org/copyright';
 
 const NOME_DA_CONTA = { google: 'Google', apple: 'Apple' };
 
@@ -55,6 +51,20 @@ function Conta() {
     );
 }
 
+function CreditoDoMapa() {
+    const avisar = useAviso();
+    return (
+        <Pressable
+            onPress={() => Linking.openURL(LICENCA_DO_MAPA).catch(() => avisar('Não foi possível abrir o link.', 'erro'))}
+            accessibilityRole="link"
+            hitSlop={10}
+            style={({ pressed }) => pressed && styles.pressed}
+        >
+            <Text style={styles.credito}>Mapa © colaboradores do OpenStreetMap</Text>
+        </Pressable>
+    );
+}
+
 function Contato({ icone, texto, url }: { icone: ComponentProps<typeof FontAwesome>['name']; texto: string; url: string }) {
     const avisar = useAviso();
     const abrir = () => Linking.openURL(url).catch(() => avisar('Não foi possível abrir o link.', 'erro'));
@@ -81,7 +91,6 @@ export default function SobreNos() {
                     Projeto de extensão da Universidade Federal Fluminense (UFF) que reúne, em um só lugar, as informações que
                     importam para quem vai à praia em Niterói e no Rio de Janeiro.
                 </Text>
-                <Text style={styles.equipe}>Feito por {EQUIPE}.</Text>
             </GlassCard>
 
             <GlassCard style={styles.card}>
@@ -103,18 +112,6 @@ export default function SobreNos() {
                 </Text>
             </GlassCard>
 
-            <GlassCard style={styles.card}>
-                <CardLabel icon={<MaterialCommunityIcons name="database-outline" size={18} color={colors.label} />}>
-                    Fontes
-                </CardLabel>
-                {FONTES.map((f) => (
-                    <View key={f.nome} style={styles.fonte}>
-                        <Text style={styles.forte}>{f.nome}</Text>
-                        <Text style={styles.fonteDetalhe}>{f.detalhe}</Text>
-                    </View>
-                ))}
-            </GlassCard>
-
             <Conta />
 
             <View style={styles.contatos}>
@@ -123,6 +120,7 @@ export default function SobreNos() {
             </View>
 
             <Text style={styles.rodape}>As informações são indicativas: siga sempre os guarda-vidas e a Defesa Civil.</Text>
+            <CreditoDoMapa />
             <Text style={styles.versao}>Versão {env.appVersion}</Text>
         </Screen>
     );

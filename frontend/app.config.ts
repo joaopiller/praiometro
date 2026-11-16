@@ -51,7 +51,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
         android: {
             package: 'com.praiometro.app',
-            adaptiveIcon: { foregroundImage: './assets/images/icone-adaptativo.png', backgroundColor: '#015486' },
+            adaptiveIcon: {
+                foregroundImage: './assets/images/icone-adaptativo.png',
+                // ícones temáticos do Android 13+
+                monochromeImage: './assets/images/icone-monocromatico.png',
+                backgroundColor: '#015486',
+            },
             // O app não precisa de armazenamento nem de sobreposição de tela.
             blockedPermissions: [
                 'android.permission.SYSTEM_ALERT_WINDOW',
@@ -63,9 +68,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             [
                 'expo-splash-screen',
                 {
-                    // logo recortada rente ao desenho: no Android 12+ a imagem é cortada em círculo,
-                    // então ela precisa ser estreita o bastante para caber nele
-                    image: './assets/images/logo-header.png',
+                    // a mesma logo vertical da abertura animada, na mesma largura, para a troca não dar salto;
+                    // no Android 12+ a imagem é cortada em círculo, e a vertical cabe nele
+                    image: './assets/images/logo-abertura.png',
                     imageWidth: 170,
                     resizeMode: 'contain',
                     backgroundColor: '#015486',

@@ -2,9 +2,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Image, Modal, StyleSheet, useWindowDimensions, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { colors, LOGO_PROPORCAO } from '../../theme';
+import { colors, LOGO_ABERTURA_PROPORCAO } from '../../theme';
 
-const logo = require('../../../assets/images/logo-header.png');
+const logo = require('../../../assets/images/logo-abertura.png');
 
 // mesma largura da logo da abertura nativa (app.config.ts), para a troca não dar salto
 const LARGURA_LOGO = 170;
@@ -153,7 +153,7 @@ export default function AnimatedSplash({ pronto, onFim }: Props) {
 
 const styles = StyleSheet.create({
     fundo: { backgroundColor: colors.brand, alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-    logo: { width: LARGURA_LOGO, height: LARGURA_LOGO / LOGO_PROPORCAO },
+    logo: { width: LARGURA_LOGO, height: LARGURA_LOGO / LOGO_ABERTURA_PROPORCAO },
     ondas: { position: 'absolute', left: 0, right: 0, bottom: 0, overflow: 'hidden' },
     onda: { position: 'absolute', left: 0, top: 0 },
 });

@@ -27,10 +27,12 @@ export default StyleSheet.create({
         // o vidro do iOS já tem a própria sombra
         ...(temVidro ? null : sombra),
     },
+    fabToque: { flex: 1 },
     fabVidro: { flex: 1, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
     fabFundo: { backgroundColor: '#fff' },
     pressed: { opacity: 0.8 },
-    carrossel: { position: 'absolute', left: 0, right: 0, bottom: 8, height: CARROSSEL_ALTURA - 8, flexGrow: 0 },
+    carrossel: { position: 'absolute', left: 0, right: 0, bottom: 8, height: CARROSSEL_ALTURA - 8 },
+    carrosselLista: { flexGrow: 0 },
     mapError: {
         position: 'absolute',
         left: spacing.lg,

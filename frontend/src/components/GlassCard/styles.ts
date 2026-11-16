@@ -10,7 +10,13 @@ export default StyleSheet.create({
         padding: spacing.lg + 2,
         overflow: 'hidden',
     },
-    labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 24 },
-    labelLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-    label: typography.label,
+    labelRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: spacing.md,
+        minHeight: 24,
+    },
+    labelLeft: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexShrink: 1 },
+    label: { ...typography.label, flexShrink: 1 },
 });

@@ -1,6 +1,7 @@
-import { Pressable, Text } from 'react-native';
+import { Animated, Pressable } from 'react-native';
 import { CIDADES, ORDEM_CIDADES, type Cidade } from '../../config/cidades';
-import { MAX_FONT_SCALE_FIXO } from '../../theme';
+import { useDeslize } from '../../hooks/useDeslize';
+import { colors, MAX_FONT_SCALE_FIXO } from '../../theme';
 import Vidro from '../Vidro';
 import styles from './styles';
 
@@ -11,8 +12,11 @@ interface Props {
     sobreMapa?: boolean;
 }
 
-/** Troca entre as cidades com praias no app. */
+/** Troca entre as cidades com praias no app; a marcação desliza de uma para a outra. */
 export default function CidadeSwitch({ cidade, onChange, sobreMapa }: Props) {
+    const { marcador, medir, cor } = useDeslize(ORDEM_CIDADES.indexOf(cidade), ORDEM_CIDADES.length);
+    const fundoAtivo = sobreMapa ? styles.ativaMapa : styles.ativaTela;
+    const [inativa, ativa] = sobreMapa ? [colors.brand, '#FFFFFF'] : [colors.textMuted, colors.brand];
     return (
         <Vidro
             style={styles.caixa}
@@ -22,28 +26,27 @@ export default function CidadeSwitch({ cidade, onChange, sobreMapa }: Props) {
             accessibilityRole="radiogroup"
             accessibilityLabel="Cidade"
         >
-            {ORDEM_CIDADES.map((c) => {
-                const ativa = c === cidade;
+            {marcador && <Animated.View pointerEvents="none" style={[styles.marcador, fundoAtivo, marcador]} />}
+            {ORDEM_CIDADES.map((c, i) => {
+                const escolhida = c === cidade;
                 return (
                     <Pressable
                         key={c}
                         onPress={() => onChange(c)}
+                        onLayout={medir(i)}
                         accessibilityRole="radio"
-                        accessibilityState={{ selected: ativa }}
+                        accessibilityState={{ selected: escolhida }}
                         accessibilityLabel={CIDADES[c].nome}
                         hitSlop={6}
-                        style={[styles.opcao, ativa && (sobreMapa ? styles.ativaMapa : styles.ativaTela)]}
+                        // antes de medir as opções ainda não há marcador para deslizar
+                        style={[styles.opcao, escolhida && !marcador && fundoAtivo]}
                     >
-                        <Text
+                        <Animated.Text
                             maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}
-                            style={[
-                                styles.texto,
-                                sobreMapa ? styles.textoMapa : styles.textoTela,
-                                ativa && (sobreMapa ? styles.textoAtivoMapa : styles.textoAtivoTela),
-                            ]}
+                            style={[styles.texto, { color: marcador ? cor(i, inativa, ativa) : escolhida ? ativa : inativa }]}
                         >
                             {CIDADES[c].curto}
-                        </Text>
+                        </Animated.Text>
                     </Pressable>
                 );
             })}

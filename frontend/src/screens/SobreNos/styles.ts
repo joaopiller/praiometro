@@ -7,12 +7,9 @@ export default StyleSheet.create({
     titulo: { ...typography.title, fontSize: 22, lineHeight: 28 },
     texto: { ...typography.body, flexShrink: 1 },
     forte: { color: colors.text, fontWeight: '700' },
-    equipe: { ...typography.caption, fontSize: 13, lineHeight: 18, color: colors.textMuted },
     legenda: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
     ponto: { width: 12, height: 12, borderRadius: 6, marginTop: 5, borderWidth: 2, borderColor: '#fff' },
     dica: { ...typography.caption, fontSize: 13, lineHeight: 19, color: colors.textMuted },
-    fonte: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md },
-    fonteDetalhe: { ...typography.body, fontSize: 14, textAlign: 'right', flexShrink: 1 },
     contatos: { flexDirection: 'row', gap: spacing.md },
     botao: {
         flex: 1,
@@ -37,5 +34,6 @@ export default StyleSheet.create({
     sairTexto: { color: colors.text, fontSize: 15, fontWeight: '600' },
     botaoTexto: { fontSize: 15, fontWeight: '700', color: colors.brand },
     rodape: { ...typography.caption, textAlign: 'center', lineHeight: 18, paddingHorizontal: spacing.lg },
-    versao: { ...typography.caption, textAlign: 'center', marginTop: spacing.md },
+    credito: { ...typography.caption, textAlign: 'center', textDecorationLine: 'underline' },
+    versao: { ...typography.caption, textAlign: 'center' },
 });

@@ -21,7 +21,7 @@ export default StyleSheet.create({
         justifyContent: 'center',
     },
     texts: { flex: 1, gap: 2 },
-    title: { color: '#fff', fontSize: 19, fontWeight: '800', lineHeight: 24 },
-    subtitle: { color: 'rgba(255,255,255,0.9)', fontSize: 13, lineHeight: 18 },
+    title: { color: '#fff', fontSize: 18, fontWeight: '800', lineHeight: 22 },
+    subtitle: { color: 'rgba(255,255,255,0.92)', fontSize: 13, lineHeight: 18 },
     watermark: { position: 'absolute', right: -6, bottom: -10 },
 });

@@ -73,5 +73,6 @@ export const MAX_FONT_SCALE_FIXO = 1.3;
 
 export const CONTENT_MAX_WIDTH = 560;
 
-// logo-header.png é recortado rente ao desenho; o espaço em volta vem do layout
-export const LOGO_PROPORCAO = 600 / 228;
+// largura / altura das logos (assets/images, geradas por scripts/gerar-icones.py)
+export const LOGO_PROPORCAO = 840 / 193;
+export const LOGO_ABERTURA_PROPORCAO = 680 / 542;

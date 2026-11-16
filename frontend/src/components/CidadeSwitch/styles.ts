@@ -13,11 +13,9 @@ export default StyleSheet.create({
     },
     fundoTela: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
     opcao: { minWidth: 92, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: radius.pill },
+    // fica atrás dos textos e acompanha a opção escolhida; a folga é a mesma da caixa
+    marcador: { position: 'absolute', top: 3, bottom: 3, borderRadius: radius.pill },
     ativaMapa: { backgroundColor: colors.brand },
     ativaTela: { backgroundColor: colors.sand },
     texto: { fontSize: 14, fontWeight: '700' },
-    textoMapa: { color: colors.brand },
-    textoTela: { color: colors.textMuted },
-    textoAtivoMapa: { color: '#fff' },
-    textoAtivoTela: { color: colors.brand },
 });

@@ -124,8 +124,13 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                 <StatusBanner
                     tone={balneabilidade.tom}
                     icon={ICONE_BALNEABILIDADE[balneabilidade.tom]}
-                    title={balneabilidade.mensagem ?? ''}
-                    subtitle={praia.situacao === 'parcial' ? `Veja abaixo em quais trechos dá para nadar. ${boletim}` : boletim}
+                    // na parcial o título fica curto, numa linha só; o "para banho" e a conta dos trechos vão embaixo
+                    title={(praia.situacao === 'parcial' ? balneabilidade.rotulo : balneabilidade.mensagem) ?? ''}
+                    subtitle={
+                        praia.situacao === 'parcial'
+                            ? `Própria para banho em ${praia.pontos_proprios} de ${praia.pontos_com_dados} trechos\n${boletim}`
+                            : boletim
+                    }
                 />
 
                 {variosTrechos && trechoAtual ? (

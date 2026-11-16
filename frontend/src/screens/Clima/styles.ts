@@ -8,8 +8,11 @@ export default StyleSheet.create({
     zonas: { flexDirection: 'row', gap: spacing.lg, marginTop: spacing.md },
     zona: { paddingVertical: 8, borderBottomWidth: 2, borderBottomColor: 'transparent' },
     zonaAtiva: { borderBottomColor: colors.sand },
-    zonaTexto: { color: colors.textMuted, fontSize: 14, fontWeight: '600' },
-    zonaTextoAtivo: { color: colors.text },
+    zonaTraco: { position: 'absolute', bottom: 0, height: 2, borderRadius: 1, backgroundColor: colors.sand },
+    zonaTexto: { fontSize: 14, fontWeight: '600' },
+    agora: { alignItems: 'center' },
+    // o mesmo espaçamento entre cartões que a tela dá aos filhos diretos
+    cartoes: { gap: spacing.lg },
     temperature: { ...typography.display, marginLeft: 22, marginTop: spacing.lg },
     condicao: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.xs },
     condicaoTexto: { ...typography.title, fontSize: 18, fontWeight: '600' },

@@ -4,10 +4,11 @@ import { useIsFocused } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, useWindowDimensions, View, type ListViewToken } from 'react-native';
+import { ActivityIndicator, Animated, FlatList, Pressable, Text, useWindowDimensions, View, type ListViewToken } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../api/client';
 import type { PraiaResumo } from '../../api/types';
+import Aparecer from '../../components/Aparecer';
 import { useAviso } from '../../components/Aviso';
 import HomeHeader from '../../components/HomeHeader';
 import MapBeachCard from '../../components/MapBeachCard';
@@ -19,6 +20,7 @@ import type { Cidade } from '../../config/cidades';
 import { usePraias } from '../../hooks/queries';
 import { useCidade } from '../../hooks/useLugar';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
+import { useMovimentoReduzido } from '../../hooks/useMovimentoReduzido';
 import type { TabScreenProps } from '../../navigation/types';
 import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
 import { colors, toneColors } from '../../theme';
@@ -68,6 +70,13 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const { coordenada: origem, carregando: localizando, localizar } = useLocalizacao();
     const avisar = useAviso();
     const [cidade, setCidade] = useCidade();
+    // trocar de cidade (aqui, no clima ou pela localização) desfaz a escolha: sem isso, ao voltar,
+    // o pin reaparecia grande com o mapa afastado e o carrossel em outra praia
+    const [cidadeDaEscolha, setCidadeDaEscolha] = useState(cidade);
+    if (cidadeDaEscolha !== cidade) {
+        setCidadeDaEscolha(cidade);
+        setSelecionado(null);
+    }
     // praia a focar assim que a cidade dela entrar no carrossel
     const focarDepois = useRef<string | null>(null);
 
@@ -250,7 +259,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 mapStyle="https://tiles.openfreemap.org/styles/liberty"
                 logo={false}
                 compass={false}
-                attributionPosition={{ bottom: base + CARROSSEL_ALTURA + 4, left: 8 }}
+                // os créditos do mapa ficam na tela Sobre, com link para a licença
+                attribution={false}
                 onDidFailLoadingMap={() => setMapaFalhou(true)}
                 onDidFinishLoadingMap={() => setMapaFalhou(false)}
                 onPress={() => {
@@ -356,11 +366,14 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 </View>
             )}
 
-            {escolhida && (
-                <BotaoMapa onPress={recentralizar} rotulo="Ver todas as praias" bottom={base + CARROSSEL_ALTURA + 70}>
-                    <MaterialCommunityIcons name="arrow-expand-all" size={20} color={colors.brand} />
-                </BotaoMapa>
-            )}
+            <BotaoMapa
+                onPress={recentralizar}
+                rotulo="Ver todas as praias"
+                bottom={base + CARROSSEL_ALTURA + 70}
+                visivel={!!escolhida}
+            >
+                <MaterialCommunityIcons name="arrow-expand-all" size={20} color={colors.brand} />
+            </BotaoMapa>
             <BotaoMapa
                 onPress={irParaMaisProxima}
                 disabled={localizando}
@@ -374,37 +387,40 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 )}
             </BotaoMapa>
 
-            <FlatList
-                ref={lista}
-                style={[styles.carrossel, { bottom: base + 8 }]}
-                data={praias}
-                horizontal
-                keyExtractor={(p) => p.id}
-                showsHorizontalScrollIndicator={false}
-                snapToInterval={cardLargura + CARD_GAP}
-                decelerationRate="fast"
-                contentContainerStyle={{ paddingHorizontal: (width - cardLargura) / 2, gap: CARD_GAP }}
-                getItemLayout={(_, index) => ({
-                    length: cardLargura + CARD_GAP,
-                    offset: (cardLargura + CARD_GAP) * index,
-                    index,
-                })}
-                onScrollBeginDrag={() => {
-                    clearTimeout(fimDoArrasto.current ?? undefined);
-                    arrastando.current = true;
-                }}
-                // soltar o card já no lugar não gera o movimento final que encerra o arrasto
-                onScrollEndDrag={() => {
-                    fimDoArrasto.current = setTimeout(() => (arrastando.current = false), 200);
-                }}
-                onMomentumScrollBegin={() => clearTimeout(fimDoArrasto.current ?? undefined)}
-                onMomentumScrollEnd={() => (arrastando.current = false)}
-                onViewableItemsChanged={aoMudarCard}
-                viewabilityConfig={VISIBILIDADE}
-                initialNumToRender={3}
-                windowSize={5}
-                renderItem={renderCard}
-            />
+            {/* as praias da outra cidade surgem de leve, em vez de trocar de uma vez */}
+            <Aparecer chave={cidade} style={[styles.carrossel, { bottom: base + 8 }]}>
+                <FlatList
+                    ref={lista}
+                    style={styles.carrosselLista}
+                    data={praias}
+                    horizontal
+                    keyExtractor={(p) => p.id}
+                    showsHorizontalScrollIndicator={false}
+                    snapToInterval={cardLargura + CARD_GAP}
+                    decelerationRate="fast"
+                    contentContainerStyle={{ paddingHorizontal: (width - cardLargura) / 2, gap: CARD_GAP }}
+                    getItemLayout={(_, index) => ({
+                        length: cardLargura + CARD_GAP,
+                        offset: (cardLargura + CARD_GAP) * index,
+                        index,
+                    })}
+                    onScrollBeginDrag={() => {
+                        clearTimeout(fimDoArrasto.current ?? undefined);
+                        arrastando.current = true;
+                    }}
+                    // soltar o card já no lugar não gera o movimento final que encerra o arrasto
+                    onScrollEndDrag={() => {
+                        fimDoArrasto.current = setTimeout(() => (arrastando.current = false), 200);
+                    }}
+                    onMomentumScrollBegin={() => clearTimeout(fimDoArrasto.current ?? undefined)}
+                    onMomentumScrollEnd={() => (arrastando.current = false)}
+                    onViewableItemsChanged={aoMudarCard}
+                    viewabilityConfig={VISIBILIDADE}
+                    initialNumToRender={3}
+                    windowSize={5}
+                    renderItem={renderCard}
+                />
+            </Aparecer>
         </View>
     );
 }
@@ -414,25 +430,49 @@ function BotaoMapa({
     disabled,
     rotulo,
     bottom,
+    visivel = true,
     children,
 }: {
     onPress: () => void;
     disabled?: boolean;
     rotulo: string;
     bottom: number;
+    /** falso esconde o botão com uma saída suave, em vez de tirá-lo da tela de uma vez */
+    visivel?: boolean;
     children: ReactNode;
 }) {
+    const [presenca] = useState(() => new Animated.Value(visivel ? 1 : 0));
+    const semMovimento = useMovimentoReduzido();
+    useEffect(() => {
+        const alvo = visivel ? 1 : 0;
+        if (semMovimento) {
+            presenca.setValue(alvo);
+            return;
+        }
+        const animacao = Animated.timing(presenca, { toValue: alvo, duration: 180, useNativeDriver: true });
+        animacao.start();
+        return () => animacao.stop();
+    }, [visivel, presenca, semMovimento]);
+    const scale = presenca.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] });
+
     return (
-        <Pressable
-            onPress={onPress}
-            disabled={disabled}
-            style={({ pressed }) => [styles.fab, { bottom }, pressed && styles.pressed]}
-            accessibilityRole="button"
-            accessibilityLabel={rotulo}
+        <Animated.View
+            style={[styles.fab, { bottom, opacity: presenca, transform: [{ scale }] }]}
+            pointerEvents={visivel ? 'auto' : 'none'}
+            accessibilityElementsHidden={!visivel}
+            importantForAccessibility={visivel ? 'auto' : 'no-hide-descendants'}
         >
-            <Vidro style={styles.fabVidro} semVidro={styles.fabFundo} interativo>
-                {children}
-            </Vidro>
-        </Pressable>
+            <Pressable
+                onPress={onPress}
+                disabled={disabled || !visivel}
+                style={({ pressed }) => [styles.fabToque, pressed && styles.pressed]}
+                accessibilityRole="button"
+                accessibilityLabel={rotulo}
+            >
+                <Vidro style={styles.fabVidro} semVidro={styles.fabFundo} interativo>
+                    {children}
+                </Vidro>
+            </Pressable>
+        </Animated.View>
     );
 }

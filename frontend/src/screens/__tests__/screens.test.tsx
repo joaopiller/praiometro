@@ -167,8 +167,8 @@ describe('Praia', () => {
     it('praia boa só em parte lista os trechos e troca o histórico ao tocar', async () => {
         mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }, ICARAI));
         renderWithClient(<Praia route={{ params: { id: 'IC' } } as any} navigation={navigation} />);
-        expect(await screen.findByText('Parcialmente própria para banho')).toBeTruthy();
-        expect(screen.getByText(/Veja abaixo em quais trechos dá para nadar/)).toBeTruthy();
+        expect(await screen.findByText('Parcialmente própria')).toBeTruthy();
+        expect(screen.getByText(/Própria para banho em \d de \d trechos/)).toBeTruthy();
         expect(screen.getByText('BANHO POR TRECHO')).toBeTruthy();
         expect(screen.getByLabelText('Rua Mariz e Barros: Imprópria para banho')).toBeTruthy();
         await waitFor(() => expect(mockHistorico).toHaveBeenCalledWith('IC00'));
