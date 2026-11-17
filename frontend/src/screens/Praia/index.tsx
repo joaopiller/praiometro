@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ActivityIndicator, ImageBackground, Linking, Pressable, Text, View } from 'react-native';
 import { getErrorMessage } from '../../api/client';
 import type { PraiaDetalhe } from '../../api/types';
+import AtividadesCard from '../../components/AtividadesCard';
 import { useAviso } from '../../components/Aviso';
 import DataNotice from '../../components/DataNotice';
 import Destaques from '../../components/Destaques';
@@ -228,6 +229,8 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                         <Text style={styles.aguaValor}>{formatTemp(leitura.sea_surface_temperature)}</Text>
                     </GlassCard>
                 )}
+
+                <AtividadesCard atividades={praia.atividades} criancas={praia.criancas} />
 
                 <FeedbackSection
                     avaliacao={avaliacao.data}

@@ -74,10 +74,17 @@ class Destaque(BaseModel):
     texto: str
 
 
+class Atividade(BaseModel):
+    nome: str
+    icone: str = Field(description="Nome do desenho; o app escolhe o ícone (ex.: surfe, remo, trilha)")
+
+
 class PraiaDetalhe(PraiaResumo):
     leitura_atual: dict | None = Field(None, description="Leitura do ponto principal")
     previsao: list[dict] = []
     destaques: list[Destaque] = Field([], description="O que a praia tem de singular; avisos primeiro")
+    atividades: list[Atividade] = Field([], description="Atividades comuns na praia")
+    criancas: str | None = Field(None, description="Por que a praia é boa para crianças, se for")
 
 
 class DadosPonto(BaseModel):

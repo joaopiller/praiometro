@@ -39,6 +39,26 @@ def destaques() -> dict[str, list[dict]]:
     }
 
 
+# atividades comuns em cada praia e, quando a fonte confirma, se ela é boa para crianças
+ATIVIDADES_FILE = Path(__file__).parent / "dados" / "atividades.json"
+
+
+@cache
+def atividades() -> dict[str, dict]:
+    """{id da praia: {atividades: [{nome, icone}], criancas: texto ou None}}; a fonte fica no arquivo."""
+    try:
+        bruto = json.loads(ATIVIDADES_FILE.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    return {
+        praia: {
+            "atividades": [{"nome": a["nome"], "icone": a["icone"]} for a in dados.get("atividades", [])],
+            "criancas": (dados.get("criancas") or {}).get("texto"),
+        }
+        for praia, dados in bruto.items()
+    }
+
+
 @cache
 def centros() -> dict[str, list[float]]:
     try:

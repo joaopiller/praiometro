@@ -19,7 +19,7 @@ import Vidro from '../../components/Vidro';
 import CidadeSwitch from '../../components/CidadeSwitch';
 import type { Cidade } from '../../config/cidades';
 import { usePraias } from '../../hooks/queries';
-import { useCidade } from '../../hooks/useLugar';
+import { useCidade, useForaDaArea, vezDeAvisarForaDaArea } from '../../hooks/useLugar';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
 import { useMovimentoReduzido } from '../../hooks/useMovimentoReduzido';
 import type { TabScreenProps } from '../../navigation/types';
@@ -74,6 +74,13 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const { coordenada: origem, carregando: localizando, localizar } = useLocalizacao();
     const avisar = useAviso();
     const [cidade, setCidade] = useCidade();
+    const foraDaArea = useForaDaArea();
+    useEffect(() => {
+        if (!foraDaArea) return;
+        vezDeAvisarForaDaArea().then((avisarAgora) => {
+            if (avisarAgora) avisar('Por enquanto, o Praiômetro mostra só as praias de Niterói e do Rio de Janeiro.', 'info');
+        });
+    }, [foraDaArea, avisar]);
     // trocar de cidade (aqui, no clima ou pela localização) desfaz a escolha: sem isso, ao voltar,
     // o pin reaparecia grande com o mapa afastado e o carrossel em outra praia
     const [cidadeDaEscolha, setCidadeDaEscolha] = useState(cidade);

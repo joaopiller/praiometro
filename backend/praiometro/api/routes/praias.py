@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import Response
 
-from ...praias import agrupar, destaques, resumir
+from ...praias import agrupar, atividades, destaques, resumir
 from ..deps import get_pontos, obter_praia
 from ..schemas import ListaPraias, PraiaDetalhe
 
@@ -31,4 +31,5 @@ async def detalhar_praia(praia_id: str, pontos: dict = Depends(get_pontos)):
         leitura_atual=principal.get("leitura_atual"),
         previsao=principal.get("previsao") or [],
         destaques=destaques().get(praia["id"], []),
+        **atividades().get(praia["id"], {}),
     )

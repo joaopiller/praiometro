@@ -27,10 +27,19 @@ describe('cidade pela localização', () => {
         expect(result.current).toEqual(['rio', 'zona-sul']);
     });
 
-    it('longe das duas cidades fica onde está', () => {
-        const { result } = renderHook(() => lugar.useCidade()[0]);
+    it('na primeira abertura longe das duas cidades, começa em Niterói e marca que a pessoa está fora', () => {
+        const { result } = renderHook(() => [lugar.useCidade()[0], lugar.useForaDaArea()]);
         act(() => lugar.irParaOndeEstou(SAO_PAULO));
-        expect(result.current).toBe('niteroi');
+        expect(result.current).toEqual(['niteroi', true]);
+        act(() => lugar.irParaOndeEstou(ICARAI));
+        expect(result.current).toEqual(['niteroi', false]);
+    });
+
+    it('longe das duas cidades, fica a última cidade usada', () => {
+        const { result } = renderHook(() => [lugar.useCidade()[0], lugar.useForaDaArea()]);
+        act(() => lugar.irParaOndeEstou(COPACABANA));
+        act(() => lugar.irParaOndeEstou(SAO_PAULO));
+        expect(result.current).toEqual(['rio', true]);
     });
 
     it('a escolha da pessoa vale mais que a localização, a não ser que ela peça', () => {
@@ -67,5 +76,14 @@ describe('cidade pela localização', () => {
         expect(result.current).toBe('rio');
         await act(() => lugar.abrirNaCidadeDaPessoa());
         expect(Location.requestForegroundPermissionsAsync).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe('aviso de que o app só cobre as duas cidades', () => {
+    it('aparece no máximo uma vez por dia', async () => {
+        const agora = Date.now() + 365 * 24 * 60 * 60 * 1000;
+        expect(await lugar.vezDeAvisarForaDaArea(agora)).toBe(true);
+        expect(await lugar.vezDeAvisarForaDaArea(agora + 60 * 60 * 1000)).toBe(false);
+        expect(await lugar.vezDeAvisarForaDaArea(agora + 25 * 60 * 60 * 1000)).toBe(true);
     });
 });

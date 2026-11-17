@@ -217,3 +217,52 @@ def test_arquivo_de_destaques_e_valido():
             assert 20 <= len(item["texto"]) <= 150, item["texto"]
             assert item["texto"].endswith(".")
             assert item["fonte"].startswith("https://"), item
+
+
+def test_atividades_e_criancas_da_praia(client, tmp_path, monkeypatch):
+    from praiometro import praias as modulo
+
+    arquivo = tmp_path / "atividades.json"
+    arquivo.write_text(
+        json.dumps(
+            {
+                "IA": {"atividades": [{"nome": "Surfe", "icone": "surfe", "fonte": "https://x"}]},
+                "II": {
+                    "atividades": [{"nome": "Canoa havaiana", "icone": "remo", "fonte": "https://y"}],
+                    "criancas": {"texto": "Mar calmo.", "fonte": "https://z"},
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(modulo, "ATIVIDADES_FILE", arquivo)
+    modulo.atividades.cache_clear()
+    try:
+        ia = client.get("/praias/IA").json()
+        assert ia["atividades"] == [{"nome": "Surfe", "icone": "surfe"}]
+        assert ia["criancas"] is None
+        ii = client.get("/praias/II").json()
+        assert ii["criancas"] == "Mar calmo."
+        # praia sem nada que se destaque não ganha a seção
+        ic = client.get("/praias/IC").json()
+        assert ic["atividades"] == [] and ic["criancas"] is None
+    finally:
+        modulo.atividades.cache_clear()
+
+
+def test_arquivo_de_atividades_e_valido():
+    from praiometro.praias import ATIVIDADES_FILE
+
+    praias = set(agrupar(CATALOGO))
+    for praia, dados in json.loads(ATIVIDADES_FILE.read_text(encoding="utf-8")).items():
+        assert praia in praias, praia
+        assert set(dados) <= {"atividades", "criancas"}, praia
+        assert 1 <= len(dados["atividades"]) <= 5, praia
+        nomes = [a["nome"] for a in dados["atividades"]]
+        assert len(nomes) == len(set(nomes)), praia
+        for a in dados["atividades"]:
+            assert a["nome"] and a["icone"]
+            assert a["fonte"].startswith("https://"), a
+        if criancas := dados.get("criancas"):
+            assert 15 <= len(criancas["texto"]) <= 120 and criancas["texto"].endswith(".")
+            assert criancas["fonte"].startswith("https://")

@@ -76,10 +76,19 @@ export interface Destaque {
     texto: string;
 }
 
+export interface Atividade {
+    nome: string;
+    /** nome do desenho (ex.: "surfe", "remo"); o app escolhe o ícone */
+    icone: string;
+}
+
 export interface PraiaDetalhe extends PraiaResumo {
     leitura_atual?: Leitura | null;
     previsao?: PrevisaoHora[];
     destaques?: Destaque[];
+    atividades?: Atividade[];
+    /** por que a praia é boa para crianças, quando as fontes confirmam */
+    criancas?: string | null;
 }
 
 export interface PontoDetalhe {

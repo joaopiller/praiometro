@@ -1,0 +1,518 @@
+{
+    "IC": {
+        "atividades": [
+            {
+                "nome": "Canoa havaiana",
+                "icone": "remo",
+                "fonte": "https://www.tupi.fm/?p=2023138"
+            },
+            {
+                "nome": "Vôlei",
+                "icone": "volei",
+                "fonte": "https://www.correiodamanha.com.br/esporte/esportes/2026/09/319242-esporte-esquenta-o-fim-de-semana-chuvoso-na-praia-de-icarai.html"
+            },
+            {
+                "nome": "Futevôlei",
+                "icone": "futevolei",
+                "fonte": "https://www.correiodamanha.com.br/esporte/esportes/2026/09/319242-esporte-esquenta-o-fim-de-semana-chuvoso-na-praia-de-icarai.html"
+            },
+            {
+                "nome": "Caminhada no calçadão",
+                "icone": "caminhada",
+                "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+            }
+        ]
+    },
+    "SF": {
+        "atividades": [
+            {
+                "nome": "Canoa havaiana",
+                "icone": "remo",
+                "fonte": "https://folhadoleste.com.br/canoa-havaiana-niteroi-sao-francisco/"
+            },
+            {
+                "nome": "Stand up paddle",
+                "icone": "remo",
+                "fonte": "https://folhadoleste.com.br/canoa-havaiana-niteroi-sao-francisco/"
+            },
+            {
+                "nome": "Vela",
+                "icone": "vela",
+                "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+            },
+            {
+                "nome": "Caminhada e ciclovia",
+                "icone": "caminhada",
+                "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+            }
+        ]
+    },
+    "CH": {
+        "atividades": [
+            {
+                "nome": "Canoa havaiana",
+                "icone": "remo",
+                "fonte": "https://wellhub.com/pt-br/search/partners/niteroi-hoe-canoa-havaiana-base-charitas-sao-francisco/"
+            },
+            {
+                "nome": "Windsurfe",
+                "icone": "vela",
+                "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+            },
+            {
+                "nome": "Voo livre",
+                "icone": "voo-livre",
+                "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+            }
+        ]
+    },
+    "PR": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://www.metropoles.com/vida-e-estilo/praia-em-niteroi"
+            },
+            {
+                "nome": "Bodyboard",
+                "icone": "surfe",
+                "fonte": "https://www.metropoles.com/vida-e-estilo/praia-em-niteroi"
+            }
+        ],
+        "criancas": {
+            "texto": "Mar calmo e raso na Prainha, o trecho menor da praia.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    },
+    "CM": {
+        "atividades": [
+            {
+                "nome": "Pesca",
+                "icone": "pesca",
+                "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+            },
+            {
+                "nome": "Windsurfe",
+                "icone": "vela",
+                "fonte": "https://iloverio.com/rio-de-janeiro-attractions-landmarks-museums-churches-guide/nature/beaches/urban/rio-de-janeiro-attractions-natural-landmarks-parks-beaches-oceanic-niteroi-camboinhas2.htm"
+            },
+            {
+                "nome": "Caminhada e ciclovia",
+                "icone": "caminhada",
+                "fonte": "https://iloverio.com/rio-de-janeiro-attractions-landmarks-museums-churches-guide/nature/beaches/urban/rio-de-janeiro-attractions-natural-landmarks-parks-beaches-oceanic-niteroi-camboinhas2.htm"
+            }
+        ]
+    },
+    "II": {
+        "atividades": [
+            {
+                "nome": "Canoa havaiana",
+                "icone": "remo",
+                "fonte": "https://folhadoleste.com.br/super-paddle-2025-praia-de-itaipu-niteroi/"
+            },
+            {
+                "nome": "Stand up paddle",
+                "icone": "remo",
+                "fonte": "https://wellhub.com/pt-br/search/partners/doomar-stand-up-paddle/"
+            },
+            {
+                "nome": "Passeio de barco",
+                "icone": "barco",
+                "fonte": "https://blog.blablacar.com.br/destinos/praias-de-niteroi"
+            }
+        ],
+        "criancas": {
+            "texto": "Mar costuma ser calmo, sobretudo nos dias sem vento.",
+            "fonte": "https://blog.blablacar.com.br/destinos/praias-para-ir-com-criancas-litoral-fluminense"
+        }
+    },
+    "IA": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://quantocustaviajar.com/blog/costao-de-itacoatiara-trilha-niteroi-rj/"
+            },
+            {
+                "nome": "Bodyboard",
+                "icone": "surfe",
+                "fonte": "https://agenciabrasil.ebc.com.br/esportes/noticia/2022-05/Cidade-de-Niteroi-RJ-recebe-quarta-etapa-do-mundial-de-bodyboard"
+            },
+            {
+                "nome": "Trilha",
+                "icone": "trilha",
+                "fonte": "https://www.maladeaventuras.com/trilha-do-costao-de-itacoatiara/"
+            },
+            {
+                "nome": "Escalada",
+                "icone": "escalada",
+                "fonte": "https://quantocustaviajar.com/blog/costao-de-itacoatiara-trilha-niteroi-rj/"
+            }
+        ]
+    },
+    "barra-de-guaratiba": {
+        "atividades": [
+            {
+                "nome": "Stand up paddle",
+                "icone": "remo",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/barra-de-guaratiba"
+            },
+            {
+                "nome": "Trilha",
+                "icone": "trilha",
+                "fonte": "https://www.maladeaventuras.com/trilha-pedra-do-telegrafo/"
+            }
+        ],
+        "criancas": {
+            "texto": "Águas tranquilas, dentro da baía.",
+            "fonte": "https://blog.blablacar.com.br/destinos/praias-para-ir-com-criancas-litoral-fluminense"
+        }
+    },
+    "grumari": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-de-grumari"
+            },
+            {
+                "nome": "Trilha",
+                "icone": "trilha",
+                "fonte": "https://trilhatranscarioca.com.br/barra-de-guaratiba-x-grumari-en"
+            }
+        ]
+    },
+    "prainha": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+            },
+            {
+                "nome": "Trilha",
+                "icone": "trilha",
+                "fonte": "https://www.dicasdeviagem.com/passeios/trilha-pela-prainha-excursao-a-grumari/"
+            }
+        ]
+    },
+    "pontal": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://iloverio.com/rio-de-janeiro-beaches-copacabana-ipanema-leblon-barra-guide/south-west-zone-praias/rio-de-janeiro-beaches-global-list-zona-oeste-barra-detail-praia-do-pontal-de-sernambetiba.htm"
+            },
+            {
+                "nome": "Pesca",
+                "icone": "pesca",
+                "fonte": "https://iloverio.com/rio-de-janeiro-beaches-copacabana-ipanema-leblon-barra-guide/south-west-zone-praias/rio-de-janeiro-beaches-global-list-zona-oeste-barra-detail-praia-do-pontal-de-sernambetiba.htm"
+            }
+        ],
+        "criancas": {
+            "texto": "Mar mais calmo no trecho junto à Pedra do Pontal.",
+            "fonte": "https://blog.blablacar.com.br/destinos/praias-para-ir-com-criancas-litoral-fluminense"
+        }
+    },
+    "recreio": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-recreio"
+            },
+            {
+                "nome": "Bodyboard",
+                "icone": "surfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-recreio"
+            },
+            {
+                "nome": "Vôlei",
+                "icone": "volei",
+                "fonte": "https://www.tupi.fm/esportes/do-leblon-para-o-mundo-5-points-no-rio-para-quem-ama-volei-de-praia/"
+            }
+        ]
+    },
+    "reserva": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-da-reserva"
+            },
+            {
+                "nome": "Pesca",
+                "icone": "pesca",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-da-reserva"
+            }
+        ]
+    },
+    "barra": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-da-barra-da-tijuca"
+            },
+            {
+                "nome": "Kitesurfe",
+                "icone": "kitesurfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-pepe"
+            },
+            {
+                "nome": "Windsurfe",
+                "icone": "vela",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-pepe"
+            },
+            {
+                "nome": "Vôlei",
+                "icone": "volei",
+                "fonte": "https://www.tupi.fm/esportes/do-leblon-para-o-mundo-5-points-no-rio-para-quem-ama-volei-de-praia/"
+            },
+            {
+                "nome": "Caminhada e ciclovia",
+                "icone": "caminhada",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-pepe"
+            }
+        ]
+    },
+    "joatinga": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-da-joatinga"
+            },
+            {
+                "nome": "Bodyboard",
+                "icone": "surfe",
+                "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+            }
+        ]
+    },
+    "pepino": {
+        "atividades": [
+            {
+                "nome": "Voo livre",
+                "icone": "voo-livre",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-de-sao-conrado"
+            },
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://iloverio.com/rio-de-janeiro-beaches-copacabana-ipanema-leblon-barra-guide/south-zone-praias/rio-de-janeiro-beaches-global-list-zona-sul-detail-praia-de-s%C3%A3o-conrado-pepino-beach.htm"
+            }
+        ]
+    },
+    "sao-conrado": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-de-sao-conrado"
+            }
+        ]
+    },
+    "leblon": {
+        "atividades": [
+            {
+                "nome": "Vôlei",
+                "icone": "volei",
+                "fonte": "https://www.tupi.fm/esportes/do-leblon-para-o-mundo-5-points-no-rio-para-quem-ama-volei-de-praia/"
+            },
+            {
+                "nome": "Futevôlei",
+                "icone": "futevolei",
+                "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+            },
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+            }
+        ],
+        "criancas": {
+            "texto": "Baixo Bebê, entre os postos 11 e 12, com brinquedos e estrutura para crianças pequenas.",
+            "fonte": "https://blog.blablacar.com.br/destinos/praias-para-ir-com-criancas-litoral-fluminense"
+        }
+    },
+    "ipanema": {
+        "atividades": [
+            {
+                "nome": "Altinha",
+                "icone": "futevolei",
+                "fonte": "https://riodejaneirobycariocas.com/?p=1473"
+            },
+            {
+                "nome": "Vôlei",
+                "icone": "volei",
+                "fonte": "https://www.tupi.fm/esportes/do-leblon-para-o-mundo-5-points-no-rio-para-quem-ama-volei-de-praia/"
+            },
+            {
+                "nome": "Ver o pôr do sol",
+                "icone": "por-do-sol",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-de-ipanema"
+            },
+            {
+                "nome": "Caminhada e ciclovia",
+                "icone": "caminhada",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-de-ipanema"
+            }
+        ]
+    },
+    "arpoador": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-arpoador"
+            },
+            {
+                "nome": "Stand up paddle",
+                "icone": "remo",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-arpoador"
+            },
+            {
+                "nome": "Ver o pôr do sol",
+                "icone": "por-do-sol",
+                "fonte": "https://agenciabrasil.ebc.com.br/geral/noticia/2015-12/praia-do-arpoador-e-um-dos-pontos-mais-disputados-do-verao-carioca"
+            }
+        ]
+    },
+    "diabo": {
+        "atividades": [
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://riodejaneirobycariocas.com/?p=1473"
+            }
+        ]
+    },
+    "copacabana": {
+        "atividades": [
+            {
+                "nome": "Vôlei",
+                "icone": "volei",
+                "fonte": "https://www.tupi.fm/esportes/do-leblon-para-o-mundo-5-points-no-rio-para-quem-ama-volei-de-praia/"
+            },
+            {
+                "nome": "Futevôlei",
+                "icone": "futevolei",
+                "fonte": "https://riodejaneirobycariocas.com/?p=1473"
+            },
+            {
+                "nome": "Frescobol",
+                "icone": "frescobol",
+                "fonte": "https://riodejaneirobycariocas.com/?p=1473"
+            },
+            {
+                "nome": "Natação no mar",
+                "icone": "natacao",
+                "fonte": "https://swimchannel.net/br/copacabana-o-lugar-das-aguas-abertas-no-rio-de-janeiro"
+            }
+        ]
+    },
+    "leme": {
+        "atividades": [
+            {
+                "nome": "Vôlei",
+                "icone": "volei",
+                "fonte": "https://www.tupi.fm/esportes/do-leblon-para-o-mundo-5-points-no-rio-para-quem-ama-volei-de-praia/"
+            },
+            {
+                "nome": "Surfe",
+                "icone": "surfe",
+                "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+            },
+            {
+                "nome": "Pesca",
+                "icone": "pesca",
+                "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+            }
+        ]
+    },
+    "vermelha": {
+        "atividades": [
+            {
+                "nome": "Stand up paddle",
+                "icone": "remo",
+                "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+            },
+            {
+                "nome": "Caiaque",
+                "icone": "caiaque",
+                "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+            },
+            {
+                "nome": "Natação no mar",
+                "icone": "natacao",
+                "fonte": "https://www.fuiserviajante.com/rio-de-janeiro/bairro-da-urca/index.html"
+            },
+            {
+                "nome": "Escalada",
+                "icone": "escalada",
+                "fonte": "https://www.fuiserviajante.com/rio-de-janeiro/bairro-da-urca/index.html"
+            },
+            {
+                "nome": "Trilha",
+                "icone": "trilha",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-vermelha"
+            }
+        ]
+    },
+    "urca": {
+        "atividades": [
+            {
+                "nome": "Canoa havaiana",
+                "icone": "remo",
+                "fonte": "https://alohaspiritmidia.com.br/wp-content/uploads/2021/11/Rio-Vaa-2021-Aviso-de-prova-1.pdf"
+            },
+            {
+                "nome": "Ver o pôr do sol",
+                "icone": "por-do-sol",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/mureta-da-urca"
+            }
+        ],
+        "criancas": {
+            "texto": "Mar calmo e pouco movimento, dentro da baía.",
+            "fonte": "https://blog.blablacar.com.br/destinos/praias-para-ir-com-criancas-litoral-fluminense"
+        }
+    },
+    "botafogo": {
+        "atividades": [
+            {
+                "nome": "Canoa havaiana",
+                "icone": "remo",
+                "fonte": "https://wellhub.com/pt-br/search/partners/selva-a-canoa-botafogo/"
+            }
+        ]
+    },
+    "flamengo": {
+        "atividades": [
+            {
+                "nome": "Canoa havaiana",
+                "icone": "remo",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/museus/os-melhores-programas-para-fazer-no-aterro-do-flamengo"
+            },
+            {
+                "nome": "Caminhada e ciclovia",
+                "icone": "caminhada",
+                "fonte": "https://www.timeout.com/pt/rio-de-janeiro/museus/os-melhores-programas-para-fazer-no-aterro-do-flamengo"
+            }
+        ]
+    },
+    "gloria": {
+        "atividades": [
+            {
+                "nome": "Vela",
+                "icone": "vela",
+                "fonte": "https://diariodorio.com/agenda/2026/11/06/rio-tera-aulas-gratuitas-de-vela-na-marina-da-gloria.html"
+            },
+            {
+                "nome": "Passeio de barco",
+                "icone": "barco",
+                "fonte": "https://www.nautal.com/activities/rio-de-janeiro/sail-rio-s-coast-5h-scenic-escape-from-marina-da-gloria-9374"
+            }
+        ]
+    }
+}
