@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render } from '@testing-library/react-native';
-import type { ReactElement } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AvisoProvider } from '../components/Aviso';
 
@@ -10,16 +10,15 @@ export function renderWithClient(ui: ReactElement) {
     const client = new QueryClient({
         defaultOptions: { queries: { retry: false, gcTime: Infinity }, mutations: { retry: false, gcTime: Infinity } },
     });
-    return {
-        client,
-        ...render(
-            <SafeAreaProvider initialMetrics={METRICAS}>
-                <QueryClientProvider client={client}>
-                    <AvisoProvider>{ui}</AvisoProvider>
-                </QueryClientProvider>
-            </SafeAreaProvider>,
-        ),
-    };
+    // como wrapper, os provedores continuam no lugar quando o teste chama rerender
+    const wrapper = ({ children }: { children: ReactNode }) => (
+        <SafeAreaProvider initialMetrics={METRICAS}>
+            <QueryClientProvider client={client}>
+                <AvisoProvider>{children}</AvisoProvider>
+            </QueryClientProvider>
+        </SafeAreaProvider>
+    );
+    return { client, ...render(ui, { wrapper }) };
 }
 
 export function axiosError(status?: number, detail?: unknown, code?: string) {

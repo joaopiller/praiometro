@@ -33,7 +33,7 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 - **Mapa com cuidado geográfico.** O pin de cada praia fica no meio da faixa de areia, calculado a partir dos contornos do OpenStreetMap com Shapely, e não no mar.
 - **Relatos colaborativos com moderação automática.** Opções fixas, validade de 5 horas, conferência de que a pessoa está na praia e contestações que escondem relatos falsos.
 - **Feito para o público geral.** Linguagem direta ("Própria para banho"), funcionamento offline com os últimos dados, suporte a leitor de tela, fonte ampliada e redução de movimento.
-- **Testado e automatizado.** 137 testes no app (Jest) e 157 no backend (pytest), com lint, checagem de tipos e CI no GitHub Actions a cada push.
+- **Testado e automatizado.** 138 testes no app (Jest) e 157 no backend (pytest), com lint, checagem de tipos e CI no GitHub Actions a cada push.
 - **Identidade visual própria, gerada por código.** Logo, variações, ícones e prancha saem de um script, em [docs/identidade-visual](docs/identidade-visual).
 
 ## Como funciona
@@ -74,7 +74,7 @@ flowchart LR
 - O app abre na cidade onde você está (pela localização, pedida uma vez); dá para trocar de cidade no mapa e no clima
 - Mapa com um pin por praia no meio da faixa de areia, colorido pela situação, e carrossel que percorre o litoral de cada cidade
 - Situação para banho de cada praia: própria, imprópria ou parcialmente própria, quando os trechos medidos pelo INEA (68 pontos de coleta) discordam
-- Trechos de cada praia com a situação de cada um e o histórico das últimas coletas
+- Trechos de cada praia com a situação de cada um e o histórico das últimas coletas; no mapa, tocar num trecho mostra o nome dele e o cartão abre a praia já naquele trecho
 - Destaques de cada praia: avisos (mar forte, acesso por trilha, areia que some na maré alta), dicas e curiosidades, conferidos em fontes públicas
 - Aviso quando choveu recentemente
 - Praia mais próxima de você (no mapa e na lista)

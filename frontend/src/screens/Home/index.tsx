@@ -27,7 +27,8 @@ import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
 import { colors, toneColors } from '../../theme';
 import { maisRecente } from '../../utils/format';
 import { centroDaPraia, distanciaAtePraia, formatDistancia, ordenarPraiasPorDistancia } from '../../utils/geo';
-import { nomeCurto } from '../../utils/search';
+import { nivelBalneabilidade } from '../../utils/risk';
+import { nomeCurto, nomeDoTrecho } from '../../utils/search';
 import styles, { CARD_GAP, CARROSSEL_ALTURA } from './styles';
 
 const PINS = {
@@ -42,11 +43,11 @@ const PINS = {
 };
 
 const PIN_DA_SITUACAO = { propria: 'propria', impropria: 'impropria', parcial: 'parcial', sem_dados: 'sem-dados' } as const;
-const COR_DO_TRECHO = (b: boolean | null) => toneColors[b === true ? 'success' : b === false ? 'danger' : 'neutral'].solid;
-
 const VISIBILIDADE = { itemVisiblePercentThreshold: 70 };
 // menor área enquadrada ao escolher uma praia (~1 km), em graus
 const FAIXA_MINIMA = 0.009;
+// espaço que o nome de um trecho ocupa para cada lado do ponto e abaixo dele
+const NOME_DO_TRECHO = { lado: 76, abaixo: 48 };
 
 type Limites = [number, number, number, number];
 
@@ -63,10 +64,11 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const { data, isPending, error, refetch } = usePraias();
     const insets = useSafeAreaInsets();
     const focado = useIsFocused();
-    const { width } = useWindowDimensions();
+    const { width, height } = useWindowDimensions();
     const camera = useRef<CameraRef>(null);
     const lista = useRef<FlatList<PraiaResumo>>(null);
     const [selecionado, setSelecionado] = useState<string | null>(null);
+    const [trechoTocado, setTrechoTocado] = useState<string | null>(null);
     const [mapaFalhou, setMapaFalhou] = useState(false);
     const base = useEspacoDasAbas();
     const { coordenada: origem, carregando: localizando, localizar } = useLocalizacao();
@@ -78,6 +80,7 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     if (cidadeDaEscolha !== cidade) {
         setCidadeDaEscolha(cidade);
         setSelecionado(null);
+        setTrechoTocado(null);
     }
     // praia a focar assim que a cidade dela entrar no carrossel
     const focarDepois = useRef<string | null>(null);
@@ -93,6 +96,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     // a escolha some quando a praia sai do carrossel (troca de cidade)
     const escolhida = praias.some((p) => p.id === selecionado) ? selecionado : null;
     const espaco = { bottom: base + CARROSSEL_ALTURA + 24, top: insets.top + 150, left: 40, right: 40 };
+    // com uma praia escolhida, os botões ficam à direita
+    const espacoDaPraia = { ...espaco, right: 84 };
 
     // um pin por praia, no meio da areia
     const pins = useMemo<GeoJSON.FeatureCollection>(
@@ -118,16 +123,22 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             type: 'FeatureCollection',
             features: (praia && praia.pontos.length > 1 ? praia.pontos : []).flatMap((t) => {
                 const c = t.coordenadas_terra ?? t.coordenadas;
-                return c
-                    ? [
-                          {
-                              type: 'Feature' as const,
-                              id: t.codigo,
-                              geometry: { type: 'Point' as const, coordinates: [c[1], c[0]] },
-                              properties: { cor: COR_DO_TRECHO(t.balneabilidade) },
-                          },
-                      ]
-                    : [];
+                if (!c) return [];
+                const nivel = nivelBalneabilidade(t.balneabilidade);
+                return [
+                    {
+                        type: 'Feature' as const,
+                        id: t.codigo,
+                        geometry: { type: 'Point' as const, coordinates: [c[1], c[0]] },
+                        properties: {
+                            codigo: t.codigo,
+                            nome: nomeDoTrecho(t),
+                            situacao: nivel.rotulo,
+                            cor: toneColors[nivel.tom].solid,
+                            corDoTexto: toneColors[nivel.tom].escuro,
+                        },
+                    },
+                ];
             }),
         };
     }, [praias, escolhida]);
@@ -138,7 +149,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             if (indice < 0) return;
             const praia = praias[indice];
             setSelecionado(id);
-            const padding = { ...espaco, right: 84 };
+            setTrechoTocado(null);
+            const padding = espacoDaPraia;
             const lugares = [centroDaPraia(praia)!, ...praia.pontos.flatMap((t) => {
                 const c = t.coordenadas_terra ?? t.coordenadas;
                 return c ? [{ latitude: c[0], longitude: c[1] }] : [];
@@ -187,9 +199,13 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     };
 
     const abrirPraia = useCallback(
-        // initial: false mantém a lista embaixo da praia, mesmo que a aba Praias nunca tenha sido aberta
-        (id: string) => navigation.navigate('PraiasTab', { screen: 'Praia', params: { id, doMapa: true }, initial: false }),
-        [navigation],
+        (id: string) => {
+            // a página abre no trecho que estava marcado no mapa
+            const trecho = id === escolhida ? (trechoTocado ?? undefined) : undefined;
+            // initial: false mantém a lista embaixo da praia, mesmo que a aba Praias nunca tenha sido aberta
+            navigation.navigate('PraiasTab', { screen: 'Praia', params: { id, trecho, doMapa: true }, initial: false });
+        },
+        [navigation, escolhida, trechoTocado],
     );
 
     // cards memorizados: mudar a seleção só redesenha os dois cards afetados
@@ -211,12 +227,16 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
 
     const recentralizar = () => {
         setSelecionado(null);
+        setTrechoTocado(null);
         const limites = limitesDaCidade(todas, cidade);
         if (limites) camera.current?.fitBounds(limites, { padding: espaco, duration: 700 });
     };
 
-    // o toque num pin também chega ao mapa como toque comum, antes ou depois: não pode desfazer a escolha
+    // o toque num pin ou num trecho também chega ao mapa como toque comum, antes ou depois:
+    // o mapa espera um instante para saber se foi isso antes de desfazer a escolha
     const toquePin = useRef(0);
+    const toqueNoMapa = useRef<ReturnType<typeof setTimeout> | null>(null);
+    useEffect(() => () => clearTimeout(toqueNoMapa.current ?? undefined), []);
     const arrastando = useRef(false);
     const fimDoArrasto = useRef<ReturnType<typeof setTimeout> | null>(null);
     useEffect(() => () => clearTimeout(fimDoArrasto.current ?? undefined), []);
@@ -268,7 +288,12 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 onDidFailLoadingMap={() => setMapaFalhou(true)}
                 onDidFinishLoadingMap={() => setMapaFalhou(false)}
                 onPress={() => {
-                    if (Date.now() - toquePin.current > 400) setSelecionado(null);
+                    clearTimeout(toqueNoMapa.current ?? undefined);
+                    toqueNoMapa.current = setTimeout(() => {
+                        if (Date.now() - toquePin.current < 500) return;
+                        setSelecionado(null);
+                        setTrechoTocado(null);
+                    }, 80);
                 }}
             >
                 <Camera
@@ -283,16 +308,32 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 />
                 <Images images={PINS} />
                 {origem && <UserLocation animated />}
-                <GeoJSONSource id="trechos" data={trechos}>
+                {/* o nome fica abaixo dos pins, para desviar deles; os pontos ficam acima, para receber o toque */}
+                <GeoJSONSource id="trechos-nomes" data={trechos}>
                     <Layer
-                        type="circle"
-                        id="trechos-ponto"
-                        paint={{
-                            'circle-radius': 7,
-                            'circle-color': ['get', 'cor'],
-                            'circle-stroke-color': '#ffffff',
-                            'circle-stroke-width': 2.5,
+                        type="symbol"
+                        id="trechos-nome"
+                        filter={['==', ['get', 'codigo'], trechoTocado ?? '']}
+                        layout={{
+                            'text-field': [
+                                'format',
+                                ['get', 'nome'],
+                                {},
+                                '\n',
+                                {},
+                                ['get', 'situacao'],
+                                { 'font-scale': 0.9, 'text-color': ['get', 'corDoTexto'] },
+                            ],
+                            'text-font': ['Noto Sans Bold'],
+                            'text-size': 13,
+                            'text-max-width': 11,
+                            // procura um lado livre em volta do ponto, para não cair em cima do pin da praia
+                            'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+                            'text-radial-offset': 1.1,
+                            'text-justify': 'auto',
+                            'text-allow-overlap': true,
                         }}
+                        paint={{ 'text-color': colors.bgBottom, 'text-halo-color': '#ffffff', 'text-halo-width': 2 }}
                     />
                 </GeoJSONSource>
                 <GeoJSONSource
@@ -341,7 +382,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                             'icon-anchor': 'bottom',
                             'icon-allow-overlap': true,
                             'icon-size': 0.52,
-                            'text-field': ['get', 'nome'],
+                            // com um trecho marcado, o nome que aparece é o dele
+                            'text-field': trechoTocado ? '' : ['get', 'nome'],
                             'text-font': ['Noto Sans Bold'],
                             'text-size': 14,
                             'text-anchor': 'top',
@@ -349,6 +391,40 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                             'text-allow-overlap': true,
                         }}
                         paint={{ 'text-color': colors.brand, 'text-halo-color': '#ffffff', 'text-halo-width': 2 }}
+                    />
+                </GeoJSONSource>
+                <GeoJSONSource
+                    id="trechos"
+                    data={trechos}
+                    onPress={(e) => {
+                        const { features, point } = e.nativeEvent;
+                        const trecho = features[0];
+                        if (!trecho?.properties?.codigo || trecho.geometry.type !== 'Point') return;
+                        toquePin.current = Date.now();
+                        setTrechoTocado(trecho.properties.codigo);
+                        // perto da borda, dos botões ou do carrossel o nome ficaria escondido: traz o ponto para o meio
+                        const [x, y] = point;
+                        const cabe =
+                            x > NOME_DO_TRECHO.lado &&
+                            x < width - espacoDaPraia.right - NOME_DO_TRECHO.lado &&
+                            y > espacoDaPraia.top &&
+                            y < height - espacoDaPraia.bottom - NOME_DO_TRECHO.abaixo;
+                        if (!cabe) {
+                            const [longitude, latitude] = trecho.geometry.coordinates;
+                            camera.current?.easeTo({ center: [longitude, latitude], duration: 400, padding: espacoDaPraia });
+                        }
+                    }}
+                    hitbox={{ top: 14, right: 14, bottom: 14, left: 14 }}
+                >
+                    <Layer
+                        type="circle"
+                        id="trechos-ponto"
+                        paint={{
+                            'circle-radius': ['case', ['==', ['get', 'codigo'], trechoTocado ?? ''], 10, 7],
+                            'circle-color': ['get', 'cor'],
+                            'circle-stroke-color': '#ffffff',
+                            'circle-stroke-width': ['case', ['==', ['get', 'codigo'], trechoTocado ?? ''], 3.5, 2.5],
+                        }}
                     />
                 </GeoJSONSource>
             </Map>

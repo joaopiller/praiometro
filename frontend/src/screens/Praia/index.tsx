@@ -41,6 +41,12 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
     const avaliacao = useAvaliacao(id);
     const relatos = useRelatos(id);
     const [escolhido, setEscolhido] = useState(trecho);
+    // a página já aberta pode receber outro trecho do mapa
+    const [trechoDaRota, setTrechoDaRota] = useState(trecho);
+    if (trechoDaRota !== trecho) {
+        setTrechoDaRota(trecho);
+        setEscolhido(trecho);
+    }
     // histórico do trecho tocado (ou do que veio do mapa); sem escolha, o ponto principal
     const pontos = praia?.pontos ?? [];
     const trechoAtual = pontos.find((p) => p.codigo === escolhido) ?? pontos.find((p) => p.codigo === praia?.principal);

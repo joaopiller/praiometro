@@ -222,6 +222,16 @@ describe('Praia', () => {
         expect(mockHistorico).not.toHaveBeenCalledWith('IC00');
     });
 
+    it('a página já aberta muda de trecho quando o mapa manda outro', async () => {
+        mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }, ICARAI));
+        const { rerender } = renderWithClient(
+            <Praia route={{ params: { id: 'IC', trecho: 'IC001' } } as any} navigation={navigation} />,
+        );
+        await waitFor(() => expect(mockHistorico).toHaveBeenCalledWith('IC001'));
+        rerender(<Praia route={{ params: { id: 'IC', trecho: 'IC00' } } as any} navigation={navigation} />);
+        await waitFor(() => expect(mockHistorico).toHaveBeenCalledWith('IC00'));
+    });
+
     it('alerta de chuva recente e dados ausentes não quebram a tela', async () => {
         mockPraia.mockResolvedValue(detalhe({ choveu_8_horas: true, balneabilidade: true }));
         mockAvaliacao.mockRejectedValue(axiosError(503, 'fora'));
