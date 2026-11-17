@@ -14,6 +14,7 @@ import { usePraias } from '../../hooks/queries';
 import { useCidadeDaPessoa } from '../../hooks/useLugar';
 import { useLocalizacao } from '../../hooks/useLocalizacao';
 import { usePuxarParaAtualizar } from '../../hooks/usePuxarParaAtualizar';
+import { maisRecente } from '../../utils/format';
 import { formatDistancia, ordenarPraiasPorDistancia } from '../../utils/geo';
 import type { PraiasScreenProps } from '../../navigation/types';
 import { colors } from '../../theme';
@@ -87,7 +88,7 @@ export default function Praias({ navigation }: PraiasScreenProps<'Praias'>) {
                 refreshControl={<RefreshControl refreshing={puxando} onRefresh={puxar} tintColor={colors.text} colors={[colors.brand]} />}
                 ListHeaderComponent={
                     <View style={styles.header}>
-                        {error ? <DataNotice timestamp={data?.[0]?.ultima_leitura} refreshError /> : null}
+                        <DataNotice timestamp={maisRecente(data.map((p) => p.ultima_leitura))} refreshError={!!error} />
                         <Vidro style={styles.search} semVidro={styles.searchFundo} escuro>
                             <Ionicons name="search" size={20} color={colors.textMuted} />
                             <TextInput

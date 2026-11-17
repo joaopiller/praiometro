@@ -9,6 +9,8 @@ Com COLETOR_EMBUTIDO=true a API roda estas mesmas tarefas dentro dela (ver api/a
 import argparse
 import logging
 import threading
+import time
+from pathlib import Path
 
 import schedule
 
@@ -16,20 +18,38 @@ from .avaliacoes import RepositorioVotos, gravar_snapshot_medias
 from .catalogo import carregar_catalogo
 from .coleta.atualizador import atualizar_historico, atualizar_regiao, executar_coleta
 from .config import Settings, configurar_logging, get_settings
+from .copia import CopiaDosArquivos
 from .db import criar_colecao_votos
 from .relatos import RepositorioRelatos
 
 log = logging.getLogger("praiometro.worker")
 
 
-def _seguro(nome, func):
+HISTORICO_A_CADA = 6  # horas
+
+
+def _recente(arquivo: Path, horas: float) -> bool:
+    try:
+        return time.time() - arquivo.stat().st_mtime < horas * 3600
+    except OSError:
+        return False
+
+
+def _seguro(nome, func, depois=None):
     def executar():
         try:
             func()
+            if depois:
+                depois()
         except Exception:
             log.exception("Tarefa '%s' falhou", nome)
 
     return executar
+
+
+def copia_dos_arquivos(settings: Settings, banco) -> CopiaDosArquivos:
+    arquivos = [settings.estado_file, settings.historico_file, settings.regiao_file]
+    return CopiaDosArquivos(banco["arquivos"], arquivos)
 
 
 def rodar(settings: Settings, uma_vez: bool = False, parar: threading.Event | None = None) -> None:
@@ -38,10 +58,14 @@ def rodar(settings: Settings, uma_vez: bool = False, parar: threading.Event | No
     repo = RepositorioVotos(criar_colecao_votos(settings))
     relatos = RepositorioRelatos(repo.colecao.database)
 
-    coleta = _seguro("coleta", lambda: executar_coleta(settings))
+    # sem disco permanente, cada arquivo gerado vai também para o banco
+    copia = copia_dos_arquivos(settings, repo.colecao.database)
+    guardar = copia.guardar if settings.coletor_embutido else None
+
+    coleta = _seguro("coleta", lambda: executar_coleta(settings), guardar)
     medias = _seguro("médias", lambda: gravar_snapshot_medias(repo, settings.estado_file))
-    regiao = _seguro("maré e sol", lambda: atualizar_regiao(settings))
-    historico = _seguro("histórico", lambda: atualizar_historico(settings))
+    regiao = _seguro("maré e sol", lambda: atualizar_regiao(settings), guardar)
+    historico = _seguro("histórico", lambda: atualizar_historico(settings), guardar)
 
     # votos e relatos antigos eram por ponto de coleta; aqui roda num processo só
     catalogo = carregar_catalogo(settings.catalogo_file)
@@ -50,7 +74,12 @@ def rodar(settings: Settings, uma_vez: bool = False, parar: threading.Event | No
     )
 
     # a coleta vem primeiro: é ela que põe as praias no ar
-    for tarefa in (coleta, regiao, praias, historico, medias):
+    iniciais = [coleta, regiao, praias, historico, medias]
+    if _recente(settings.historico_file, HISTORICO_A_CADA):
+        # reler os boletins do ano inteiro é a parte mais pesada; se o arquivo voltou do banco
+        # ainda novo, fica para o próximo horário
+        iniciais.remove(historico)
+    for tarefa in iniciais:
         if parar.is_set():
             return
         tarefa()
@@ -60,7 +89,7 @@ def rodar(settings: Settings, uma_vez: bool = False, parar: threading.Event | No
     agenda = schedule.Scheduler()
     agenda.every().hour.at(":01").do(coleta)
     agenda.every().hour.at(":05").do(regiao)
-    agenda.every(6).hours.do(historico)
+    agenda.every(HISTORICO_A_CADA).hours.do(historico)
     agenda.every(15).minutes.do(medias)
     log.info("Coleta agendada.")
     while not parar.wait(15):

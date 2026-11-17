@@ -4,9 +4,12 @@ import { env } from '../config/env';
 
 export const api = create({
     baseURL: env.apiUrl,
-    // fora do alcance do servidor, é este o tempo até o aviso de "sem conexão" aparecer
+    // as consultas desistem cedo e tentam de novo (ver queryClient)
     timeout: 8_000,
 });
+
+// envios não se repetem sozinhos, então esperam o servidor voltar do repouso
+export const ESPERA_DE_ENVIO = 45_000;
 
 // login recusado pelo servidor: o token guardado não serve mais
 api.interceptors.response.use(undefined, (error) => {

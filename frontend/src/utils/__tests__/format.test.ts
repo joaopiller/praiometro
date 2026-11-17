@@ -1,4 +1,4 @@
-import { descreverBoletim, tempoDesde, formatDate, formatHour, formatNumber, formatTemp, formatUpdated, isStale, parseTimestamp } from '../format';
+import { descreverBoletim, tempoDesde, formatDate, formatHour, formatNumber, formatTemp, formatUpdated, isStale, maisRecente, parseTimestamp } from '../format';
 
 // 16/11/2026 15:30 em Niterói = 18:30 UTC
 const AGORA = new Date(Date.UTC(2026, 10, 16, 18, 30));
@@ -48,5 +48,11 @@ describe('format', () => {
         expect(tempoDesde('2026-11-16T18:29:30Z', AGORA)).toBe('agora');
         expect(tempoDesde('2026-11-16T18:10:00Z', AGORA)).toBe('há 20 min');
         expect(tempoDesde('2026-11-16T15:00:00Z', AGORA)).toBe('há 3 h');
+    });
+
+    it('acha a leitura mais nova, ignorando as que faltam', () => {
+        expect(maisRecente(['2026-11-16T13:00', null, '2026-11-16T14:00', undefined])).toBe('2026-11-16T14:00');
+        expect(maisRecente([null])).toBeNull();
+        expect(maisRecente()).toBeNull();
     });
 });

@@ -42,5 +42,17 @@ export default StyleSheet.create({
         borderRadius: radius.md,
         padding: spacing.md,
     },
+    aviso: {
+        alignSelf: 'center',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: spacing.sm,
+        maxWidth: '100%',
+        backgroundColor: 'rgba(1,59,96,0.92)',
+        borderRadius: radius.md,
+        paddingVertical: spacing.sm,
+        paddingHorizontal: spacing.md,
+    },
+    avisoTexto: { color: '#fff', fontSize: 13, flexShrink: 1 },
     mapErrorText: { color: '#fff', fontWeight: '600', textAlign: 'center' },
 });

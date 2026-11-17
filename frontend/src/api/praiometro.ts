@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, ESPERA_DE_ENVIO } from './client';
 import type {
     Avaliacao,
     Historico,
@@ -36,6 +36,7 @@ export async function enviarVoto(praiaId: string, notas: Notas, idToken: string)
     const { data } = await api.post<RespostaVoto>('/votar', notas, {
         params: { praia_id: praiaId },
         headers: { Authorization: `Bearer ${idToken}` },
+        timeout: ESPERA_DE_ENVIO,
     });
     return data;
 }
@@ -64,12 +65,13 @@ export async function enviarRelato(
     await api.post(
         `/praias/${encodeURIComponent(praiaId)}/relatos`,
         { tipos, latitude: local.latitude, longitude: local.longitude },
-        { headers: { Authorization: `Bearer ${idToken}` } },
+        { headers: { Authorization: `Bearer ${idToken}` }, timeout: ESPERA_DE_ENVIO },
     );
 }
 
 export async function denunciarRelato(praiaId: string, tipo: TipoRelato, idToken: string): Promise<void> {
     await api.post(`/praias/${encodeURIComponent(praiaId)}/relatos/${tipo}/denuncia`, null, {
         headers: { Authorization: `Bearer ${idToken}` },
+        timeout: ESPERA_DE_ENVIO,
     });
 }

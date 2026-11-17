@@ -38,6 +38,8 @@ export default StyleSheet.create({
     },
     rainText: { color: colors.text, fontSize: 14, flex: 1 },
     grid: { flexDirection: 'row', gap: spacing.md },
+    carregando: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, paddingVertical: spacing.md },
+    carregandoTexto: { color: colors.textMuted, fontSize: 14, flexShrink: 1 },
     agua: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.md },
     aguaTextos: { flex: 1, gap: 2 },
     aguaLabel: typography.label,

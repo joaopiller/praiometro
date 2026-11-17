@@ -38,14 +38,37 @@ function Linha({ relato, onPress }: { relato: Relato; onPress: () => void }) {
 }
 
 export default function RelatosCard({ codigo }: { codigo: string }) {
-    const { data } = useRelatos(codigo);
+    const { data, isPending, refetch } = useRelatos(codigo);
     const { relatar, contestar, enviando } = useAcoesRelato(codigo);
     const [escolhendo, setEscolhendo] = useState(false);
     const [marcados, setMarcados] = useState<TipoRelato[]>([]);
     const [selecionado, setSelecionado] = useState<Relato | null>(null);
     const avisar = useAviso();
 
-    if (!data?.disponivel) return null;
+    const titulo = (
+        <CardLabel
+            icon={<MaterialCommunityIcons name="account-voice" size={18} color={colors.label} />}
+            right={<Text style={styles.validade}>últimas 5 h</Text>}
+        >
+            Agora na praia
+        </CardLabel>
+    );
+
+    if (!data) {
+        return (
+            <GlassCard style={styles.card}>
+                {titulo}
+                {isPending ? (
+                    <Text style={styles.vazio}>Carregando relatos...</Text>
+                ) : (
+                    <Pressable onPress={() => refetch()} accessibilityRole="button">
+                        <Text style={styles.vazio}>Não foi possível carregar os relatos. Toque para tentar de novo.</Text>
+                    </Pressable>
+                )}
+            </GlassCard>
+        );
+    }
+    if (!data.disponivel) return null;
 
     const concluir = (resultado: Resultado, sucesso: string, fechar: () => void) => {
         if (resultado.ok) {
@@ -87,12 +110,7 @@ export default function RelatosCard({ codigo }: { codigo: string }) {
 
     return (
         <GlassCard style={styles.card}>
-            <CardLabel
-                icon={<MaterialCommunityIcons name="account-voice" size={18} color={colors.label} />}
-                right={<Text style={styles.validade}>últimas 5 h</Text>}
-            >
-                Agora na praia
-            </CardLabel>
+            {titulo}
 
             {data.relatos.length ? (
                 <View style={styles.lista}>

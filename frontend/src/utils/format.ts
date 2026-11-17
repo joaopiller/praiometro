@@ -60,6 +60,11 @@ export function isStale(timestamp?: string | null, horas = 3, agora: Date = new 
     return paraMinutos(agoraEmNiteroi(agora)) - paraMinutos(d) > horas * 60;
 }
 
+/** A leitura mais nova de uma lista (os horários da API ordenam como texto). */
+export function maisRecente(timestamps: (string | null | undefined)[] = []): string | null {
+    return timestamps.reduce<string | null>((maior, t) => (t && (!maior || t > maior) ? t : maior), null);
+}
+
 export function formatNumber(valor: number | null | undefined, casas = 1): string {
     if (valor === null || valor === undefined || Number.isNaN(valor)) return '–';
     return valor.toFixed(casas).replace('.', ',');

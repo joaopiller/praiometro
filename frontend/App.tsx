@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { createQueryClient, setupAppFocusRefetch } from './src/api/queryClient';
+import { createQueryClient, GUARDAR_POR, setupAppFocusRefetch } from './src/api/queryClient';
 import { configureGoogleSignIn } from './src/auth/google';
 import { LoginProvider } from './src/auth/LoginProvider';
 import AnimatedSplash from './src/components/AnimatedSplash';
@@ -34,7 +34,7 @@ export default function App() {
             <SafeAreaProvider>
                 <PersistQueryClientProvider
                     client={queryClient}
-                    persistOptions={{ persister, maxAge: 24 * 60 * 60 * 1000, buster: '3' }}
+                    persistOptions={{ persister, maxAge: GUARDAR_POR, buster: '3' }}
                     onSuccess={() => setCacheRestaurado(true)}
                     onError={() => setCacheRestaurado(true)}
                 >

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
-// rede de segurança: o pedido já desiste sozinho antes disso (api/client.ts), e aí a roleta
-// para junto com o aviso de "sem conexão"; isto só garante que ela nunca fique rodando para sempre
+// com o servidor voltando do repouso a atualização pode levar um minuto; a roleta sai antes
+// e os dados novos entram na tela quando chegarem
 const ESPERA_MAXIMA = 12_000;
 
 /**

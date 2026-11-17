@@ -14,6 +14,7 @@ from ..avaliacoes import RepositorioVotos
 from ..config import Settings, configurar_logging, get_settings
 from ..db import criar_colecao_votos
 from ..relatos import RepositorioRelatos
+from ..worker import copia_dos_arquivos
 from ..worker import rodar as rodar_coletor
 from .cache import CacheJson, CachePontos
 from .ratelimit import LimitadorTaxa
@@ -38,6 +39,13 @@ def create_app(
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        if settings.coletor_embutido:
+            # o disco começa vazio: volta com o que a última coleta deixou no banco
+            try:
+                trazidos = copia_dos_arquivos(settings, relatos.relatos.database).restaurar()
+                log.info("Arquivos trazidos do banco: %s", ", ".join(trazidos) or "nenhum")
+            except Exception as e:
+                log.warning("Não foi possível trazer os arquivos do banco: %s", e)
         app.state.cache.recarregar(forcar=True)
         for repositorio in (repo, relatos):
             try:

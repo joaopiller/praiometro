@@ -7,8 +7,40 @@ import styles from './styles';
 
 const ULTIMAS = 24;
 
-function HistoricoStrip({ historico, trecho }: { historico?: Historico; trecho?: string }) {
-    if (!historico?.total) return null;
+interface Props {
+    historico?: Historico;
+    trecho?: string;
+    carregando?: boolean;
+}
+
+function HistoricoStrip({ historico, trecho, carregando }: Props) {
+    const titulo = <CardLabel>Banho nas últimas coletas</CardLabel>;
+
+    if (!historico?.total) {
+        // com vários trechos o cartão fica no lugar mesmo vazio, senão a tela pula a cada toque
+        if (!carregando && !trecho) return null;
+        const aviso = carregando ? 'Carregando o histórico...' : 'Sem coletas registradas';
+        return (
+            <GlassCard style={styles.card} accessibilityLabel={`Histórico${trecho ? ` de ${trecho}` : ''}: ${aviso}`}>
+                <View>
+                    {titulo}
+                    <Text style={styles.resumo}>
+                        {aviso}
+                        {trecho ? ` · ${trecho}` : ''}
+                    </Text>
+                </View>
+                <View style={styles.barras}>
+                    {Array.from({ length: ULTIMAS }, (_, i) => (
+                        <View key={i} style={[styles.barra, styles.semDado]} />
+                    ))}
+                </View>
+                <View style={styles.rodape}>
+                    <Text style={styles.data}> </Text>
+                </View>
+            </GlassCard>
+        );
+    }
+
     const ultimas = historico.registros.slice(-ULTIMAS);
     const pct = Math.round(historico.percentual_proprio ?? 0);
     const primeira = ultimas[0]?.data;
@@ -20,7 +52,7 @@ function HistoricoStrip({ historico, trecho }: { historico?: Historico; trecho?:
             accessibilityLabel={`Histórico${trecho ? ` de ${trecho}` : ''}: própria para banho em ${pct}% das coletas dos últimos 12 meses`}
         >
             <View>
-                <CardLabel>Banho nas últimas coletas</CardLabel>
+                {titulo}
                 {/* o percentual vai embaixo do título: ao lado, os dois se encostavam em telas estreitas */}
                 <Text style={styles.resumo}>
                     <Text style={styles.pct}>{pct}% própria</Text>

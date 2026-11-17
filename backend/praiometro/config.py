@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     port: int = 8000
     api_workers: int = 2
     # roda a coleta dentro da própria API, para hospedagens de um serviço só (sem worker à parte
-    # e sem disco compartilhado); os dados são refeitos a cada início
+    # e sem disco permanente); os arquivos gerados ficam também no banco e voltam a cada início
     coletor_embutido: bool = False
     # ponte para a coleta sair por um endereço do Brasil (ver ponte/ na raiz do repositório)
     ponte_url: str | None = None

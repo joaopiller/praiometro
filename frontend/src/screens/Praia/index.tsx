@@ -1,8 +1,9 @@
 import { Feather, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { ImageBackground, Linking, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, ImageBackground, Linking, Pressable, Text, View } from 'react-native';
 import { getErrorMessage } from '../../api/client';
+import type { PraiaDetalhe } from '../../api/types';
 import { useAviso } from '../../components/Aviso';
 import DataNotice from '../../components/DataNotice';
 import Destaques from '../../components/Destaques';
@@ -18,7 +19,7 @@ import StatusBanner from '../../components/StatusBanner';
 import TrechosCard from '../../components/TrechosCard';
 import WaveDivider from '../../components/WaveDivider';
 import { getBeachPhoto } from '../../constants/beaches';
-import { useAvaliacao, useHistorico, usePraia, useRelatos } from '../../hooks/queries';
+import { useAvaliacao, useHistorico, usePraia, usePraias, useRelatos } from '../../hooks/queries';
 import { usePuxarParaAtualizar } from '../../hooks/usePuxarParaAtualizar';
 import type { PraiasScreenProps } from '../../navigation/types';
 import { colors } from '../../theme';
@@ -32,13 +33,17 @@ const ICONE_BALNEABILIDADE = { success: 'check-circle', danger: 'close-circle', 
 export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>) {
     const { id, trecho, doMapa } = route.params;
     const consulta = usePraia(id);
+    // enquanto os detalhes não chegam (servidor voltando do repouso, rede ruim), a página abre
+    // com o que a lista já tem: nome, situação do banho e trechos
+    const resumo = usePraias().data?.find((p) => p.id === id);
+    const praia: PraiaDetalhe | undefined = consulta.data ?? resumo;
+    const soResumo = !consulta.data;
     const avaliacao = useAvaliacao(id);
     const relatos = useRelatos(id);
     const [escolhido, setEscolhido] = useState(trecho);
     // histórico do trecho tocado (ou do que veio do mapa); sem escolha, o ponto principal
-    const pontos = consulta.data?.pontos ?? [];
-    const trechoAtual =
-        pontos.find((p) => p.codigo === escolhido) ?? pontos.find((p) => p.codigo === consulta.data?.principal);
+    const pontos = praia?.pontos ?? [];
+    const trechoAtual = pontos.find((p) => p.codigo === escolhido) ?? pontos.find((p) => p.codigo === praia?.principal);
     const historico = useHistorico(trechoAtual?.codigo ?? '');
     const [puxando, puxar] = usePuxarParaAtualizar(() =>
         Promise.all([consulta.refetch(), avaliacao.refetch(), historico.refetch(), relatos.refetch()]),
@@ -46,7 +51,7 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
     const [modalVisivel, setModalVisivel] = useState(false);
     const avisar = useAviso();
 
-    if (consulta.isPending || (consulta.error && !consulta.data)) {
+    if (!praia) {
         return (
             <Screen scroll={false}>
                 <StateView
@@ -58,7 +63,6 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
         );
     }
 
-    const praia = consulta.data;
     const leitura = praia.leitura_atual ?? {};
     const nome = praia.nome;
     const foto = getBeachPhoto(id);
@@ -76,8 +80,8 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
         navigation.navigate('Home');
     };
 
+    const coords = praia.centro;
     async function abrirMapa() {
-        const coords = praia.centro;
         if (!coords) return;
         const url = `https://www.google.com/maps/dir/?api=1&destination=${coords[0]},${coords[1]}`;
         try {
@@ -120,7 +124,9 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
             </ImageBackground>
 
             <View style={styles.body}>
-                <DataNotice timestamp={leitura.timestamp} refreshError={!!consulta.error} />
+                {soResumo && !consulta.error ? null : (
+                    <DataNotice timestamp={leitura.timestamp ?? praia.ultima_leitura} refreshError={!!consulta.error} />
+                )}
 
                 <StatusBanner
                     tone={balneabilidade.tom}
@@ -142,6 +148,7 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
 
                 <HistoricoStrip
                     historico={historico.data}
+                    carregando={historico.isLoading}
                     trecho={variosTrechos && trechoAtual ? nomeDoTrecho(trechoAtual) : undefined}
                 />
 
@@ -156,43 +163,52 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                     </View>
                 )}
 
-                <View style={styles.grid}>
-                    <MetricCard
-                        label="Ondas"
-                        icon={<MaterialCommunityIcons name="waves" size={28} color={colors.label} />}
-                        nivel={onda}
-                        value={formatNumber(leitura.wave_height)}
-                        unit="m"
-                        nota={baia ? 'Águas abrigadas' : undefined}
-                        footer={
-                            baia
-                                ? 'Sem previsão de ondas confiável dentro da baía'
-                                : leitura.wave_period != null
-                                  ? `${formatNumber(leitura.wave_period)}s de período`
-                                  : null
-                        }
-                        footerIcon={baia ? undefined : <Feather name="clock" size={14} color={colors.textMuted} />}
-                    />
-                    <MetricCard
-                        label="Vento"
-                        icon={<MaterialCommunityIcons name="weather-windy" size={28} color={colors.label} />}
-                        nivel={vento}
-                        value={formatNumber(leitura.wind_speed_10m)}
-                        unit="km/h"
-                        footer={direcaoVento(leitura.wind_direction_10m)}
-                        footerIcon={
-                            leitura.wind_direction_10m != null ? (
-                                <Feather
-                                    name="navigation"
-                                    size={14}
-                                    color={colors.textMuted}
-                                    // seta aponta para onde o vento vai
-                                    style={{ transform: [{ rotate: `${(leitura.wind_direction_10m + 180 - 45) % 360}deg` }] }}
-                                />
-                            ) : undefined
-                        }
-                    />
-                </View>
+                {soResumo && !consulta.error ? (
+                    <View style={styles.carregando} accessibilityLiveRegion="polite">
+                        <ActivityIndicator color={colors.textMuted} />
+                        <Text style={styles.carregandoTexto}>Carregando ondas, vento e temperatura da água...</Text>
+                    </View>
+                ) : null}
+
+                {soResumo ? null : (
+                    <View style={styles.grid}>
+                        <MetricCard
+                            label="Ondas"
+                            icon={<MaterialCommunityIcons name="waves" size={28} color={colors.label} />}
+                            nivel={onda}
+                            value={formatNumber(leitura.wave_height)}
+                            unit="m"
+                            nota={baia ? 'Águas abrigadas' : undefined}
+                            footer={
+                                baia
+                                    ? 'Sem previsão de ondas confiável dentro da baía'
+                                    : leitura.wave_period != null
+                                      ? `${formatNumber(leitura.wave_period)}s de período`
+                                      : null
+                            }
+                            footerIcon={baia ? undefined : <Feather name="clock" size={14} color={colors.textMuted} />}
+                        />
+                        <MetricCard
+                            label="Vento"
+                            icon={<MaterialCommunityIcons name="weather-windy" size={28} color={colors.label} />}
+                            nivel={vento}
+                            value={formatNumber(leitura.wind_speed_10m)}
+                            unit="km/h"
+                            footer={direcaoVento(leitura.wind_direction_10m)}
+                            footerIcon={
+                                leitura.wind_direction_10m != null ? (
+                                    <Feather
+                                        name="navigation"
+                                        size={14}
+                                        color={colors.textMuted}
+                                        // seta aponta para onde o vento vai
+                                        style={{ transform: [{ rotate: `${(leitura.wind_direction_10m + 180 - 45) % 360}deg` }] }}
+                                    />
+                                ) : undefined
+                            }
+                        />
+                    </View>
+                )}
 
                 {leitura.sea_surface_temperature != null && (
                     <GlassCard

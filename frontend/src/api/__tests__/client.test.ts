@@ -26,9 +26,12 @@ describe('getErrorMessage', () => {
 describe('novas tentativas', () => {
     const { createQueryClient } = require('../queryClient');
     const retry = createQueryClient().getDefaultOptions().queries.retry as (falhas: number, erro: unknown) => boolean;
+    const semResposta = axiosError(undefined, undefined, 'ECONNABORTED');
 
-    it('servidor que não responde não ganha segunda tentativa: só dobraria a espera', () => {
-        expect(retry(0, axiosError(undefined, undefined, 'ECONNABORTED'))).toBe(false);
+    it('servidor que não responde pode estar voltando do repouso: insiste por cerca de um minuto', () => {
+        expect(retry(0, semResposta)).toBe(true);
+        expect(retry(5, semResposta)).toBe(true);
+        expect(retry(6, semResposta)).toBe(false);
     });
 
     it('outras falhas ganham uma segunda chance, e só uma', () => {

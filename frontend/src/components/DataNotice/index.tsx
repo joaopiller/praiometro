@@ -9,15 +9,19 @@ interface Props {
     refreshError?: boolean;
 }
 
-export default function DataNotice({ timestamp, refreshError }: Props) {
-    const velho = isStale(timestamp);
-    if (!refreshError && !velho) return null;
+/** O que avisar sobre a idade dos dados; nada quando estão em dia. */
+export function textoDoAviso(timestamp?: string | null, refreshError?: boolean): string | null {
+    if (!refreshError && !isStale(timestamp)) return null;
     const quando = timestamp ? formatUpdated(timestamp) : null;
-    const texto = refreshError
-        ? `Não foi possível atualizar agora.${quando ? ` Mostrando dados de ${quando}.` : ''}`
-        : quando
-          ? `Dados de ${quando}. Podem não refletir a situação atual.`
-          : 'Sem dados recentes. As informações podem não refletir a situação atual.';
+    if (refreshError) return `Não foi possível atualizar agora.${quando ? ` Mostrando dados de ${quando}.` : ''}`;
+    return quando
+        ? `Dados de ${quando}. Podem não refletir a situação atual.`
+        : 'Sem dados recentes. As informações podem não refletir a situação atual.';
+}
+
+export default function DataNotice({ timestamp, refreshError }: Props) {
+    const texto = textoDoAviso(timestamp, refreshError);
+    if (!texto) return null;
     return (
         <View style={styles.box} accessibilityRole="alert">
             <Feather name={refreshError ? 'wifi-off' : 'clock'} size={18} color={colors.warning} />

@@ -10,6 +10,7 @@ export default StyleSheet.create({
     propria: { height: '100%', backgroundColor: colors.success },
     // mais baixa, para não depender só da cor
     impropria: { height: '55%', backgroundColor: colors.danger },
+    semDado: { height: '55%', backgroundColor: 'rgba(255,255,255,0.16)' },
     rodape: { flexDirection: 'row', justifyContent: 'space-between', marginTop: -spacing.xs },
     data: { color: colors.textSubtle, fontSize: 12 },
 });

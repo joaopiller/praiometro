@@ -47,8 +47,17 @@ describe('RelatosCard', () => {
         mockFetch.mockResolvedValue({ disponivel: false, relatos: [] });
         renderWithClient(<RelatosCard codigo="IC001" />);
         await waitFor(() => expect(mockFetch).toHaveBeenCalled());
-        expect(screen.queryByText('AGORA NA PRAIA')).toBeNull();
+        await waitFor(() => expect(screen.queryByText('AGORA NA PRAIA')).toBeNull());
         expect(screen.queryByText('Como está a praia agora?')).toBeNull();
+    });
+
+    it('se os relatos não carregam, o cartão fica e deixa tentar de novo', async () => {
+        mockFetch.mockRejectedValueOnce(axiosError(undefined, undefined, 'ECONNABORTED'));
+        mockFetch.mockResolvedValue({ disponivel: true, relatos: [] });
+        renderWithClient(<RelatosCard codigo="IC001" />);
+        expect(screen.getByText('Carregando relatos...')).toBeTruthy();
+        fireEvent.press(await screen.findByText(/Não foi possível carregar os relatos/));
+        expect(await screen.findByText('Como está a praia agora?')).toBeTruthy();
     });
 
     it('envia um relato com a localização do usuário', async () => {

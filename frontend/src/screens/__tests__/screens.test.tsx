@@ -176,6 +176,45 @@ describe('Praia', () => {
         await waitFor(() => expect(mockHistorico).toHaveBeenCalledWith('IC001'));
     });
 
+    it('ao trocar de trecho o cartão do histórico continua na tela', async () => {
+        const comColetas = {
+            codigo: 'IC00',
+            registros: [{ data: '2026-11-12', propria: true }],
+            total: 1,
+            proprias: 1,
+            percentual_proprio: 100,
+        };
+        mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }, ICARAI));
+        mockHistorico.mockImplementation(async (codigo: string) =>
+            codigo === 'IC00' ? comColetas : { codigo, registros: [], total: 0, proprias: 0, percentual_proprio: null },
+        );
+        renderWithClient(<Praia route={{ params: { id: 'IC' } } as any} navigation={navigation} />);
+        expect(await screen.findByText('100% própria')).toBeTruthy();
+        fireEvent.press(screen.getByText('Rua Mariz e Barros'));
+        expect(await screen.findByText(/Sem coletas registradas · Rua Mariz e Barros/)).toBeTruthy();
+        expect(screen.getByText('BANHO NAS ÚLTIMAS COLETAS')).toBeTruthy();
+    });
+
+    it('enquanto os detalhes não chegam, abre com o que a lista já sabe', async () => {
+        mockPraias.mockResolvedValue([ICARAI]);
+        mockPraia.mockReturnValue(new Promise(() => {}));
+        renderWithClient(<Praia route={{ params: { id: 'IC' } } as any} navigation={navigation} />);
+        expect(await screen.findByText('Praia de Icaraí')).toBeTruthy();
+        expect(screen.getByText('Parcialmente própria')).toBeTruthy();
+        expect(screen.getByText('BANHO POR TRECHO')).toBeTruthy();
+        expect(screen.getByText(/Carregando ondas, vento/)).toBeTruthy();
+        expect(screen.queryByText('ONDAS')).toBeNull();
+    });
+
+    it('se os detalhes falham, fica o resumo com o aviso de que não atualizou', async () => {
+        mockPraias.mockResolvedValue([ICARAI]);
+        mockPraia.mockRejectedValue(axiosError(undefined, undefined, 'ECONNABORTED'));
+        renderWithClient(<Praia route={{ params: { id: 'IC' } } as any} navigation={navigation} />);
+        expect(await screen.findByText(/Não foi possível atualizar agora/)).toBeTruthy();
+        expect(screen.getByText('Praia de Icaraí')).toBeTruthy();
+        expect(screen.queryByText(/Carregando ondas, vento/)).toBeNull();
+    });
+
     it('vindo do mapa, abre já no trecho escolhido', async () => {
         mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }, ICARAI));
         renderWithClient(<Praia route={{ params: { id: 'IC', trecho: 'IC001' } } as any} navigation={navigation} />);

@@ -23,7 +23,7 @@
 
 O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF), desenvolvido por alunos de Sistemas de Informação. Ele junta três fontes que hoje ficam espalhadas: os boletins de balneabilidade do INEA (publicados em PDF), a previsão de clima e mar e os relatos de quem está na areia.
 
-> A API pública roda no plano gratuito do Render e dorme depois de 15 minutos sem uso: o primeiro acesso pode levar cerca de um minuto.
+> A API pública roda no plano gratuito do Render e dorme depois de 15 minutos sem uso: o primeiro acesso pode levar cerca de um minuto. Enquanto isso o app mostra os últimos dados que guardou e insiste sozinho até ela voltar.
 
 ## Destaques do projeto
 
@@ -33,7 +33,7 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 - **Mapa com cuidado geográfico.** O pin de cada praia fica no meio da faixa de areia, calculado a partir dos contornos do OpenStreetMap com Shapely, e não no mar.
 - **Relatos colaborativos com moderação automática.** Opções fixas, validade de 5 horas, conferência de que a pessoa está na praia e contestações que escondem relatos falsos.
 - **Feito para o público geral.** Linguagem direta ("Própria para banho"), funcionamento offline com os últimos dados, suporte a leitor de tela, fonte ampliada e redução de movimento.
-- **Testado e automatizado.** 129 testes no app (Jest) e 149 no backend (pytest), com lint, checagem de tipos e CI no GitHub Actions a cada push.
+- **Testado e automatizado.** 137 testes no app (Jest) e 157 no backend (pytest), com lint, checagem de tipos e CI no GitHub Actions a cada push.
 - **Identidade visual própria, gerada por código.** Logo, variações, ícones e prancha saem de um script, em [docs/identidade-visual](docs/identidade-visual).
 
 ## Como funciona
@@ -153,7 +153,7 @@ O [`render.yaml`](render.yaml) publica o backend no plano gratuito do [Render](h
 
 1. **Atlas:** crie o cluster gratuito, um usuário do banco (senha só com letras e números) e, em *Network Access*, libere `0.0.0.0/0` (o Render gratuito não tem IP fixo). Em *Connect → Drivers* copie o endereço `mongodb+srv://...`.
 2. **Render:** *New → Blueprint*, escolha este repositório e preencha `MONGO_URI` (o endereço do Atlas) e `GOOGLE_CLIENT_ID`.
-3. **Manter acordado:** o serviço gratuito dorme depois de 15 minutos sem acesso e leva cerca de um minuto para voltar. Um monitor gratuito (por exemplo o [UptimeRobot](https://uptimerobot.com)) chamando `/health` a cada 5 minutos evita isso.
+3. **Manter acordado:** o serviço gratuito dorme depois de 15 minutos sem acesso e leva cerca de um minuto para voltar. Um monitor gratuito (por exemplo o [UptimeRobot](https://uptimerobot.com)) chamando `/health` a cada 5 minutos evita isso. Como o disco do plano gratuito não é permanente, o serviço guarda no MongoDB a última coleta e o histórico e os traz de volta ao iniciar: já acorda respondendo com dados, e não vazio até a coleta seguinte.
 4. **App:** aponte o `EXPO_PUBLIC_API_URL` do frontend para o endereço `https://...onrender.com`.
 
 **Ponte em São Paulo.** O site do INEA só responde a endereços do Brasil, e o Open-Meteo conta o limite de acessos por endereço (o do Render gratuito é dividido com outros usuários). Por isso a coleta, quando roda fora do país, passa pela função em [`ponte/`](ponte), publicada na [Vercel](https://vercel.com) na região de São Paulo: importe o repositório com *Root Directory* `ponte`, defina a variável `PONTE_CHAVE` (uma senha qualquer) e, no backend, `PONTE_URL=https://<projeto>.vercel.app/api/buscar` e a mesma `PONTE_CHAVE`. A ponte só busca páginas do INEA e do Open-Meteo, e só com a chave. O `/health` do backend mostra como foi a última tentativa em cada fonte.

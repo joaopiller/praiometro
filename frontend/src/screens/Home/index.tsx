@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Camera, GeoJSONSource, Images, Layer, Map, UserLocation, type CameraRef } from '@maplibre/maplibre-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getErrorMessage } from '../../api/client';
 import type { PraiaResumo } from '../../api/types';
 import Aparecer from '../../components/Aparecer';
+import { textoDoAviso } from '../../components/DataNotice';
 import { useAviso } from '../../components/Aviso';
 import HomeHeader from '../../components/HomeHeader';
 import MapBeachCard from '../../components/MapBeachCard';
@@ -24,6 +25,7 @@ import { useMovimentoReduzido } from '../../hooks/useMovimentoReduzido';
 import type { TabScreenProps } from '../../navigation/types';
 import { useEspacoDasAbas } from '../../navigation/useEspacoDasAbas';
 import { colors, toneColors } from '../../theme';
+import { maisRecente } from '../../utils/format';
 import { centroDaPraia, distanciaAtePraia, formatDistancia, ordenarPraiasPorDistancia } from '../../utils/geo';
 import { nomeCurto } from '../../utils/search';
 import styles, { CARD_GAP, CARROSSEL_ALTURA } from './styles';
@@ -252,6 +254,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
         );
     }
 
+    const avisoDosDados = textoDoAviso(maisRecente(data.map((p) => p.ultima_leitura)), !!error);
+
     return (
         <View style={styles.container}>
             <Map
@@ -358,6 +362,12 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
             <View style={[styles.top, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
                 <HomeHeader onPress={() => navigation.navigate('Clima')} />
                 <CidadeSwitch cidade={cidade} onChange={setCidade} sobreMapa />
+                {avisoDosDados ? (
+                    <View style={styles.aviso} accessibilityRole="alert">
+                        <Feather name={error ? 'wifi-off' : 'clock'} size={15} color="#fff" />
+                        <Text style={styles.avisoTexto}>{avisoDosDados}</Text>
+                    </View>
+                ) : null}
             </View>
 
             {mapaFalhou && (

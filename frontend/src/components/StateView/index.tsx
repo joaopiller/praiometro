@@ -24,7 +24,11 @@ function Carregando({ compact }: { compact?: boolean }) {
         <View style={[styles.container, compact && styles.compact]} accessibilityLiveRegion="polite">
             <ActivityIndicator color={colors.text} size={compact ? 'small' : 'large'} />
             {!compact && <Text style={styles.message}>Carregando...</Text>}
-            {!compact && demorando && <Text style={styles.demora}>Está demorando. Verifique sua conexão com a internet.</Text>}
+            {!compact && demorando && (
+                <Text style={styles.demora}>
+                    Está demorando mais que o normal. Depois de um tempo sem uso, o servidor leva até um minuto para voltar.
+                </Text>
+            )}
         </View>
     );
 }
