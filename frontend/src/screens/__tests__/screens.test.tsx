@@ -195,6 +195,14 @@ describe('Praia', () => {
         expect(screen.getByText('BANHO NAS ÚLTIMAS COLETAS')).toBeTruthy();
     });
 
+    it('histórico que não carregou não aparece como praia sem coletas', async () => {
+        mockPraia.mockResolvedValue(detalhe({ balneabilidade: true }, ICARAI));
+        mockHistorico.mockRejectedValue(axiosError(undefined, undefined, 'ERR_NETWORK'));
+        renderWithClient(<Praia route={{ params: { id: 'IC' } } as any} navigation={navigation} />);
+        expect(await screen.findByText(/Não foi possível carregar o histórico/)).toBeTruthy();
+        expect(screen.queryByText(/Sem coletas registradas/)).toBeNull();
+    });
+
     it('enquanto os detalhes não chegam, abre com o que a lista já sabe', async () => {
         mockPraias.mockResolvedValue([ICARAI]);
         mockPraia.mockReturnValue(new Promise(() => {}));

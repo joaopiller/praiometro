@@ -11,15 +11,21 @@ interface Props {
     historico?: Historico;
     trecho?: string;
     carregando?: boolean;
+    /** a consulta falhou (sem internet, servidor fora): não é o mesmo que não haver coletas */
+    erro?: boolean;
 }
 
-function HistoricoStrip({ historico, trecho, carregando }: Props) {
+function HistoricoStrip({ historico, trecho, carregando, erro }: Props) {
     const titulo = <CardLabel>Banho nas últimas coletas</CardLabel>;
 
     if (!historico?.total) {
         // com vários trechos o cartão fica no lugar mesmo vazio, senão a tela pula a cada toque
-        if (!carregando && !trecho) return null;
-        const aviso = carregando ? 'Carregando o histórico...' : 'Sem coletas registradas';
+        if (!carregando && !erro && !trecho) return null;
+        const aviso = carregando
+            ? 'Carregando o histórico...'
+            : erro
+              ? 'Não foi possível carregar o histórico'
+              : 'Sem coletas registradas';
         return (
             <GlassCard style={styles.card} accessibilityLabel={`Histórico${trecho ? ` de ${trecho}` : ''}: ${aviso}`}>
                 <View>

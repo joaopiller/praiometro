@@ -29,7 +29,8 @@ export default StyleSheet.create({
     },
     fabToque: { flex: 1 },
     fabVidro: { flex: 1, borderRadius: 23, alignItems: 'center', justifyContent: 'center' },
-    fabFundo: { backgroundColor: '#fff' },
+    // sem o vidro: o mesmo branco translúcido com borda fina dos botões do iOS
+    fabFundo: { backgroundColor: 'rgba(255,255,255,0.92)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(1,59,96,0.18)' },
     pressed: { opacity: 0.8 },
     carrossel: { position: 'absolute', left: 0, right: 0, bottom: 8, height: CARROSSEL_ALTURA - 8 },
     carrosselLista: { flexGrow: 0 },

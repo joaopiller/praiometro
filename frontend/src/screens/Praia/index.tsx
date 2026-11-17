@@ -156,6 +156,7 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                 <HistoricoStrip
                     historico={historico.data}
                     carregando={historico.isLoading}
+                    erro={!!historico.error && !historico.data}
                     trecho={variosTrechos && trechoAtual ? nomeDoTrecho(trechoAtual) : undefined}
                 />
 

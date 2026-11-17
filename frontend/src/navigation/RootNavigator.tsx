@@ -5,7 +5,6 @@ import { DefaultTheme, NavigationContainer, type Theme } from '@react-navigation
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { ComponentType } from 'react';
 import { Platform, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import CustomHeader from '../components/CustomHeader';
 import Clima from '../screens/Clima';
 import Home from '../screens/Home';
@@ -13,6 +12,7 @@ import Praia from '../screens/Praia';
 import Praias from '../screens/Praias';
 import SobreNos from '../screens/SobreNos';
 import { colors } from '../theme';
+import BarraDeAbas from './BarraDeAbas';
 import type { PraiasStackParamList, TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -89,23 +89,10 @@ function AbasIOS() {
     );
 }
 
+/** Android: barra flutuante desenhada à mão, com a mesma cara da do iPhone */
 function AbasAndroid() {
-    const insets = useSafeAreaInsets();
     return (
-        <Tab.Navigator
-            screenOptions={{
-                header: () => <CustomHeader />,
-                tabBarStyle: {
-                    backgroundColor: colors.tabBar,
-                    borderTopColor: colors.border,
-                    height: 64 + insets.bottom,
-                    paddingTop: 8,
-                },
-                tabBarActiveTintColor: colors.sand,
-                tabBarInactiveTintColor: 'rgba(255,255,255,0.6)',
-                tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-            }}
-        >
+        <Tab.Navigator tabBar={(props) => <BarraDeAbas {...props} />} screenOptions={{ header: () => <CustomHeader /> }}>
             <Tab.Screen
                 name="Home"
                 component={Home}
@@ -113,7 +100,7 @@ function AbasAndroid() {
                     title: 'Mapa',
                     headerShown: false,
                     tabBarIcon: ({ color, focused }) => (
-                        <MaterialCommunityIcons name={focused ? 'map-marker-radius' : 'map-marker-radius-outline'} size={26} color={color} />
+                        <MaterialCommunityIcons name={focused ? 'map' : 'map-outline'} size={25} color={color} />
                     ),
                 }}
             />
@@ -123,7 +110,7 @@ function AbasAndroid() {
                 options={{
                     title: 'Praias',
                     tabBarIcon: ({ color, focused }) => (
-                        <MaterialCommunityIcons name={focused ? 'umbrella-beach' : 'umbrella-beach-outline'} size={26} color={color} />
+                        <MaterialCommunityIcons name={focused ? 'umbrella-beach' : 'umbrella-beach-outline'} size={25} color={color} />
                     ),
                 }}
                 listeners={({ navigation }) => ({
@@ -139,7 +126,7 @@ function AbasAndroid() {
                 component={Clima}
                 options={{
                     title: 'Clima',
-                    tabBarIcon: ({ color }) => <MaterialCommunityIcons name="weather-partly-cloudy" size={26} color={color} />,
+                    tabBarIcon: ({ color }) => <MaterialCommunityIcons name="weather-partly-cloudy" size={25} color={color} />,
                 }}
             />
             <Tab.Screen

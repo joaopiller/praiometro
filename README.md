@@ -33,7 +33,7 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 - **Mapa com cuidado geográfico.** O pin de cada praia fica no meio da faixa de areia, calculado a partir dos contornos do OpenStreetMap com Shapely, e não no mar.
 - **Relatos colaborativos com moderação automática.** Opções fixas, validade de 5 horas, conferência de que a pessoa está na praia e contestações que escondem relatos falsos.
 - **Feito para o público geral.** Linguagem direta ("Própria para banho"), funcionamento offline com os últimos dados, suporte a leitor de tela, fonte ampliada e redução de movimento.
-- **Testado e automatizado.** 144 testes no app (Jest) e 159 no backend (pytest), com lint, checagem de tipos e CI no GitHub Actions a cada push.
+- **Testado e automatizado.** 145 testes no app (Jest) e 159 no backend (pytest), com lint, checagem de tipos e CI no GitHub Actions a cada push.
 - **Identidade visual própria, gerada por código.** Logo, variações, ícones e prancha saem de um script, em [docs/identidade-visual](docs/identidade-visual).
 
 ## Como funciona
