@@ -254,9 +254,10 @@ describe('Praia', () => {
             mar: 'baia',
         });
         renderWithClient(<Praia route={rota} navigation={navigation} />);
-        expect(await screen.findByText('Águas abrigadas')).toBeTruthy();
+        expect(await screen.findByText('Sem previsão de ondas confiável dentro da baía')).toBeTruthy();
         expect(screen.getByText('Mar de baía')).toBeTruthy();
         expect(screen.queryByText('1,0')).toBeNull();
+        expect(screen.queryByLabelText(/Ondas: /)).toBeNull();
         expect(screen.getByText(/Boletim do INEA de 12\/11/)).toBeTruthy();
     });
 
@@ -264,7 +265,7 @@ describe('Praia', () => {
         mockPraia.mockResolvedValue({ ...detalhe({ balneabilidade: true, wave_height: 1.2 }), mar: 'oceanico' });
         renderWithClient(<Praia route={rota} navigation={navigation} />);
         expect(await screen.findByText('1,2')).toBeTruthy();
-        expect(screen.queryByText('Águas abrigadas')).toBeNull();
+        expect(screen.queryByText('Sem previsão de ondas confiável dentro da baía')).toBeNull();
     });
 
     it('mostra temperatura da água e histórico', async () => {

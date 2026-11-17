@@ -182,9 +182,8 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                             label="Ondas"
                             icon={<MaterialCommunityIcons name="waves" size={28} color={colors.label} />}
                             nivel={onda}
-                            value={formatNumber(leitura.wave_height)}
+                            value={baia ? undefined : formatNumber(leitura.wave_height)}
                             unit="m"
-                            nota={baia ? 'Águas abrigadas' : undefined}
                             footer={
                                 baia
                                     ? 'Sem previsão de ondas confiável dentro da baía'

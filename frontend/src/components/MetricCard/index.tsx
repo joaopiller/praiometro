@@ -11,7 +11,7 @@ interface Props {
     icon?: ReactNode;
     value?: string;
     unit?: string;
-    /** texto exibido no lugar do valor quando não há número confiável */
+    /** texto exibido no lugar do valor quando não há número confiável; sem valor nem nota, o cartão fica só com o selo e o rodapé */
     nota?: string;
     nivel?: Nivel;
     footer?: string | null;
@@ -22,13 +22,19 @@ export default function MetricCard({ label, icon, value, unit, nota, nivel, foot
     return (
         <GlassCard
             style={styles.card}
-            accessibilityLabel={[`${label}: ${nota ?? `${value} ${unit ?? ''}`}`, nivel?.rotulo, footer].filter(Boolean).join('. ')}
+            accessibilityLabel={[
+                [label, nota ?? (value != null ? `${value} ${unit ?? ''}`.trim() : null)].filter(Boolean).join(': '),
+                nivel?.rotulo,
+                footer,
+            ]
+                .filter(Boolean)
+                .join('. ')}
         >
             <CardLabel right={icon}>{label}</CardLabel>
             {nivel && <Badge label={nivel.rotulo} tone={nivel.tom} />}
             {nota ? (
                 <Text style={styles.nota}>{nota}</Text>
-            ) : (
+            ) : value == null ? null : (
                 <View style={styles.valueRow}>
                     <Text style={styles.value} adjustsFontSizeToFit numberOfLines={1} maxFontSizeMultiplier={MAX_FONT_SCALE_NUMEROS}>
                         {value}
