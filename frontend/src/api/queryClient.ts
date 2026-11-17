@@ -1,4 +1,5 @@
 import { focusManager, QueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { AppState, Platform, type AppStateStatus } from 'react-native';
 
 export function createQueryClient() {
@@ -7,7 +8,9 @@ export function createQueryClient() {
             queries: {
                 staleTime: 5 * 60 * 1000,
                 gcTime: 60 * 60 * 1000,
-                retry: 1,
+                // quando o servidor não responde, cada tentativa custa o tempo limite inteiro:
+                // tentar de novo só dobraria a espera. Outras falhas ganham uma segunda chance
+                retry: (falhas, erro) => falhas < 1 && !(isAxiosError(erro) && erro.code === 'ECONNABORTED'),
             },
         },
     });

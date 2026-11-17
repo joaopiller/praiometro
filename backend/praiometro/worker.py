@@ -2,18 +2,20 @@
 
 praiometro-worker           roda continuamente
 praiometro-worker --once    executa uma vez e sai
+
+Com COLETOR_EMBUTIDO=true a API roda estas mesmas tarefas dentro dela (ver api/app.py).
 """
 
 import argparse
 import logging
-import time
+import threading
 
 import schedule
 
 from .avaliacoes import RepositorioVotos, gravar_snapshot_medias
 from .catalogo import carregar_catalogo
 from .coleta.atualizador import atualizar_historico, atualizar_regiao, executar_coleta
-from .config import configurar_logging, get_settings
+from .config import Settings, configurar_logging, get_settings
 from .db import criar_colecao_votos
 from .relatos import RepositorioRelatos
 
@@ -30,15 +32,9 @@ def _seguro(nome, func):
     return executar
 
 
-def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-    parser.add_argument("--once", action="store_true", help="executa as tarefas uma vez e sai")
-    args = parser.parse_args(argv)
-
-    settings = get_settings()
-    configurar_logging(settings.log_level)
+def rodar(settings: Settings, uma_vez: bool = False, parar: threading.Event | None = None) -> None:
+    """Executa as tarefas agora e depois no horário de cada uma, até `parar` ser acionado."""
+    parar = parar or threading.Event()
     repo = RepositorioVotos(criar_colecao_votos(settings))
     relatos = RepositorioRelatos(repo.colecao.database)
 
@@ -53,19 +49,34 @@ def main(argv: list[str] | None = None) -> None:
         "migração para praias", lambda: [r.migrar_para_praias(catalogo) for r in (repo, relatos)]
     )
 
-    for tarefa in (praias, coleta, regiao, historico, medias):
+    # a coleta vem primeiro: é ela que põe as praias no ar
+    for tarefa in (coleta, regiao, praias, historico, medias):
+        if parar.is_set():
+            return
         tarefa()
-    if args.once:
+    if uma_vez:
         return
 
-    schedule.every().hour.at(":01").do(coleta)
-    schedule.every().hour.at(":05").do(regiao)
-    schedule.every(6).hours.do(historico)
-    schedule.every(15).minutes.do(medias)
-    log.info("Worker rodando. Ctrl+C para sair.")
-    while True:
-        schedule.run_pending()
-        time.sleep(15)
+    agenda = schedule.Scheduler()
+    agenda.every().hour.at(":01").do(coleta)
+    agenda.every().hour.at(":05").do(regiao)
+    agenda.every(6).hours.do(historico)
+    agenda.every(15).minutes.do(medias)
+    log.info("Coleta agendada.")
+    while not parar.wait(15):
+        agenda.run_pending()
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("--once", action="store_true", help="executa as tarefas uma vez e sai")
+    args = parser.parse_args(argv)
+
+    settings = get_settings()
+    configurar_logging(settings.log_level)
+    rodar(settings, uma_vez=args.once)
 
 
 if __name__ == "__main__":

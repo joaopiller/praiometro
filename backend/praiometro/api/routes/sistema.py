@@ -1,10 +1,12 @@
 import time
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from starlette.concurrency import run_in_threadpool
 
 from ... import __version__
 from ...avaliacoes import RepositorioVotos
+from ...coleta import situacao
 from ..cache import CachePontos
 from ..deps import get_cache, get_repo
 from ..schemas import Health
@@ -20,8 +22,24 @@ async def health(
     if time.monotonic() - ping["em"] > 10:
         ping["ok"] = await run_in_threadpool(repo.ping)
         ping["em"] = time.monotonic()
-    pontos = len(cache.dados)
-    return Health(status="ok" if pontos else "degradado", versao=__version__, pontos=pontos, mongo=ping["ok"])
+    dados = cache.dados
+    leituras = [p.get("leitura_atual") or {} for p in dados.values()]
+    # sem o arquivo de estado a API responde só com o catálogo: a coleta ainda não rodou
+    try:
+        gravado = datetime.fromtimestamp(cache.arquivo.stat().st_mtime, UTC).isoformat(timespec="seconds")
+    except OSError:
+        gravado = None
+    return Health(
+        status="ok" if dados else "degradado",
+        versao=__version__,
+        pontos=len(dados),
+        mongo=ping["ok"],
+        coleta_embutida=request.app.state.settings.coletor_embutido,
+        ultima_coleta=gravado,
+        pontos_com_leitura=sum(1 for leitura in leituras if leitura.get("timestamp")),
+        pontos_com_boletim=sum(1 for leitura in leituras if leitura.get("balneabilidade") is not None),
+        fontes=situacao.fontes(),
+    )
 
 
 @router.post("/notificar-atualizacao", summary="Força a recarga do estado (somente localhost)")

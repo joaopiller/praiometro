@@ -12,6 +12,8 @@ import pdfplumber
 import requests
 from bs4 import BeautifulSoup
 
+from . import situacao
+
 log = logging.getLogger(__name__)
 
 # Códigos de ponto do INEA: duas letras + dígitos. Niterói usa três (IC003); o boletim
@@ -106,7 +108,12 @@ def encontrar_link_boletim(html: str, url_base: str, arquivo: str | None = None)
 
 
 def baixar_boletim(
-    sessao: requests.Session, url_pagina: str, destino: Path, timeout: float = 20, arquivo: str | None = None
+    sessao: requests.Session,
+    url_pagina: str,
+    destino: Path,
+    timeout: float = 20,
+    arquivo: str | None = None,
+    fonte: str = "boletim",
 ) -> bool:
     """Baixa o boletim mais recente; se falhar, mantém o arquivo anterior."""
     try:
@@ -115,11 +122,13 @@ def baixar_boletim(
         url_pdf = encontrar_link_boletim(pagina.text, url_pagina, arquivo)
         if not url_pdf:
             log.warning("Link do último boletim não encontrado em %s", url_pagina)
+            situacao.registrar(fonte, "link do boletim não encontrado na página")
             return False
         pdf = sessao.get(url_pdf, timeout=timeout)
         pdf.raise_for_status()
         if not pdf.content.startswith(b"%PDF"):
             log.warning("Conteúdo baixado de %s não é um PDF", url_pdf)
+            situacao.registrar(fonte, "o arquivo baixado não é um PDF")
             return False
         destino.parent.mkdir(parents=True, exist_ok=True)
         tmp = destino.with_suffix(".tmp")
@@ -127,9 +136,11 @@ def baixar_boletim(
         tmp.replace(destino)
         destino.with_suffix(".url").write_text(url_pdf, encoding="utf-8")
         log.info("Boletim do INEA atualizado: %s", url_pdf)
+        situacao.registrar(fonte)
         return True
     except requests.RequestException as e:
         log.warning("Falha ao baixar boletim do INEA: %s", e)
+        situacao.registrar(fonte, f"{type(e).__name__}: {e}")
         return False
 
 

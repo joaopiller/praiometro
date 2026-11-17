@@ -60,7 +60,7 @@ def test_previsao():
 
 
 def _sessao(json_resposta):
-    resposta = MagicMock()
+    resposta = MagicMock(status_code=200)
     resposta.json.return_value = json_resposta
     sessao = MagicMock()
     sessao.get.return_value = resposta
@@ -94,3 +94,50 @@ def test_buscar_lote_erro_da_api():
     sessao = _sessao({"error": True, "reason": "Parâmetro inválido"})
     with pytest.raises(ValueError, match="Parâmetro inválido"):
         open_meteo.buscar_lote(sessao, "url", [(1, 1)], ["x"], "UTC")
+
+
+def test_limite_de_acessos_vira_erro_com_o_motivo():
+    from unittest.mock import MagicMock
+
+    import pytest
+
+    resposta = MagicMock(status_code=429, reason="Too Many Requests")
+    resposta.json.return_value = {"error": True, "reason": "Daily API request limit exceeded."}
+    sessao = MagicMock()
+    sessao.get.return_value = resposta
+    with pytest.raises(ValueError, match="429: Daily API request limit exceeded"):
+        open_meteo.buscar_lote(sessao, "https://x", [(-22.9, -43.1)], ["temperature_2m"], "America/Sao_Paulo")
+
+
+def test_sessao_nao_espera_o_tempo_que_o_servidor_mandar():
+    from praiometro.coleta.http import criar_sessao
+
+    tentativas = criar_sessao().get_adapter("https://x").max_retries
+    assert tentativas.respect_retry_after_header is False
+    assert tentativas.total <= 2
+
+
+def test_coleta_pela_ponte_manda_o_endereco_inteiro_e_a_chave():
+    from unittest.mock import patch
+
+    import requests
+
+    from praiometro.coleta.http import SessaoPelaPonte, criar_sessao
+
+    sessao = criar_sessao(ponte_url="https://ponte.exemplo/api/buscar", ponte_chave="segredo")
+    assert isinstance(sessao, SessaoPelaPonte)
+    with patch.object(requests.Session, "get", return_value="resposta") as get:
+        assert sessao.get(
+            "https://api.open-meteo.com/v1/forecast", params={"latitude": "-22.9,-23"}, timeout=20
+        )
+    (destino,), opcoes = get.call_args
+    assert destino == "https://ponte.exemplo/api/buscar"
+    assert opcoes["params"] == {"url": "https://api.open-meteo.com/v1/forecast?latitude=-22.9%2C-23"}
+    assert opcoes["headers"] == {"x-ponte-chave": "segredo"}
+    assert opcoes["timeout"] == 30
+
+
+def test_sem_ponte_a_coleta_vai_direto():
+    from praiometro.coleta.http import SessaoPelaPonte, criar_sessao
+
+    assert not isinstance(criar_sessao(), SessaoPelaPonte)

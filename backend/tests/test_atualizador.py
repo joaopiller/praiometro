@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from unittest.mock import patch
+from unittest.mock import DEFAULT, patch
 from zoneinfo import ZoneInfo
 
 from praiometro.coleta import inea
@@ -138,3 +138,42 @@ def test_cada_cidade_usa_o_proprio_boletim(settings):
     assert estado["CP004"]["leitura_atual"]["balneabilidade"] is True
     assert estado["CP004"]["leitura_atual"]["balneabilidade_data"] == "2026-11-11"
     assert estado["GR000"]["leitura_atual"]["balneabilidade_data"] == "2026-11-12"
+
+
+def test_worker_roda_uma_vez_e_para_quando_pedem(settings):
+    import threading
+
+    from praiometro import worker
+
+    alvos = ("executar_coleta", "atualizar_regiao", "atualizar_historico", "gravar_snapshot_medias")
+    with (
+        patch.multiple(worker, **dict.fromkeys(alvos, DEFAULT)) as tarefas,
+        patch.object(worker, "criar_colecao_votos"),
+        patch.object(worker, "RepositorioVotos"),
+        patch.object(worker, "RepositorioRelatos"),
+    ):
+        worker.rodar(settings, uma_vez=True)
+        assert all(tarefas[a].call_count == 1 for a in alvos)
+
+        # com o pedido de parada já feito, nada mais roda
+        parar = threading.Event()
+        parar.set()
+        worker.rodar(settings, parar=parar)
+        assert all(tarefas[a].call_count == 1 for a in alvos)
+
+
+def test_coleta_registra_como_foi_cada_fonte(settings):
+    from praiometro.coleta import situacao
+
+    def buscar_lote(_sessao, url, coordenadas, *_a, **_k):
+        if "marine" in url:
+            raise ValueError("Open-Meteo respondeu 429: limite")
+        return [{} for _ in coordenadas]
+
+    with (
+        patch("praiometro.coleta.open_meteo.buscar_lote", side_effect=buscar_lote),
+        patch("praiometro.coleta.inea.baixar_boletim", return_value=False),
+    ):
+        executar_coleta(settings, sessao=object())
+    assert situacao.fontes()["clima"] == "ok"
+    assert situacao.fontes()["mar"] == "erro: Open-Meteo respondeu 429: limite"

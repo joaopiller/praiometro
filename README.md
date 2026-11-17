@@ -80,6 +80,19 @@ docker compose up -d --build
 
 A API sobe em `http://localhost:8000` (documentação interativa em `/docs`). O worker faz a primeira coleta assim que inicia e depois repete a cada hora (o histórico do INEA é atualizado a cada 6 horas). Os arquivos gerados ficam na pasta definida por `DATA_DIR`.
 
+### Na nuvem, de graça (Render + MongoDB Atlas)
+
+O [`render.yaml`](render.yaml) publica o backend no plano gratuito do [Render](https://render.com), com as avaliações e os relatos num cluster gratuito do [MongoDB Atlas](https://www.mongodb.com/cloud/atlas/register).
+
+1. **Atlas:** crie o cluster gratuito, um usuário do banco (senha só com letras e números) e, em *Network Access*, libere `0.0.0.0/0` (o Render gratuito não tem IP fixo). Em *Connect → Drivers* copie o endereço `mongodb+srv://...`.
+2. **Render:** *New → Blueprint*, escolha este repositório e preencha `MONGO_URI` (o endereço do Atlas) e `GOOGLE_CLIENT_ID`.
+3. **Manter acordado:** o serviço gratuito dorme depois de 15 minutos sem acesso e leva cerca de um minuto para voltar. Um monitor gratuito (por exemplo o [UptimeRobot](https://uptimerobot.com)) chamando `/health` a cada 5 minutos evita isso.
+4. **App:** aponte o `EXPO_PUBLIC_API_URL` do frontend para o endereço `https://...onrender.com`.
+
+**Ponte em São Paulo.** O site do INEA só responde a endereços do Brasil, e o Open-Meteo conta o limite de acessos por endereço (o do Render gratuito é dividido com outros usuários). Por isso a coleta, quando roda fora do país, passa pela função em [`ponte/`](ponte), publicada na [Vercel](https://vercel.com) na região de São Paulo: importe o repositório com *Root Directory* `ponte`, defina a variável `PONTE_CHAVE` (uma senha qualquer) e, no backend, `PONTE_URL=https://<projeto>.vercel.app/api/buscar` e a mesma `PONTE_CHAVE`. A ponte só busca páginas do INEA e do Open-Meteo, e só com a chave. O `/health` do backend mostra como foi a última tentativa em cada fonte.
+
+No plano gratuito há um serviço só e o disco é apagado a cada reinício. Por isso o `render.yaml` liga `COLETOR_EMBUTIDO=true`: a coleta roda dentro da própria API e refaz os dados ao iniciar (enquanto isso, a API responde com o catálogo, sem leituras). Avaliações e relatos ficam no Atlas e não se perdem.
+
 ### Sem Docker
 
 Requer Python 3.11+ e um MongoDB rodando.
@@ -185,7 +198,7 @@ Scripts em `frontend/scripts/` (requerem Python com Pillow: `pip install pillow`
 
 ### Identidade visual
 
-A logo é um medidor apontando para o mar: o "ômetro" do nome. Em [docs/identidade-visual](docs/identidade-visual) ficam todas as versões, em SVG e PNG com fundo transparente (horizontal, vertical, compacta, só o ícone, ícone reforçado para tamanhos pequenos e só o nome; coloridas para fundo escuro e claro e em uma cor), o ícone do app e a [prancha](docs/identidade-visual/prancha.png) com cores e tipografia.
+A logo é o sol descendo sobre o mar, dentro de um selo. Em [docs/identidade-visual](docs/identidade-visual) ficam todas as versões, em SVG e PNG com fundo transparente (horizontal, vertical, compacta, só o ícone e só o nome; coloridas para fundo escuro e claro e em uma cor), os ícones do app e a [prancha](docs/identidade-visual/prancha.png) com cores e tipografia.
 
 Os arquivos são gerados por `docs/identidade-visual/gerador/gerar.py` (requer `fonttools`, `uharfbuzz`, `pillow` e o Google Chrome, usado para renderizar os PNG). O nome usa a fonte Poppins Bold, de licença aberta (OFL), convertida em contorno. Depois de mudar a logo, rode `python scripts/gerar-icones.py` em `frontend/` e `npm run prebuild` para os ícones nativos.
 

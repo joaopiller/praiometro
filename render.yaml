@@ -1,0 +1,29 @@
+# Publica o backend no Render (plano gratuito): https://render.com/docs/blueprint-spec
+# A API e a coleta rodam no mesmo serviço; as avaliações e os relatos ficam no MongoDB Atlas.
+services:
+  - type: web
+    name: praiometro-api
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    # mudanças só no app não reiniciam o servidor (cada reinício refaz a coleta)
+    buildFilter:
+      paths:
+        - backend/**
+        - render.yaml
+    envVars:
+      - key: COLETOR_EMBUTIDO
+        value: "true"
+      # preenchidas no painel do Render, nunca aqui
+      - key: MONGO_URI
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      # ponte em São Paulo (ver ponte/): o INEA só responde a endereços do Brasil
+      - key: PONTE_URL
+        sync: false
+      - key: PONTE_CHAVE
+        sync: false

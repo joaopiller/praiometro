@@ -4,7 +4,8 @@ import { env } from '../config/env';
 
 export const api = create({
     baseURL: env.apiUrl,
-    timeout: 15_000,
+    // fora do alcance do servidor, é este o tempo até o aviso de "sem conexão" aparecer
+    timeout: 8_000,
 });
 
 // login recusado pelo servidor: o token guardado não serve mais
@@ -18,7 +19,7 @@ export function getErrorMessage(error: unknown): string {
         const err = error as AxiosError<{ detail?: unknown }>;
         const detail = err.response?.data?.detail;
         if (typeof detail === 'string') return detail;
-        if (err.code === 'ECONNABORTED') return 'O servidor demorou para responder.';
+        if (err.code === 'ECONNABORTED') return 'O servidor não respondeu. Verifique sua conexão e tente de novo.';
         if (!err.response) return 'Sem conexão com o servidor. Verifique sua internet.';
         if (err.response.status >= 500) return 'O servidor está com problemas. Tente mais tarde.';
     }

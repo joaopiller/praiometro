@@ -22,6 +22,20 @@ describe('usePuxarParaAtualizar', () => {
         expect(atualizar).toHaveBeenCalledTimes(1);
     });
 
+    it('nunca fica rodando para sempre, mesmo se a atualização não responder', async () => {
+        jest.useFakeTimers();
+        const { result } = renderHook(() => usePuxarParaAtualizar(() => new Promise(() => {})));
+        act(() => {
+            result.current[1]();
+        });
+        expect(result.current[0]).toBe(true);
+        await act(async () => {
+            jest.advanceTimersByTime(12_000);
+        });
+        expect(result.current[0]).toBe(false);
+        jest.useRealTimers();
+    });
+
     it('solta a roleta mesmo se a atualização falhar', async () => {
         const { result } = renderHook(() => usePuxarParaAtualizar(() => Promise.reject(new Error('sem rede'))));
         await act(async () => {

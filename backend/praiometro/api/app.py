@@ -1,4 +1,5 @@
 import logging
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -13,6 +14,7 @@ from ..avaliacoes import RepositorioVotos
 from ..config import Settings, configurar_logging, get_settings
 from ..db import criar_colecao_votos
 from ..relatos import RepositorioRelatos
+from ..worker import rodar as rodar_coletor
 from .cache import CacheJson, CachePontos
 from .ratelimit import LimitadorTaxa
 from .routes import avaliacoes, pontos, praias, regiao, sistema
@@ -42,7 +44,18 @@ def create_app(
                 repositorio.garantir_indices()
             except Exception as e:
                 log.warning("Não foi possível criar índices no MongoDB: %s", e)
+        parar = threading.Event()
+        if settings.coletor_embutido:
+            # numa thread à parte: a API já responde (com o catálogo) enquanto a primeira coleta roda
+            log.info("Coleta embutida na API: iniciando")
+            threading.Thread(
+                target=rodar_coletor,
+                kwargs={"settings": settings, "parar": parar},
+                name="coletor",
+                daemon=True,
+            ).start()
         yield
+        parar.set()
 
     app = FastAPI(
         title="Praiômetro API",
@@ -115,7 +128,8 @@ def main() -> None:
         factory=True,
         host="0.0.0.0",
         port=settings.port,
-        workers=settings.api_workers,
+        # com o coletor embutido, mais de um processo coletaria em dobro
+        workers=1 if settings.coletor_embutido else settings.api_workers,
         proxy_headers=True,
     )
 

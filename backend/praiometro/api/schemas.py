@@ -97,6 +97,13 @@ class Health(BaseModel):
     versao: str
     pontos: int
     mongo: bool
+    coleta_embutida: bool = False
+    ultima_coleta: str | None = Field(None, description="Quando o estado foi gravado pela última vez (UTC)")
+    pontos_com_leitura: int = 0
+    pontos_com_boletim: int = 0
+    fontes: dict[str, str] = Field(
+        {}, description="Última tentativa em cada fonte (só com a coleta embutida)"
+    )
 
 
 class RegistroHistorico(BaseModel):

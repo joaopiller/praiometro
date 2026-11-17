@@ -9,7 +9,7 @@ describe('getErrorMessage', () => {
     });
 
     it('trata timeout, falta de rede e erro do servidor', () => {
-        expect(getErrorMessage(axiosError(undefined, undefined, 'ECONNABORTED'))).toMatch(/demorou/);
+        expect(getErrorMessage(axiosError(undefined, undefined, 'ECONNABORTED'))).toMatch(/não respondeu/);
         expect(getErrorMessage(axiosError())).toMatch(/Sem conexão/);
         expect(getErrorMessage(axiosError(502))).toMatch(/servidor está com problemas/);
     });
@@ -20,5 +20,19 @@ describe('getErrorMessage', () => {
 
     it('erro genérico', () => {
         expect(getErrorMessage(new Error('x'))).toBe('Algo deu errado. Tente novamente.');
+    });
+});
+
+describe('novas tentativas', () => {
+    const { createQueryClient } = require('../queryClient');
+    const retry = createQueryClient().getDefaultOptions().queries.retry as (falhas: number, erro: unknown) => boolean;
+
+    it('servidor que não responde não ganha segunda tentativa: só dobraria a espera', () => {
+        expect(retry(0, axiosError(undefined, undefined, 'ECONNABORTED'))).toBe(false);
+    });
+
+    it('outras falhas ganham uma segunda chance, e só uma', () => {
+        expect(retry(0, axiosError(502))).toBe(true);
+        expect(retry(1, axiosError(502))).toBe(false);
     });
 });

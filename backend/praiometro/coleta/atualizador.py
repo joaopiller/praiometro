@@ -12,7 +12,7 @@ import requests
 from ..catalogo import carregar_catalogo
 from ..config import Settings
 from ..storage import atualizar_json
-from . import historico, inea, open_meteo, regiao
+from . import historico, inea, open_meteo, regiao, situacao
 from .http import criar_sessao
 
 log = logging.getLogger(__name__)
@@ -93,8 +93,12 @@ def mesclar_estado(
     return novo
 
 
+def _sessao(settings: Settings) -> requests.Session:
+    return criar_sessao(ponte_url=settings.ponte_url, ponte_chave=settings.ponte_chave)
+
+
 def executar_coleta(settings: Settings, sessao: requests.Session | None = None) -> dict[str, dict]:
-    sessao = sessao or criar_sessao()
+    sessao = sessao or _sessao(settings)
     catalogo = carregar_catalogo(settings.catalogo_file)
     codigos = list(catalogo)
     # clima no ponto em terra (onde fica o banhista); mar no ponto de coleta, dentro da água
@@ -105,10 +109,14 @@ def executar_coleta(settings: Settings, sessao: requests.Session | None = None) 
     chave = chave_hora_atual(settings.timezone)
 
     def buscar(url: str, variaveis, coordenadas) -> list[dict]:
+        fonte = "mar" if url == settings.open_meteo_marine_url else "clima"
         try:
-            return open_meteo.buscar_lote(sessao, url, coordenadas, variaveis, settings.timezone)
+            lote = open_meteo.buscar_lote(sessao, url, coordenadas, variaveis, settings.timezone)
+            situacao.registrar(fonte)
+            return lote
         except (requests.RequestException, ValueError) as e:
             log.error("Falha ao consultar %s: %s", url, e)
+            situacao.registrar(fonte, e)
             return [{} for _ in codigos]
 
     meteo = buscar(settings.open_meteo_url, open_meteo.METEO_VARIAVEIS, em_terra)
@@ -132,7 +140,7 @@ def executar_coleta(settings: Settings, sessao: requests.Session | None = None) 
     datas: dict[str, str | None] = {}
     for fonte in fontes(settings):
         pdf = _pdf(settings, fonte)
-        inea.baixar_boletim(sessao, fonte.pagina, pdf, arquivo=fonte.boletim)
+        inea.baixar_boletim(sessao, fonte.pagina, pdf, arquivo=fonte.boletim, fonte=f"boletim-{fonte.cidade}")
         boletim = inea.ler_boletim(pdf)
         status.update(boletim.status)
         datas[fonte.cidade] = boletim.data.isoformat() if boletim.data else None
@@ -147,7 +155,7 @@ def executar_coleta(settings: Settings, sessao: requests.Session | None = None) 
 
 
 def atualizar_regiao(settings: Settings, sessao: requests.Session | None = None) -> dict:
-    sessao = sessao or criar_sessao()
+    sessao = sessao or _sessao(settings)
     dados = regiao.buscar_regiao(
         sessao, settings.open_meteo_marine_url, settings.open_meteo_url, settings.timezone
     )
@@ -158,7 +166,7 @@ def atualizar_regiao(settings: Settings, sessao: requests.Session | None = None)
 
 
 def atualizar_historico(settings: Settings, sessao: requests.Session | None = None) -> int:
-    sessao = sessao or criar_sessao()
+    sessao = sessao or _sessao(settings)
     ano = datetime.now(ZoneInfo(settings.timezone)).year
     novo: dict[str, dict[str, bool]] = {}
     for fonte in fontes(settings):

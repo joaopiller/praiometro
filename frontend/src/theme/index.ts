@@ -74,5 +74,5 @@ export const MAX_FONT_SCALE_FIXO = 1.3;
 export const CONTENT_MAX_WIDTH = 560;
 
 // largura / altura das logos (assets/images, geradas por scripts/gerar-icones.py)
-export const LOGO_PROPORCAO = 840 / 193;
-export const LOGO_ABERTURA_PROPORCAO = 680 / 542;
+export const LOGO_PROPORCAO = 840 / 217;
+export const LOGO_ABERTURA_PROPORCAO = 680 / 527;

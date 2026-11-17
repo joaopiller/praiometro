@@ -47,7 +47,13 @@ def buscar_lote(
         "forecast_days": 2,
     }
     resposta = sessao.get(url, params=params, timeout=timeout)
-    resposta.raise_for_status()
+    if resposta.status_code >= 400:
+        # o motivo vem no corpo ("Daily API request limit exceeded...")
+        try:
+            motivo = resposta.json().get("reason")
+        except ValueError:
+            motivo = None
+        raise ValueError(f"Open-Meteo respondeu {resposta.status_code}: {motivo or resposta.reason}")
     dados = resposta.json()
     if isinstance(dados, dict):
         if dados.get("error"):

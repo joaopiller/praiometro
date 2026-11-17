@@ -22,10 +22,10 @@ h2 { font: 700 24px Poppins; color: #015486; margin: 52px 0 18px; }
 .capa img.logo { height: %(capa_altura)spx; position: relative; }
 .capa .frase { font: 700 22px Poppins; color: #F5D9A8; position: relative; letter-spacing: .3px; }
 .capa svg.fundo { position: absolute; inset: 0; width: 100%%; height: 100%%; }
-.grade { display: grid; grid-template-columns: 150px repeat(6, 1fr); gap: 12px; align-items: stretch; }
+.grade { display: grid; grid-template-columns: 150px repeat(5, 1fr); gap: 12px; align-items: stretch; }
 .grade .rotulo { font-size: 15px; color: #4A6478; display: flex; align-items: center; line-height: 1.3; }
 .grade .topo { font-size: 14px; color: #4A6478; text-align: center; padding-bottom: 2px; }
-.q { height: 124px; border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.q { height: 132px; border-radius: 16px; display: flex; align-items: center; justify-content: center; padding: 18px; }
 .q img { max-width: 100%%; max-height: 100%%; }
 .claro { background: #fff; box-shadow: inset 0 0 0 1px #DDD6C8; }
 .cores { display: grid; grid-template-columns: repeat(%(n_cores)s, 1fr); gap: 12px; }
@@ -63,41 +63,25 @@ CORES_BASE = [
     ("#013B60", "Azul profundo", "fundo escuro, textos"),
     ("#2FA8E8", "Azul mar", "ondas, destaques"),
     ("#8FD8FF", "Azul céu", "parte clara do nome"),
-    ("#F5D9A8", "Areia", "sol, ponteiro, botões"),
+    ("#F5D9A8", "Areia", "sol da marca, botões"),
 ]
 
-FUNDO_A = """<svg class="fundo" viewBox="0 0 1472 400" preserveAspectRatio="xMidYMid slice" fill="none" stroke-linecap="round">
-<g stroke="#0B6199" stroke-width="2.5">
-<path d="M1010 470 A330 330 0 0 1 1670 470"/><path d="M1090 470 A250 250 0 0 1 1590 470"/><path d="M1170 470 A170 170 0 0 1 1510 470"/>
-<path d="M-200 470 A330 330 0 0 1 460 470"/><path d="M-120 470 A250 250 0 0 1 380 470"/><path d="M-40 470 A170 170 0 0 1 300 470"/>
-</g>
-<g stroke="#1673AE" stroke-width="5">%(riscos)s</g></svg>"""
+FUNDO = """<svg class="fundo" viewBox="0 0 1472 400" preserveAspectRatio="xMidYMid slice">
+<circle cx="1250" cy="250" r="130" fill="#0B6199"/>
+<path d="M0 300 q92 -52 184 0 t184 0 t184 0 t184 0 t184 0 t184 0 t184 0 t184 0 V400 H0 Z" fill="#0D69A4"/>
+<path d="M-92 345 q92 -46 184 0 t184 0 t184 0 t184 0 t184 0 t184 0 t184 0 t184 0 t184 0 V400 H-92 Z" fill="#1178B8"/></svg>"""
 
 AREIA_DO_FONE = '<svg viewBox="0 0 170 46"><path d="M0 16 q21 -12 42.5 0 t42.5 0 t42.5 0 t42.5 0 V46 H0 Z" fill="#F5D9A8"/></svg>'
 
 
-def _riscos() -> str:
-    """Marcações de medidor em volta dos arcos da capa A."""
-    import math
-
-    partes = []
-    for cx in (1340, 130):
-        for grau in range(200, 341, 20):
-            a = math.radians(grau)
-            x1, y1 = cx + 352 * math.cos(a), 470 + 352 * math.sin(a)
-            x2, y2 = cx + 372 * math.cos(a), 470 + 372 * math.sin(a)
-            partes.append(f'<path d="M{x1:.1f} {y1:.1f} L{x2:.1f} {y2:.1f}"/>')
-    return "".join(partes)
-
-
 TITULO = "Identidade visual do Praiômetro"
-CONCEITO = "O “ômetro” do nome vira desenho: um medidor apontando para o mar. É a marca de quem mede a praia para você."
-FRASE = "A praia, medida."
+CONCEITO = "O sol descendo sobre o mar, dentro de um selo: a marca de quem convida para a praia já sabendo como ela está."
+FRASE = "Sol, mar e informação."
 CORES = [
     *CORES_BASE,
-    ("#2FA35A", "Verde própria", "escala do medidor"),
-    ("#E2A72E", "Amarelo atenção", "escala do medidor"),
-    ("#D9483B", "Vermelho imprópria", "escala do medidor"),
+    ("#FFC83D", "Sol", "ícones de clima, avisos"),
+    ("#E8B04E", "Areia forte", "areia sobre fundo claro"),
+    ("#E6F6FF", "Espuma", "fundos claros"),
 ]
 
 LINHAS = [
@@ -111,7 +95,6 @@ COLUNAS = [
     ("vertical", "Vertical"),
     ("compacta", "Compacta"),
     ("icone", "Só o ícone"),
-    ("icone-reforcado", "Ícone reforçado"),
     ("nome", "Só o nome"),
 ]
 
@@ -136,21 +119,19 @@ def html_da_prancha(fonte_b64: str) -> str:
         f'<div class="app" style="width:{lado}px;height:{lado}px"><img src="icone-do-app/icone-do-app.png"></div>'
         for lado in (118, 76, 48)
     )
-    css = CSS % dict(fonte=fonte_b64, capa_altura=240, n_cores=len(CORES))
-    fundo = FUNDO_A % dict(riscos=_riscos())
+    css = CSS % {"fonte": fonte_b64, "capa_altura": 150, "n_cores": len(CORES)}
     return f"""<!doctype html><html lang="pt-BR"><meta charset="utf-8"><title>{TITULO}</title><style>{css}</style><body>
 <h1>{TITULO}</h1>
 <p class="sub">{CONCEITO}</p>
-<div class="capa">{fundo}<img class="logo" src="{svg("vertical", "fundo-escuro")}"><div class="frase">{FRASE}</div></div>
+<div class="capa">{FUNDO}<img class="logo" src="{svg("horizontal", "fundo-escuro")}"><div class="frase">{FRASE}</div></div>
 
 <h2>Versões da logo</h2>
 <div class="grade">{grade}</div>
-<p class="nota">Todos os arquivos têm fundo transparente, em SVG (vetor) e PNG. Os fundos coloridos aqui são só para mostrar onde cada versão funciona.
-O ícone reforçado tem traços mais grossos, para tamanhos pequenos como o ícone do app.</p>
+<p class="nota">Todos os arquivos têm fundo transparente, em SVG (vetor) e PNG. Os fundos coloridos aqui são só para mostrar onde cada versão funciona.</p>
 
 <h2>Cores</h2>
 <div class="cores">{cores}</div>
-<p class="nota">As três cores da situação para banho viram a “escala” do medidor e podem aparecer em gráficos e avisos.</p>
+<p class="nota">O amarelo do sol e os tons de areia aquecem a paleta. Verde, amarelo e vermelho ficam só para a situação de banho.</p>
 
 <h2>Tipografia</h2>
 <div class="tipos">
@@ -161,7 +142,7 @@ O ícone reforçado tem traços mais grossos, para tamanhos pequenos como o íco
 <h2>No app</h2>
 <div class="usos">
 <div class="uso"><small>Ícone do app</small><div class="meio" style="align-items:flex-end">{icones}</div></div>
-<div class="uso"><small>Foto de perfil nas redes</small><div class="meio"><div class="avatar"><img src="{svg("icone-reforcado", "fundo-escuro")}"></div></div></div>
+<div class="uso"><small>Foto de perfil nas redes</small><div class="meio"><div class="avatar"><img src="{svg("icone", "fundo-escuro")}"></div></div></div>
 <div class="uso"><small>Cabeçalho do mapa</small><div class="meio"><div class="barra"><img src="{svg("horizontal", "fundo-escuro")}"><div>24°<span>Garoa</span></div></div></div></div>
 <div class="uso"><small>Tela de abertura</small><div class="meio"><div class="fone"><img src="{svg("vertical", "fundo-escuro")}">{AREIA_DO_FONE}</div></div></div>
 </div>

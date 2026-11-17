@@ -297,6 +297,6 @@ describe('Clima', () => {
     it('timeout mostra mensagem específica', async () => {
         mockPonto.mockRejectedValue(axiosError(undefined, undefined, 'ECONNABORTED'));
         renderWithClient(<Clima />);
-        await waitFor(() => expect(screen.getByText(/demorou para responder/)).toBeTruthy());
+        await waitFor(() => expect(screen.getByText(/não respondeu/)).toBeTruthy());
     });
 });

@@ -109,3 +109,18 @@ def test_normalizar_codigo():
     assert inea.normalizar_codigo("BG00") == "BG000"
     assert inea.normalizar_codigo("BD011") == "BD011"
     assert inea.normalizar_codigo("CP100") == "CP100"
+
+
+def test_falha_no_download_fica_registrada(tmp_path):
+    from unittest.mock import MagicMock
+
+    import requests
+
+    from praiometro.coleta import situacao
+
+    sessao = MagicMock()
+    sessao.get.side_effect = requests.ConnectTimeout("sem resposta")
+    assert not inea.baixar_boletim(
+        sessao, "https://inea/niteroi/", tmp_path / "b.pdf", fonte="boletim-niteroi"
+    )
+    assert situacao.fontes()["boletim-niteroi"] == "erro: ConnectTimeout: sem resposta"

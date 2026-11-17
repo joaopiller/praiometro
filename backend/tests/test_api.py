@@ -1,9 +1,14 @@
 import json
+from unittest.mock import patch
 
 import mongomock
+from fastapi.testclient import TestClient
 
+from praiometro.api.app import create_app
 from praiometro.api.ratelimit import LimitadorTaxa
 from praiometro.relatos import RepositorioRelatos
+
+from .conftest import verificador_falso
 
 VOTOS = {"limpeza": 5, "acessibilidade": 4, "infraestrutura": 3, "seguranca": 2, "tranquilidade": 1}
 AUTH = {"Authorization": "Bearer valido-usuario1"}
@@ -331,3 +336,37 @@ def test_estado_vazio_cai_no_catalogo(client, settings):
 def test_codigo_do_ponto_sem_diferenciar_maiusculas(client):
     assert client.get("/pontos/gr000").status_code == 200
     assert client.get("/pontos/zz999").status_code == 404
+
+
+def test_coletor_embutido_roda_junto_com_a_api(settings, estado, repo):
+    settings.coletor_embutido = True
+    with patch("praiometro.api.app.rodar_coletor") as coletor:
+        app = create_app(settings, repo=repo, verificador=verificador_falso)
+        with TestClient(app) as c:
+            assert c.get("/health").status_code == 200
+            parar = coletor.call_args.kwargs["parar"]
+            assert coletor.call_args.kwargs["settings"] is settings
+            assert not parar.is_set()
+        # ao desligar a API, a coleta para
+        assert parar.is_set()
+
+
+def test_sem_coletor_embutido_a_api_nao_coleta(client):
+    with patch("praiometro.api.app.rodar_coletor") as coletor, TestClient(client.app):
+        pass
+    coletor.assert_not_called()
+
+
+def test_health_diz_se_a_coleta_ja_rodou(client, settings):
+    saude = client.get("/health").json()
+    assert saude["coleta_embutida"] is False
+    assert saude["ultima_coleta"] is not None
+    assert saude["pontos_com_leitura"] == 68
+    assert saude["pontos_com_boletim"] == 68
+    # sem o arquivo de estado, só o catálogo: nada foi coletado ainda
+    settings.estado_file.unlink()
+    client.app.state.cache.recarregar(forcar=True)
+    saude = client.get("/health").json()
+    assert saude["ultima_coleta"] is None
+    assert saude["pontos"] == 68
+    assert saude["pontos_com_leitura"] == 0
