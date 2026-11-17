@@ -1,5 +1,14 @@
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Camera, GeoJSONSource, Images, Layer, Map, UserLocation, type CameraRef } from '@maplibre/maplibre-react-native';
+import {
+    Camera,
+    GeoJSONSource,
+    Images,
+    Layer,
+    Map,
+    UserLocation,
+    type CameraRef,
+    type ViewStateChangeEvent,
+} from '@maplibre/maplibre-react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -44,6 +53,8 @@ const PINS = {
 
 const PIN_DA_SITUACAO = { propria: 'propria', impropria: 'impropria', parcial: 'parcial', sem_dados: 'sem-dados' } as const;
 const VISIBILIDADE = { itemVisiblePercentThreshold: 70 };
+// afastando o mapa com os dedos abaixo deste zoom, a praia escolhida deixa de ser destaque
+const ZOOM_DA_ESCOLHA = 12.8;
 // menor área enquadrada ao escolher uma praia (~1 km), em graus
 const FAIXA_MINIMA = 0.009;
 // espaço que o nome de um trecho ocupa para cada lado do ponto e abaixo dele
@@ -247,6 +258,15 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
     const arrastando = useRef(false);
     const fimDoArrasto = useRef<ReturnType<typeof setTimeout> | null>(null);
     useEffect(() => () => clearTimeout(fimDoArrasto.current ?? undefined), []);
+    const afastou = useCallback(
+        ({ nativeEvent }: { nativeEvent: ViewStateChangeEvent }) => {
+            // só o gesto de quem usa o app: a câmera passa por zooms baixos ao voar até uma praia
+            if (!escolhida || !nativeEvent.userInteraction || nativeEvent.zoom >= ZOOM_DA_ESCOLHA) return;
+            setSelecionado(null);
+            setTrechoTocado(null);
+        },
+        [escolhida],
+    );
     const focarRef = useRef(focar);
     const noCarrossel = useRef(praias);
     useEffect(() => {
@@ -294,6 +314,8 @@ export default function Home({ navigation }: TabScreenProps<'Home'>) {
                 attribution={false}
                 onDidFailLoadingMap={() => setMapaFalhou(true)}
                 onDidFinishLoadingMap={() => setMapaFalhou(false)}
+                onRegionIsChanging={afastou}
+                onRegionDidChange={afastou}
                 onPress={() => {
                     clearTimeout(toqueNoMapa.current ?? undefined);
                     toqueNoMapa.current = setTimeout(() => {
