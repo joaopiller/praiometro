@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { CONTENT_MAX_WIDTH, colors, radius, spacing } from '../../theme';
+import { CONTENT_MAX_WIDTH, colors, radius, spacing, tituloDaMarca } from '../../theme';
 
 export default StyleSheet.create({
     list: { padding: spacing.lg, paddingBottom: spacing.xxl, width: '100%', maxWidth: CONTENT_MAX_WIDTH, alignSelf: 'center' },
@@ -33,7 +33,7 @@ export default StyleSheet.create({
     chipText: { color: colors.text, fontWeight: '600' },
     chipTextActive: { color: colors.brand },
     secao: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', marginTop: spacing.sm },
-    secaoTitulo: { color: colors.text, fontSize: 18, fontWeight: '800' },
+    secaoTitulo: { color: colors.text, ...tituloDaMarca(17) },
     secaoTotal: { color: colors.textSubtle, fontSize: 13 },
     separator: { height: spacing.md },
     empty: { color: colors.textMuted, fontSize: 16, textAlign: 'center', marginTop: spacing.xl },

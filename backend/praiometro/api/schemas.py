@@ -66,9 +66,18 @@ class ListaPraias(BaseModel):
     praias: list[PraiaResumo]
 
 
+class Destaque(BaseModel):
+    tipo: Literal["atencao", "dica", "curiosidade"]
+    icone: str = Field(
+        description="Nome do desenho; o app escolhe o ícone (ex.: mar-forte, trilha, por-do-sol)"
+    )
+    texto: str
+
+
 class PraiaDetalhe(PraiaResumo):
     leitura_atual: dict | None = Field(None, description="Leitura do ponto principal")
     previsao: list[dict] = []
+    destaques: list[Destaque] = Field([], description="O que a praia tem de singular; avisos primeiro")
 
 
 class DadosPonto(BaseModel):

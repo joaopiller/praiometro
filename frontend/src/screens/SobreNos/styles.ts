@@ -1,10 +1,10 @@
 import { StyleSheet } from 'react-native';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, radius, spacing, typography, tituloDaMarca } from '../../theme';
 
 export default StyleSheet.create({
     conteudo: { paddingTop: spacing.lg },
     card: { gap: spacing.md },
-    titulo: { ...typography.title, fontSize: 22, lineHeight: 28 },
+    titulo: { color: colors.text, ...tituloDaMarca(21, 28) },
     texto: { ...typography.body, flexShrink: 1 },
     forte: { color: colors.text, fontWeight: '700' },
     legenda: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },

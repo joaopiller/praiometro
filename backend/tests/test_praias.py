@@ -168,3 +168,52 @@ def test_migracao_dos_relatos():
     )
     RepositorioRelatos(db).migrar_para_praias(CATALOGO)
     assert db.relatos.find_one()["praia_id"] == "PR"
+
+
+def test_destaques_da_praia_vem_com_os_avisos_primeiro(client, tmp_path, monkeypatch):
+    from praiometro import praias as modulo
+
+    arquivo = tmp_path / "destaques.json"
+    arquivo.write_text(
+        json.dumps(
+            {
+                "IA": [
+                    {
+                        "tipo": "curiosidade",
+                        "icone": "trilha",
+                        "texto": "Trilha do Costão.",
+                        "fonte": "https://x",
+                    },
+                    {"tipo": "atencao", "icone": "mar-forte", "texto": "Mar forte.", "fonte": "https://y"},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(modulo, "DESTAQUES_FILE", arquivo)
+    modulo.destaques.cache_clear()
+    try:
+        itens = client.get("/praias/IA").json()["destaques"]
+        # a fonte fica só no arquivo, para quem mantém o app
+        assert itens == [
+            {"tipo": "atencao", "icone": "mar-forte", "texto": "Mar forte."},
+            {"tipo": "curiosidade", "icone": "trilha", "texto": "Trilha do Costão."},
+        ]
+        assert client.get("/praias/IC").json()["destaques"] == []
+    finally:
+        modulo.destaques.cache_clear()
+
+
+def test_arquivo_de_destaques_e_valido():
+    from praiometro.praias import DESTAQUES_FILE, TIPOS_DE_DESTAQUE
+
+    praias = set(agrupar(CATALOGO))
+    for praia, itens in json.loads(DESTAQUES_FILE.read_text(encoding="utf-8")).items():
+        assert praia in praias, praia
+        assert 1 <= len(itens) <= 4
+        for item in itens:
+            assert item["tipo"] in TIPOS_DE_DESTAQUE
+            assert item["icone"]
+            assert 20 <= len(item["texto"]) <= 150, item["texto"]
+            assert item["texto"].endswith(".")
+            assert item["fonte"].startswith("https://"), item

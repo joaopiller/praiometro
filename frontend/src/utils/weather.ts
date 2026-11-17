@@ -6,6 +6,8 @@ type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 export interface CondicaoClima {
     descricao: string;
+    /** nome curto, para onde o espaço é pouco (cabeçalho do mapa); sem ele, vale a descrição */
+    curta?: string;
     icone: IconName;
     iconeNoite?: IconName;
     cor: string;
@@ -19,7 +21,7 @@ const chuva = '#8FD0FF';
 const CONDICOES: { codigos: number[]; condicao: CondicaoClima }[] = [
     { codigos: [0], condicao: { descricao: 'Céu limpo', icone: 'weather-sunny', iconeNoite: 'weather-night', cor: colors.sun, arriscado: false } },
     { codigos: [1], condicao: { descricao: 'Poucas nuvens', icone: 'weather-partly-cloudy', iconeNoite: 'weather-night-partly-cloudy', cor: colors.sun, arriscado: false } },
-    { codigos: [2], condicao: { descricao: 'Parcialmente nublado', icone: 'weather-partly-cloudy', iconeNoite: 'weather-night-partly-cloudy', cor: colors.sun, arriscado: false } },
+    { codigos: [2], condicao: { descricao: 'Parcialmente nublado', curta: 'Sol e nuvens', icone: 'weather-partly-cloudy', iconeNoite: 'weather-night-partly-cloudy', cor: colors.sun, arriscado: false } },
     { codigos: [3], condicao: { descricao: 'Nublado', icone: 'weather-cloudy', cor: nuvem, arriscado: false } },
     { codigos: [45, 48], condicao: { descricao: 'Neblina', icone: 'weather-fog', cor: nuvem, arriscado: true } },
     { codigos: [51, 53, 55, 56, 57], condicao: { descricao: 'Garoa', icone: 'weather-partly-rainy', cor: chuva, arriscado: false } },
@@ -27,12 +29,12 @@ const CONDICOES: { codigos: number[]; condicao: CondicaoClima }[] = [
     { codigos: [63, 66], condicao: { descricao: 'Chuva', icone: 'weather-rainy', cor: chuva, arriscado: true } },
     { codigos: [65, 67], condicao: { descricao: 'Chuva forte', icone: 'weather-pouring', cor: chuva, arriscado: true } },
     { codigos: [71, 73, 75, 77, 85, 86], condicao: { descricao: 'Neve', icone: 'weather-snowy', cor: nuvem, arriscado: true } },
-    { codigos: [80, 81, 82], condicao: { descricao: 'Pancadas de chuva', icone: 'weather-pouring', cor: chuva, arriscado: true } },
+    { codigos: [80, 81, 82], condicao: { descricao: 'Pancadas de chuva', curta: 'Pancadas', icone: 'weather-pouring', cor: chuva, arriscado: true } },
     { codigos: [95], condicao: { descricao: 'Trovoadas', icone: 'weather-lightning-rainy', cor: colors.warning, arriscado: true } },
-    { codigos: [96, 99], condicao: { descricao: 'Trovoadas com granizo', icone: 'weather-hail', cor: colors.warning, arriscado: true } },
+    { codigos: [96, 99], condicao: { descricao: 'Trovoadas com granizo', curta: 'Granizo', icone: 'weather-hail', cor: colors.warning, arriscado: true } },
 ];
 
-const DESCONHECIDA: CondicaoClima = { descricao: 'Sem informação', icone: 'weather-cloudy-alert', cor: nuvem, arriscado: false };
+const DESCONHECIDA: CondicaoClima = { descricao: 'Sem informação', curta: 'Sem dados', icone: 'weather-cloudy-alert', cor: nuvem, arriscado: false };
 
 export function getCondicao(codigo?: number | null): CondicaoClima {
     if (codigo === null || codigo === undefined) return DESCONHECIDA;

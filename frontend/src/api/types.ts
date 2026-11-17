@@ -68,9 +68,18 @@ export interface PraiaResumo {
     pontos: PontoDaPraia[];
 }
 
+/** O que a praia tem de singular: aviso, dica ou curiosidade. */
+export interface Destaque {
+    tipo: 'atencao' | 'dica' | 'curiosidade';
+    /** nome do desenho (ex.: "mar-forte", "trilha"); o app escolhe o ícone */
+    icone: string;
+    texto: string;
+}
+
 export interface PraiaDetalhe extends PraiaResumo {
     leitura_atual?: Leitura | null;
     previsao?: PrevisaoHora[];
+    destaques?: Destaque[];
 }
 
 export interface PontoDetalhe {

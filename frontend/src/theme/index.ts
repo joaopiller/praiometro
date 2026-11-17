@@ -55,6 +55,16 @@ export const toneColors: Record<Tone, { fg: string; bg: string; solid: string; e
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 32 } as const;
 export const radius = { sm: 8, md: 14, lg: 20, pill: 999 } as const;
 
+// Títulos na fonte da marca (Poppins Bold, a do nome na logo), embutida pelo plugin expo-font.
+// A fonte já é negrito: fontWeight fica normal para o Android não engrossar por cima.
+export const tituloDaMarca = (fontSize: number, lineHeight = Math.round(fontSize * 1.3)) => ({
+    fontFamily: 'Poppins-Bold',
+    fontWeight: 'normal' as const,
+    fontSize,
+    lineHeight,
+    includeFontPadding: false,
+});
+
 // includeFontPadding: false evita o espaço extra que o Android põe acima de fontes grandes
 export const typography = {
     display: { fontSize: 88, fontWeight: '200' as const, color: colors.text, lineHeight: 96, includeFontPadding: false },

@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, tituloDaMarca } from '../../theme';
 
 export default StyleSheet.create({
     card: {
@@ -16,6 +16,6 @@ export default StyleSheet.create({
     thumb: { width: 64, height: 64, borderRadius: radius.md },
     thumbPlaceholder: { backgroundColor: colors.sandSoft, alignItems: 'center', justifyContent: 'center' },
     texts: { flex: 1, gap: 4 },
-    name: { color: colors.text, fontSize: 16, fontWeight: '700', lineHeight: 21 },
+    name: { color: colors.text, ...tituloDaMarca(15, 20) },
     location: { color: colors.textMuted, fontSize: 14 },
 });

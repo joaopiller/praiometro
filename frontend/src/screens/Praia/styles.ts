@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, radius, spacing, typography, tituloDaMarca } from '../../theme';
 
 export default StyleSheet.create({
     content: { paddingHorizontal: 0, gap: 0 },
@@ -19,8 +19,7 @@ export default StyleSheet.create({
     heroText: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl },
     title: {
         color: '#fff',
-        fontSize: 28,
-        fontWeight: '800',
+        ...tituloDaMarca(26, 32),
         textShadowColor: 'rgba(0,0,0,0.4)',
         textShadowRadius: 6,
     },

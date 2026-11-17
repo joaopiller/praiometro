@@ -1,8 +1,10 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { colors } from '../../theme';
 import styles from './styles';
+
+const selo = require('../../../assets/images/selo.png');
 
 interface Props {
     loading?: boolean;
@@ -31,7 +33,7 @@ export default function StateView({ loading, error, onRetry, compact }: Props) {
     if (loading) return <Carregando compact={compact} />;
     return (
         <View style={[styles.container, compact && styles.compact]} accessibilityLiveRegion="polite">
-            {!compact && <MaterialCommunityIcons name="umbrella-beach-outline" size={72} color={colors.sand} />}
+            {!compact && <Image source={selo} style={styles.selo} accessibilityIgnoresInvertColors />}
             <Text style={[styles.title, compact && styles.compactText]}>{error ?? 'Algo deu errado.'}</Text>
             {onRetry && (
                 <Pressable

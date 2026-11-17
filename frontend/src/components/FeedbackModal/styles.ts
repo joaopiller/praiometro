@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, tituloDaMarca } from '../../theme';
 
 export default StyleSheet.create({
     backdrop: { flex: 1, backgroundColor: 'rgba(1,30,50,0.65)', justifyContent: 'center', alignItems: 'center', padding: spacing.lg },
@@ -11,7 +11,7 @@ export default StyleSheet.create({
         padding: spacing.xl,
         gap: spacing.lg,
     },
-    title: { fontSize: 20, fontWeight: '800', color: colors.brand, textAlign: 'center' },
+    title: { ...tituloDaMarca(19), color: colors.brand, textAlign: 'center' },
     subtitle: { fontSize: 14, color: '#5B6B78', textAlign: 'center', marginTop: -spacing.sm },
     list: { gap: spacing.md },
     row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

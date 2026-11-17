@@ -65,6 +65,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
             ],
         },
         plugins: [
+            // fonte dos títulos, a mesma do nome na logo
+            ['expo-font', { fonts: ['./assets/fonts/Poppins-Bold.ttf'] }],
             [
                 'expo-splash-screen',
                 {

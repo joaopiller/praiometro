@@ -22,7 +22,7 @@ export default function HomeHeader({ onPress }: { onPress?: () => void }) {
 
     const conteudo = (
         <>
-            <Image source={logo} style={styles.logo} accessibilityLabel="Praiômetro" />
+            <Image source={logo} style={styles.logo} resizeMode="contain" accessibilityLabel="Praiômetro" />
             <Pressable
                 onPress={onPress}
                 style={({ pressed }) => [styles.clima, pressed && styles.pressed]}
@@ -36,8 +36,8 @@ export default function HomeHeader({ onPress }: { onPress?: () => void }) {
                         <WeatherIcon code={leitura.weather_code} size={28} hour={parseTimestamp(leitura.timestamp)?.hora} />
                         <View style={styles.climaTexto}>
                             <Text style={styles.temp} maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}>{formatTemp(leitura.temperature_2m)}</Text>
-                            <Text style={styles.condicao} numberOfLines={1} maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}>
-                                {condicao.descricao}
+                            <Text style={styles.condicao} maxFontSizeMultiplier={MAX_FONT_SCALE_FIXO}>
+                                {condicao.curta ?? condicao.descricao}
                             </Text>
                         </View>
                     </>

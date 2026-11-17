@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, tituloDaMarca } from '../../theme';
 
 export default StyleSheet.create({
     card: {
@@ -20,7 +20,7 @@ export default StyleSheet.create({
     foto: { width: 72, height: 72, borderRadius: radius.md },
     semFoto: { backgroundColor: '#E6F2FA', alignItems: 'center', justifyContent: 'center' },
     textos: { flex: 1, gap: 3 },
-    nome: { fontSize: 16, fontWeight: '800', color: colors.bgBottom },
+    nome: { ...tituloDaMarca(15, 20), color: colors.bgBottom },
     local: { fontSize: 13, color: '#5B6B78' },
     seta: {
         width: 32,

@@ -6,6 +6,8 @@ export default StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        // a logo e o clima nunca se encostam
+        gap: spacing.md,
         borderRadius: radius.lg,
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.18)',
@@ -20,7 +22,8 @@ export default StyleSheet.create({
         elevation: 8,
     },
     barVidro: { borderWidth: 0, shadowOpacity: 0, elevation: 0 },
-    logo: { width: 150, height: 150 / LOGO_PROPORCAO },
+    // em telas estreitas quem cede espaço é a logo: o clima aparece sempre inteiro, sem reticências
+    logo: { width: 150, aspectRatio: LOGO_PROPORCAO, flexShrink: 1, minWidth: 104 },
     clima: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -32,10 +35,10 @@ export default StyleSheet.create({
         paddingRight: spacing.sm,
         paddingVertical: 8,
         minHeight: 52,
-        flexShrink: 1,
+        flexShrink: 0,
     },
     pressed: { opacity: 0.8 },
-    climaTexto: { flexShrink: 1, marginRight: 2 },
+    climaTexto: { marginRight: 2 },
     temp: { color: colors.text, fontSize: 20, fontWeight: '800', lineHeight: 23 },
     condicao: { color: colors.textMuted, fontSize: 12, lineHeight: 15 },
 });

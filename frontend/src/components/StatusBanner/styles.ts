@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { radius, spacing } from '../../theme';
+import { radius, spacing, tituloDaMarca } from '../../theme';
 
 export default StyleSheet.create({
     banner: {
@@ -21,7 +21,7 @@ export default StyleSheet.create({
         justifyContent: 'center',
     },
     texts: { flex: 1, gap: 2 },
-    title: { color: '#fff', fontSize: 18, fontWeight: '800', lineHeight: 22 },
+    title: { color: '#fff', ...tituloDaMarca(17, 22) },
     subtitle: { color: 'rgba(255,255,255,0.92)', fontSize: 13, lineHeight: 18 },
     watermark: { position: 'absolute', right: -6, bottom: -10 },
 });

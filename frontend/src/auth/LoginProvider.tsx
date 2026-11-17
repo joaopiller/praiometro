@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import BottomSheet from '../components/BottomSheet';
 import { FOLHA } from '../components/BottomSheet/styles';
-import { colors, radius, spacing } from '../theme';
+import { colors, radius, spacing, tituloDaMarca } from '../theme';
 import { appleDisponivel } from './apple';
 import { contaLembrada, entrar, tokenDaSessao } from './sessao';
 
@@ -143,7 +143,7 @@ function EscolhaDeLogin({ entrarComApple, entrarComGoogle, cancelar }: Folha) {
 }
 
 const styles = StyleSheet.create({
-    titulo: { fontSize: 20, fontWeight: '800', color: colors.brand, textAlign: 'center' },
+    titulo: { ...tituloDaMarca(19), color: colors.brand, textAlign: 'center' },
     subtitulo: { fontSize: 14, color: FOLHA.textoSuave, textAlign: 'center', marginTop: spacing.xs },
     botoes: { gap: spacing.sm, marginTop: spacing.lg },
     botao: { height: 50, width: '100%' },

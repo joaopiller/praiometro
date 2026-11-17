@@ -21,4 +21,14 @@ describe('clima', () => {
         expect(getSensationMessage(null)).toBe('Sem informação');
         expect(getSensationMessage(30)).toMatch(/protetor/);
     });
+
+    it('nomes longos têm versão curta para o cabeçalho do mapa', () => {
+        expect(getCondicao(80).curta).toBe('Pancadas');
+        expect(getCondicao(0).curta).toBeUndefined();
+        // nenhum nome mostrado no cabeçalho passa de 13 letras
+        for (const codigo of [0, 1, 2, 3, 45, 51, 61, 63, 65, 71, 80, 95, 96, undefined]) {
+            const c = getCondicao(codigo);
+            expect((c.curta ?? c.descricao).length).toBeLessThanOrEqual(13);
+        }
+    });
 });

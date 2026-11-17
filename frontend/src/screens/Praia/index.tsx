@@ -5,6 +5,7 @@ import { ImageBackground, Linking, Pressable, Text, View } from 'react-native';
 import { getErrorMessage } from '../../api/client';
 import { useAviso } from '../../components/Aviso';
 import DataNotice from '../../components/DataNotice';
+import Destaques from '../../components/Destaques';
 import FeedbackModal from '../../components/FeedbackModal';
 import FeedbackSection from '../../components/FeedbackSection';
 import GlassCard from '../../components/GlassCard';
@@ -93,10 +94,10 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
             contentStyle={styles.content}
         >
             <ImageBackground source={foto?.imagem} style={styles.hero} resizeMode="cover" accessibilityIgnoresInvertColors>
-                {/* o topo parte da mesma cor em que o cabeçalho termina, então a foto "nasce" dele */}
+                {/* a foto fica limpa; só a base escurece, para o nome da praia ler bem em qualquer imagem */}
                 <LinearGradient
-                    colors={[colors.bgTop, 'rgba(10,99,158,0.55)', 'rgba(10,99,158,0)', 'transparent', 'rgba(1,84,134,0.65)']}
-                    locations={[0, 0.16, 0.42, 0.62, 1]}
+                    colors={['transparent', 'transparent', 'rgba(0,26,46,0.68)']}
+                    locations={[0, 0.42, 1]}
                     style={styles.heroShade}
                 />
                 <Pressable
@@ -132,6 +133,8 @@ export default function Praia({ route, navigation }: PraiasScreenProps<'Praia'>)
                             : boletim
                     }
                 />
+
+                <Destaques key={praia.id} destaques={praia.destaques ?? []} />
 
                 {variosTrechos && trechoAtual ? (
                     <TrechosCard pontos={praia.pontos} selecionado={trechoAtual.codigo} onSelecionar={setEscolhido} />

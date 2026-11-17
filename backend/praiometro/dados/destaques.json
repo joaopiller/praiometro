@@ -1,0 +1,330 @@
+{
+    "GR": [
+        {
+            "tipo": "curiosidade",
+            "icone": "forte",
+            "texto": "Praia pequena ao lado do Forte de Gragoatá.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    ],
+    "BV": [
+        {
+            "tipo": "curiosidade",
+            "icone": "museu",
+            "texto": "Fica ao lado do MAC, museu projetado por Oscar Niemeyer, com vista para a Ilha da Boa Viagem.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    ],
+    "IC": [
+        {
+            "tipo": "curiosidade",
+            "icone": "montanha",
+            "texto": "Aqui ficam a Pedra de Itapuca e a Pedra do Índio, símbolos de Niterói.",
+            "fonte": "https://pt.wikipedia.org/wiki/Praia_de_Icara%C3%AD_(Niter%C3%B3i)"
+        },
+        {
+            "tipo": "dica",
+            "icone": "vista",
+            "texto": "Da areia se veem o Corcovado e o Pão de Açúcar.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    ],
+    "SF": [
+        {
+            "tipo": "dica",
+            "icone": "restaurantes",
+            "texto": "Águas calmas e um calçadão com bares e restaurantes.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    ],
+    "CH": [
+        {
+            "tipo": "curiosidade",
+            "icone": "barca",
+            "texto": "A estação das barcas ao lado da praia foi projetada por Oscar Niemeyer e inaugurada em 2004.",
+            "fonte": "https://pt.wikipedia.org/wiki/Esta%C3%A7%C3%A3o_Hidrovi%C3%A1ria_de_Charitas"
+        },
+        {
+            "tipo": "dica",
+            "icone": "vela",
+            "texto": "Águas calmas, procuradas para o windsurfe.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    ],
+    "JR": [
+        {
+            "tipo": "curiosidade",
+            "icone": "pesca",
+            "texto": "Sede de uma colônia de pescadores, com restaurantes de frutos do mar.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    ],
+    "EA": [
+        {
+            "tipo": "curiosidade",
+            "icone": "enseada",
+            "texto": "Forma um par com a vizinha Praia de Adão: duas praias pequenas, lado a lado, em Jurujuba.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    ],
+    "AD": [
+        {
+            "tipo": "curiosidade",
+            "icone": "enseada",
+            "texto": "Forma um par com a vizinha Praia de Eva: duas praias pequenas, lado a lado, em Jurujuba.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        }
+    ],
+    "PR": [
+        {
+            "tipo": "atencao",
+            "icone": "salva-vidas",
+            "texto": "Praia de mar aberto, a segunda de Niterói em afogamentos. Respeite as bandeiras e os guarda-vidas.",
+            "fonte": "https://editorarealize.com.br/editora/anais/enanpege/2021/TRABALHO_COMPLETO_EV154_MD1_SA125_ID402216112021213705.pdf"
+        }
+    ],
+    "SG": [
+        {
+            "tipo": "atencao",
+            "icone": "escada",
+            "texto": "Só se chega a pé, por trilha íngreme e escada de pedras. Não há quiosques.",
+            "fonte": "https://pt.wikipedia.org/wiki/Praia_do_Sossego"
+        },
+        {
+            "tipo": "curiosidade",
+            "icone": "premio",
+            "texto": "Tem o selo internacional Bandeira Azul desde 2021.",
+            "fonte": "https://folhadoleste.com.br/praia-sossego-bandeira-azul-sexta-vez-niteroi/"
+        }
+    ],
+    "CM": [
+        {
+            "tipo": "curiosidade",
+            "icone": "navio",
+            "texto": "O nome vem do cargueiro Camboinhas, que encalhou aqui em 1958.",
+            "fonte": "https://pt.wikipedia.org/wiki/Camboinhas"
+        }
+    ],
+    "II": [
+        {
+            "tipo": "atencao",
+            "icone": "salva-vidas",
+            "texto": "Evite nadar perto do canal da lagoa: é onde acontece a maioria dos afogamentos da praia.",
+            "fonte": "https://editorarealize.com.br/editora/anais/enanpege/2021/TRABALHO_COMPLETO_EV154_MD1_SA125_ID402216112021213705.pdf"
+        },
+        {
+            "tipo": "curiosidade",
+            "icone": "museu",
+            "texto": "Ao lado da areia fica o Museu de Arqueologia de Itaipu, nas ruínas do Recolhimento de Santa Teresa.",
+            "fonte": "https://museudearqueologiadeitaipu.museus.gov.br/"
+        }
+    ],
+    "IA": [
+        {
+            "tipo": "atencao",
+            "icone": "mar-forte",
+            "texto": "Mar forte e com correnteza: é a praia de Niterói com mais afogamentos. Fique perto dos guarda-vidas.",
+            "fonte": "https://editorarealize.com.br/editora/anais/enanpege/2021/TRABALHO_COMPLETO_EV154_MD1_SA125_ID402216112021213705.pdf"
+        },
+        {
+            "tipo": "dica",
+            "icone": "surfe",
+            "texto": "Um dos principais pontos de surfe de Niterói.",
+            "fonte": "https://diariodorio.com/13-praias-que-voce-precisa-conhecer-em-niteroi/"
+        },
+        {
+            "tipo": "curiosidade",
+            "icone": "trilha",
+            "texto": "A trilha do Costão, no Parque Estadual da Serra da Tiririca, começa aqui.",
+            "fonte": "https://www.inea.rj.gov.br/biodiversidade-territorio/conheca-as-unidades-de-conservacao/parque-estadual-da-serra-da-tiririca/"
+        }
+    ],
+    "barra-de-guaratiba": [
+        {
+            "tipo": "dica",
+            "icone": "restaurantes",
+            "texto": "Conhecida pelos restaurantes de frutos do mar.",
+            "fonte": "https://riotur.rio/que_fazer/barra-de-guaratiba/"
+        },
+        {
+            "tipo": "curiosidade",
+            "icone": "trilha",
+            "texto": "Daqui sai a trilha para as praias selvagens: Perigoso, Meio, Funda e Inferno.",
+            "fonte": "https://riotur.rio/que_fazer/praias-selvagens/"
+        }
+    ],
+    "grumari": [
+        {
+            "tipo": "atencao",
+            "icone": "estacionamento",
+            "texto": "Em fins de semana e feriados de verão, o acesso de carros fecha quando o estacionamento lota.",
+            "fonte": "https://diariodorio.com/acesso-as-praias-da-zona-oeste-do-rio-sera-controlado-nos-finais-de-semana-entenda/"
+        },
+        {
+            "tipo": "curiosidade",
+            "icone": "natureza",
+            "texto": "Área de preservação onde construções são proibidas.",
+            "fonte": "https://riotur.rio/que_fazer/grumari/"
+        }
+    ],
+    "prainha": [
+        {
+            "tipo": "atencao",
+            "icone": "estacionamento",
+            "texto": "Só se chega de carro, e o acesso fecha quando o estacionamento lota. Em dias cheios, vá cedo.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        },
+        {
+            "tipo": "dica",
+            "icone": "surfe",
+            "texto": "Ponto tradicional de surfe, com ondas médias e altas.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        }
+    ],
+    "pontal": [
+        {
+            "tipo": "dica",
+            "icone": "montanha",
+            "texto": "Na maré baixa, uma faixa de areia liga a praia à Pedra do Pontal.",
+            "fonte": "https://riotur.rio/?p=890"
+        }
+    ],
+    "recreio": [
+        {
+            "tipo": "dica",
+            "icone": "campeonato",
+            "texto": "Recebe campeonatos internacionais de surfe e bodyboard.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        }
+    ],
+    "reserva": [
+        {
+            "tipo": "curiosidade",
+            "icone": "natureza",
+            "texto": "São 8 km de praia dentro de uma área protegida.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        }
+    ],
+    "barra": [
+        {
+            "tipo": "curiosidade",
+            "icone": "extensao",
+            "texto": "É a praia mais extensa do Rio.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        },
+        {
+            "tipo": "dica",
+            "icone": "kitesurf",
+            "texto": "No trecho do Pepê, kitesurfe e windsurfe são comuns no começo da manhã e no fim da tarde.",
+            "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-pepe"
+        }
+    ],
+    "joatinga": [
+        {
+            "tipo": "atencao",
+            "icone": "mare-alta",
+            "texto": "Na maré alta a faixa de areia some. Confira a maré antes de ir.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        },
+        {
+            "tipo": "atencao",
+            "icone": "trilha",
+            "texto": "O acesso passa por um condomínio e termina numa trilha curta sobre pedras.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        }
+    ],
+    "sao-conrado": [
+        {
+            "tipo": "atencao",
+            "icone": "mar-forte",
+            "texto": "Ondas fortes, procuradas por surfistas. Atenção ao entrar no mar.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        }
+    ],
+    "leblon": [
+        {
+            "tipo": "dica",
+            "icone": "familia",
+            "texto": "O Baixo Bebê, espaço de recreação para crianças pequenas, existe desde os anos 1990.",
+            "fonte": "https://diariodorio.com/baixo-bebe-leblon-reinaugura-no-domingo/"
+        },
+        {
+            "tipo": "dica",
+            "icone": "vista",
+            "texto": "No fim da praia, na Avenida Niemeyer, há um mirante.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        }
+    ],
+    "arpoador": [
+        {
+            "tipo": "dica",
+            "icone": "por-do-sol",
+            "texto": "Um dos lugares mais procurados do Rio para ver o pôr do sol, que costuma ser aplaudido.",
+            "fonte": "https://agenciabrasil.ebc.com.br/geral/noticia/2015-12/praia-do-arpoador-e-um-dos-pontos-mais-disputados-do-verao-carioca"
+        },
+        {
+            "tipo": "dica",
+            "icone": "surfe",
+            "texto": "Ponto clássico de surfe do Rio.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        }
+    ],
+    "diabo": [
+        {
+            "tipo": "atencao",
+            "icone": "mar-forte",
+            "texto": "As ondas costumam ser fortes. Com o mar agitado, redobre a atenção.",
+            "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-diabo"
+        }
+    ],
+    "copacabana": [
+        {
+            "tipo": "curiosidade",
+            "icone": "calcadao",
+            "texto": "São quase 4 km de praia. O calçadão em ondas ganhou a forma atual nos anos 1970, com Burle Marx.",
+            "fonte": "https://pt.wikipedia.org/wiki/Praia_de_Copacabana"
+        },
+        {
+            "tipo": "curiosidade",
+            "icone": "fogos",
+            "texto": "Palco de uma das maiores festas de Réveillon do mundo, com queima de fogos.",
+            "fonte": "https://pt.wikipedia.org/wiki/Praia_de_Copacabana"
+        }
+    ],
+    "leme": [
+        {
+            "tipo": "curiosidade",
+            "icone": "montanha",
+            "texto": "Começa na Pedra do Leme, onde ficam o Caminho dos Pescadores e a estátua de Clarice Lispector.",
+            "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-leme"
+        },
+        {
+            "tipo": "dica",
+            "icone": "forte",
+            "texto": "O Forte do Leme tem uma trilha ecológica dentro da área militar.",
+            "fonte": "https://www.timeout.com/pt/rio-de-janeiro/atraccoes/praia-do-leme"
+        }
+    ],
+    "vermelha": [
+        {
+            "tipo": "dica",
+            "icone": "mar-calmo",
+            "texto": "Mar calmo, bom para stand-up paddle e caiaque.",
+            "fonte": "https://riotur.rio/que_fazer/rio-praias/"
+        },
+        {
+            "tipo": "curiosidade",
+            "icone": "bondinho",
+            "texto": "O nome vem da cor da areia. Ao lado ficam o bondinho do Pão de Açúcar e a Pista Cláudio Coutinho.",
+            "fonte": "https://pt.wikipedia.org/wiki/Praia_Vermelha_(Rio_de_Janeiro)"
+        }
+    ],
+    "gloria": [
+        {
+            "tipo": "curiosidade",
+            "icone": "vela",
+            "texto": "A prainha fica atrás da Marina da Glória e passou a ter a água medida pelo INEA em 2024.",
+            "fonte": "https://diariodorio.com/prainha-da-gloria-ganha-medicoes-de-balneabilidade-e-atrai-banhistas/"
+        }
+    ]
+}

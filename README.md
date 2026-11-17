@@ -1,13 +1,72 @@
-# Praiômetro
+<div align="center">
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/identidade-visual/svg/praiometro-horizontal-fundo-escuro.svg">
+  <img src="docs/identidade-visual/svg/praiometro-horizontal-fundo-claro.svg" alt="Praiômetro" width="360">
+</picture>
+
+**Como está a praia agora?** App mobile que mostra se a água está própria para banho, o clima, o mar e o que os banhistas estão vendo nas praias de Niterói e do Rio de Janeiro.
 
 [![Backend](https://github.com/joaopiller/praiometro/actions/workflows/backend.yml/badge.svg)](https://github.com/joaopiller/praiometro/actions/workflows/backend.yml)
 [![Frontend](https://github.com/joaopiller/praiometro/actions/workflows/frontend.yml/badge.svg)](https://github.com/joaopiller/praiometro/actions/workflows/frontend.yml)
+![React Native](https://img.shields.io/badge/React_Native-0.88-015486?logo=react&logoColor=white)
+![Expo](https://img.shields.io/badge/Expo-SDK_58-015486?logo=expo&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-015486?logo=typescript&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Python_3.12-015486?logo=fastapi&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-015486?logo=mongodb&logoColor=white)
 
-App com informações das praias de Niterói e do Rio de Janeiro (Zona Sul e Sudoeste): balneabilidade, ondas, vento, índice UV, previsão do tempo e avaliações dos banhistas, tudo em um só lugar.
+[Site](https://joaopiller.github.io/praiometro/) · [API ao vivo](https://praiometro-api.onrender.com/docs) · [Identidade visual](docs/identidade-visual/prancha.png) · [Política de privacidade](https://joaopiller.github.io/praiometro/privacidade.html)
 
-O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF), desenvolvido por alunos de Sistemas de Informação.
+</div>
 
-![Telas do app](docs/screenshots/telas.png)
+![Telas do app no iPhone: mapa, lista de praias, página da praia, relatos e clima](docs/screenshots/telas.png)
+
+O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF), desenvolvido por alunos de Sistemas de Informação. Ele junta três fontes que hoje ficam espalhadas: os boletins de balneabilidade do INEA (publicados em PDF), a previsão de clima e mar e os relatos de quem está na areia.
+
+> A API pública roda no plano gratuito do Render e dorme depois de 15 minutos sem uso: o primeiro acesso pode levar cerca de um minuto.
+
+## Destaques do projeto
+
+- **Um código, dois sistemas.** App em React Native (Expo SDK 58) e TypeScript para iOS e Android. No iOS 26 usa o visual Liquid Glass e a barra de abas nativa; no Android, a mesma tela sem o vidro.
+- **Dados públicos difíceis de consumir, entregues de forma simples.** Um coletor em Python baixa e interpreta os boletins em PDF do INEA de duas cidades (68 pontos de coleta, agrupados em 36 praias), cruza com o Open-Meteo e publica tudo numa API FastAPI.
+- **Publicação sem custo, contornando um bloqueio real.** O site do INEA só responde a endereços do Brasil. A API roda no Render (EUA), o banco no MongoDB Atlas, e a coleta sai por uma função na Vercel em São Paulo, restrita aos sites das fontes e protegida por chave.
+- **Mapa com cuidado geográfico.** O pin de cada praia fica no meio da faixa de areia, calculado a partir dos contornos do OpenStreetMap com Shapely, e não no mar.
+- **Relatos colaborativos com moderação automática.** Opções fixas, validade de 5 horas, conferência de que a pessoa está na praia e contestações que escondem relatos falsos.
+- **Feito para o público geral.** Linguagem direta ("Própria para banho"), funcionamento offline com os últimos dados, suporte a leitor de tela, fonte ampliada e redução de movimento.
+- **Testado e automatizado.** 129 testes no app (Jest) e 149 no backend (pytest), com lint, checagem de tipos e CI no GitHub Actions a cada push.
+- **Identidade visual própria, gerada por código.** Logo, variações, ícones e prancha saem de um script, em [docs/identidade-visual](docs/identidade-visual).
+
+## Como funciona
+
+```mermaid
+flowchart LR
+    subgraph Fontes
+        INEA["INEA<br/>boletins em PDF"]
+        OM["Open-Meteo<br/>clima, mar e maré"]
+    end
+    Ponte["Ponte<br/>Vercel · São Paulo"]
+    subgraph Backend["Backend · Render"]
+        Coleta["Coleta<br/>a cada hora"] --> API["API FastAPI"]
+    end
+    Banco[("MongoDB Atlas<br/>avaliações e relatos")]
+    App["App<br/>React Native · iOS e Android"]
+    Mapa["OpenFreeMap<br/>mapa"]
+
+    INEA --> Ponte
+    OM --> Ponte
+    Ponte --> Coleta
+    API <--> Banco
+    App <--> API
+    App --> Mapa
+```
+
+| Camada | Tecnologias |
+| --- | --- |
+| App | React Native 0.88, Expo SDK 58, TypeScript, React Query, React Navigation, MapLibre |
+| Backend | Python 3.12, FastAPI, Pydantic, pdfplumber, pymongo |
+| Dados | MongoDB Atlas; INEA e Open-Meteo como fontes |
+| Infraestrutura | Docker, Render, Vercel, GitHub Actions, GitHub Pages |
+| Qualidade | Jest, Testing Library, pytest, mongomock, ESLint, Ruff |
 
 ## Funcionalidades
 
@@ -16,6 +75,7 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 - Mapa com um pin por praia no meio da faixa de areia, colorido pela situação, e carrossel que percorre o litoral de cada cidade
 - Situação para banho de cada praia: própria, imprópria ou parcialmente própria, quando os trechos medidos pelo INEA (68 pontos de coleta) discordam
 - Trechos de cada praia com a situação de cada um e o histórico das últimas coletas
+- Destaques de cada praia: avisos (mar forte, acesso por trilha, areia que some na maré alta), dicas e curiosidades, conferidos em fontes públicas
 - Aviso quando choveu recentemente
 - Praia mais próxima de você (no mapa e na lista)
 - Ondas (nas praias oceânicas), vento, temperatura da água, índice UV e previsão para as próximas 24 horas
@@ -25,6 +85,10 @@ O Praiômetro é um projeto de extensão da Universidade Federal Fluminense (UFF
 - Busca sem acento por praia, bairro, cidade ou rua de referência, com as praias separadas por cidade (a sua primeiro), e filtros de praias próprias para banho e mais próximas
 - Login com Google (e com Apple no iPhone) para avaliar e relatar; o app lembra da conta, então não é preciso entrar a cada vez
 - Funciona offline com os últimos dados baixados
+
+<div align="center">
+<img src="docs/screenshots/android.png" alt="O app no Android: mapa e página da praia" width="560">
+</div>
 
 ## Fontes de dados
 
@@ -65,7 +129,10 @@ praiometro/
 │   │   ├── theme/           cores, espaçamentos, tipografia
 │   │   └── utils/
 │   └── app.config.ts
+├── ponte/                   função na Vercel (São Paulo) por onde a coleta alcança o INEA
+├── docs/                    site, política de privacidade, identidade visual e capturas
 ├── docker-compose.yml       MongoDB + API + worker
+├── render.yaml              publicação do backend no Render
 └── .github/workflows/       CI/CD
 ```
 
@@ -137,6 +204,8 @@ ruff check . && ruff format --check .
 
 Em Niterói, o id da praia são as duas letras do começo do código dos pontos (`IC` para Icaraí, cujos pontos são `IC00`, `IC001`...); no Rio, onde várias praias dividem o mesmo prefixo, é um nome (`copacabana`, `sao-conrado`). Cada ponto do catálogo (`praiometro/dados/praias.json`) diz a cidade, a praia e o bairro. `/praias/{id}` também aceita o código de um ponto e responde com a praia dele. As avaliações e os relatos são da praia; as rotas antigas por ponto (`/pontos/{codigo}/avaliacao` e `/pontos/{codigo}/relatos`) continuam respondendo pela praia do ponto.
 
+O que cada praia tem de singular (avisos, dicas e curiosidades) fica em `praiometro/dados/destaques.json`, escrito à mão: cada item tem tipo, o nome do desenho, a frase e a fonte de onde veio. `/praias/{id}` devolve a lista em `destaques`, com os avisos primeiro e sem a fonte; no app, os avisos aparecem sempre e as dicas e curiosidades se revezam num cartão.
+
 O pin de cada praia fica em `praiometro/dados/centro_das_praias.json`, gerado por `scripts/centro_das_praias.py` a partir dos contornos de areia do OpenStreetMap (um ou mais arquivos do Overpass, por exemplo um por cidade): o ponto bem dentro da areia mais perto do meio da praia.
 
 Cada cidade tem o próprio boletim do INEA. A página do Rio publica vários (um por região), e o worker baixa só o da Zona Sul e Sudoeste. Os códigos dos pontos são normalizados para três dígitos (`BG00` vira `BG000`).
@@ -200,7 +269,7 @@ Scripts em `frontend/scripts/` (requerem Python com Pillow: `pip install pillow`
 
 A logo é o sol descendo sobre o mar, dentro de um selo. Em [docs/identidade-visual](docs/identidade-visual) ficam todas as versões, em SVG e PNG com fundo transparente (horizontal, vertical, compacta, só o ícone e só o nome; coloridas para fundo escuro e claro e em uma cor), os ícones do app e a [prancha](docs/identidade-visual/prancha.png) com cores e tipografia.
 
-Os arquivos são gerados por `docs/identidade-visual/gerador/gerar.py` (requer `fonttools`, `uharfbuzz`, `pillow` e o Google Chrome, usado para renderizar os PNG). O nome usa a fonte Poppins Bold, de licença aberta (OFL), convertida em contorno. Depois de mudar a logo, rode `python scripts/gerar-icones.py` em `frontend/` e `npm run prebuild` para os ícones nativos.
+Os arquivos são gerados por `docs/identidade-visual/gerador/gerar.py` (requer `fonttools`, `uharfbuzz`, `pillow` e o Google Chrome, usado para renderizar os PNG). O nome usa a fonte Poppins Bold, de licença aberta (OFL), convertida em contorno. Depois de mudar a logo, rode `python scripts/gerar-icones.py` em `frontend/` e `npm run prebuild` para os ícones nativos. No app, os títulos usam a mesma Poppins Bold (`frontend/assets/fonts`), embutida pelo plugin `expo-font`; os textos seguem na fonte do sistema.
 
 ### Testes e qualidade
 
@@ -250,6 +319,10 @@ eas build --platform ios --profile preview        # iPhone (distribuição inter
 - **Backend** (`.github/workflows/backend.yml`): lint, testes com cobertura e build da imagem Docker. Em pushes na `main`, a imagem é publicada no GitHub Container Registry.
 - **Frontend** (`.github/workflows/frontend.yml`): typecheck, lint, testes e validação do bundle.
 - **Release do app** (`.github/workflows/eas-build.yml`): builds pelo EAS, disparado manualmente (escolhendo Android, iOS ou ambos) ou por tags `v*` (por enquanto só Android, até a conta Apple Developer estar no EAS). Precisa do secret `EXPO_TOKEN`.
+
+## Site e política de privacidade
+
+A pasta `docs/` é publicada pelo GitHub Pages (*Settings → Pages → Deploy from a branch*, `main`, pasta `/docs`): [página inicial](https://joaopiller.github.io/praiometro/) e [política de privacidade](https://joaopiller.github.io/praiometro/privacidade.html). São os endereços informados no Google Auth Platform (*Branding*) para o login com Google ficar aberto a qualquer conta. Ao mudar o que o app faz com dados, atualize `docs/privacidade.html` junto.
 
 ## Autoria
 

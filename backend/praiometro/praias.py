@@ -18,6 +18,27 @@ Situacao = Literal["propria", "impropria", "parcial", "sem_dados"]
 CENTROS_FILE = Path(__file__).parent / "dados" / "centro_das_praias.json"
 
 
+# o que cada praia tem de singular (avisos, dicas e curiosidades), escrito à mão e com fonte
+DESTAQUES_FILE = Path(__file__).parent / "dados" / "destaques.json"
+TIPOS_DE_DESTAQUE = ("atencao", "dica", "curiosidade")
+
+
+@cache
+def destaques() -> dict[str, list[dict]]:
+    """{id da praia: [{tipo, icone, texto}]}, com os avisos primeiro. A fonte fica só no arquivo."""
+    try:
+        bruto = json.loads(DESTAQUES_FILE.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
+    return {
+        praia: sorted(
+            ({"tipo": d["tipo"], "icone": d["icone"], "texto": d["texto"]} for d in itens),
+            key=lambda d: TIPOS_DE_DESTAQUE.index(d["tipo"]),
+        )
+        for praia, itens in bruto.items()
+    }
+
+
 @cache
 def centros() -> dict[str, list[float]]:
     try:

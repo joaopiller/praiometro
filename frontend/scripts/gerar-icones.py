@@ -6,6 +6,7 @@ Parte dos PNG de docs/identidade-visual (gerados por docs/identidade-visual/gera
 
 - logo-header.png: logo horizontal dos cabeçalhos
 - logo-abertura.png: logo vertical da tela de abertura
+- selo.png: só o selo do sol e mar, para as telas de erro
 - icone.png: ícone completo 1024x1024 (iOS e Android antigo)
 - icone-adaptativo.png: a mesma cena com folga em volta, para o ícone adaptativo do
   Android (o sistema recorta as bordas)
@@ -30,6 +31,8 @@ if __name__ == "__main__":
     # 4x o tamanho em que aparecem na tela (168 pt no cabeçalho, 170 pt na abertura)
     logo("horizontal-fundo-escuro", 840).save(DESTINO / "logo-header.png", optimize=True)
     logo("vertical-fundo-escuro", 680).save(DESTINO / "logo-abertura.png", optimize=True)
+    # só o selo, para as telas de erro
+    logo("icone-fundo-escuro", 288).save(DESTINO / "selo.png", optimize=True)
     icones = IDENTIDADE / "icone-do-app"
     Image.open(icones / "icone-do-app.png").convert("RGB").save(DESTINO / "icone.png", optimize=True)
     # no adaptativo a cena fica nos dois terços centrais e o mar vai até as bordas, que o sistema recorta

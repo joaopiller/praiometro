@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { colors, radius, spacing, toneColors, typography } from '../../theme';
+import { colors, radius, spacing, toneColors, typography, tituloDaMarca } from '../../theme';
 import { FOLHA } from '../BottomSheet/styles';
 
 export default StyleSheet.create({
@@ -24,7 +24,7 @@ export default StyleSheet.create({
     },
     botaoTexto: { color: colors.sand, fontSize: 15, fontWeight: '700' },
 
-    titulo: { fontSize: 20, fontWeight: '800', color: colors.brand, textAlign: 'center' },
+    titulo: { ...tituloDaMarca(19), color: colors.brand, textAlign: 'center' },
     subtitulo: { fontSize: 14, color: FOLHA.textoSuave, textAlign: 'center', marginTop: spacing.xs },
     grade: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.lg },
     opcao: {
